@@ -230,51 +230,43 @@ export default function Home() {
           <span style={{ color: "#FF5757" }}>Support</span> Tickets
         </h3>
         <div className="row g-4">
-          {/* Total Support Tickets */}
+          {/* Gym Support Tickets Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
-            <div className="dashboard-card">
-              <div className="card-header-custom">
-                <h6 className="card-title">Total Support Tickets</h6>
+            <div
+              className="dashboard-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/support/tickets?type=gym")}
+            >
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Gym</h6>
               </div>
               <div className="card-body-custom">
-                <div className="ticket-breakdown">
-                  <div className="ticket-item">
-                    <span className="ticket-label">Gym</span>
-                    <span className="ticket-number">
-                      {dashboardData.support.totalTickets.gym}
-                    </span>
-                  </div>
-                  <div className="ticket-item">
-                    <span className="ticket-label">Client</span>
-                    <span className="ticket-number">
-                      {dashboardData.support.totalTickets.client}
-                    </span>
-                  </div>
+                <div className="metric-number">
+                  {dashboardData.support.totalTickets.gym}
+                </div>
+                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                  Total support tickets
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Unresolved Tickets */}
+          {/* Client Support Tickets Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
-            <div className="dashboard-card">
-              <div className="card-header-custom">
-                <h6 className="card-title">Unresolved Tickets</h6>
+            <div
+              className="dashboard-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/support/tickets?type=client")}
+            >
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Client</h6>
               </div>
               <div className="card-body-custom">
-                <div className="ticket-breakdown">
-                  <div className="ticket-item">
-                    <span className="ticket-label">Gym</span>
-                    <span className="ticket-number urgent">
-                      {dashboardData.support.unresolvedTickets.gym}
-                    </span>
-                  </div>
-                  <div className="ticket-item">
-                    <span className="ticket-label">Client</span>
-                    <span className="ticket-number urgent">
-                      {dashboardData.support.unresolvedTickets.client}
-                    </span>
-                  </div>
+                <div className="metric-number">
+                  {dashboardData.support.totalTickets.client}
+                </div>
+                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                  Total support tickets
                 </div>
               </div>
             </div>
