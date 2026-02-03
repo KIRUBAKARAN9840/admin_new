@@ -81,69 +81,33 @@ export default function AdminLogin() {
   const handleMobileSubmit = async (e) => {
     e.preventDefault();
     if (mobileNumber.length >= 10) {
-      console.log("🔐 [LOGIN] Starting login process...");
-      console.log("📱 [LOGIN] Mobile number:", mobileNumber);
-      console.log("⏰ [LOGIN] Timestamp:", new Date().toISOString());
-
       setLoading(true);
       setError("");
 
       try {
-        console.log("📤 [LOGIN] Sending login request to /admin/auth/login");
-        const startTime = Date.now();
-
         const response = await axiosInstance.post("/admin/auth/login", {
           mobile_number: mobileNumber,
           password: password,
         });
 
-        const endTime = Date.now();
-        console.log(`📥 [LOGIN] Response received in ${endTime - startTime}ms`);
-        console.log("📊 [LOGIN] Response status:", response?.status);
-        console.log("📦 [LOGIN] Response data:", response?.data);
-
         if (response.data.status === 200) {
-          console.log("✅ [LOGIN] Login successful!");
-          console.log("👤 [LOGIN] User data:", response.data.data);
-          console.log("🎭 [LOGIN] User role:", response.data.data.role);
-
-          console.log("💾 [LOGIN] Storing user data to localStorage");
           localStorage.setItem("user", JSON.stringify(response.data.data));
-          console.log("✅ [LOGIN] User data stored successfully");
-
-          console.log("🍪 [LOGIN] Checking cookies in response headers:");
-          console.log("🍪 [LOGIN] Set-Cookie headers:", response.headers?.['set-cookie']);
-
           if (response.data.data.role === "admin") {
-            console.log("🚀 [LOGIN] Redirecting to admin dashboard...");
             router.push("/portal/admin/home");
           } else if (response.data.data.role === "support") {
-            console.log("🚀 [LOGIN] Redirecting to support dashboard...");
             router.push("/portal/support/fittbotbusiness");
           } else if (response.data.data.role === "nutritionist") {
-            console.log("🚀 [LOGIN] Redirecting to nutritionist dashboard...");
             router.push("/portal/nutritionist/home");
           } else {
-            console.log("❌ [LOGIN] Unauthorized role:", response.data.data.role);
             setError("Only admins are allowed to access this portal");
             localStorage.removeItem("user");
             handleBack();
           }
         } else {
-          console.log("❌ [LOGIN] Login failed - unexpected status code:", response.data.status);
-          console.log("❌ [LOGIN] Error detail:", response?.data?.detail);
           setError(response?.data?.detail || "Failed to Login");
         }
       } catch (err) {
-        console.error("❌❌❌ [LOGIN] LOGIN ERROR CAUGHT ❌❌❌");
-        console.error("📌 [LOGIN] Error object:", err);
-        console.error("📌 [LOGIN] Error message:", err?.message);
-        console.error("📌 [LOGIN] Error response status:", err?.response?.status);
-        console.error("📌 [LOGIN] Error response data:", err?.response?.data);
-        console.error("📌 [LOGIN] Error response headers:", err?.response?.headers);
-        console.error("📌 [LOGIN] Error config:", err?.config);
-        console.error("📌 [LOGIN] Error code:", err?.code);
-
+        console.error("Login error:", err);
         if (err.response?.status === 400) {
           setError("Only admins are allowed to access this portal");
         } else {
@@ -152,7 +116,6 @@ export default function AdminLogin() {
           );
         }
       } finally {
-        console.log("⏹️ [LOGIN] Login process completed, setting loading to false");
         setLoading(false);
       }
     }
@@ -379,19 +342,13 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      console.log("🔑 [FORGOT PASSWORD] Submitting new password...");
-
       // Call the change_password endpoint to update the password in database
       const response = await axiosInstance.post("/admin/auth/change_password", {
         mobile_number: mobileNumber,
         new_password: newPassword,
       });
 
-      console.log("📥 [FORGOT PASSWORD] Change password response:", response?.data);
-
       if (response.data.status === 200) {
-        console.log("✅ [FORGOT PASSWORD] Password changed successfully");
-
         // Show success message and redirect to login
         setError("Password changed successfully! Please login with your new password.");
 
@@ -400,12 +357,10 @@ export default function AdminLogin() {
           handleCancelForgotPassword();
         }, 2000);
       } else {
-        console.error("❌ [FORGOT PASSWORD] Failed - unexpected response:", response.data);
         setError(response?.data?.detail || "Failed to reset password");
       }
     } catch (err) {
-      console.error("❌ [FORGOT PASSWORD] Password reset error:", err);
-      console.error("❌ [FORGOT PASSWORD] Error response:", err?.response?.data);
+      console.error("Password reset error:", err);
       setError(
         err.response?.data?.detail ||
           "Failed to reset password. Please try again."
