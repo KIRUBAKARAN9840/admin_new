@@ -56,7 +56,6 @@ export default function SupportTickets() {
         throw new Error(response.data.message || "Failed to fetch tickets");
       }
     } catch (err) {
-      console.error("[SUPPORT-TICKETS] Error:", err);
       const errorMsg = err.response?.data?.detail || err.message || "Failed to fetch tickets";
       setError(errorMsg);
       setTickets([]);
@@ -183,20 +182,6 @@ export default function SupportTickets() {
                 All
               </button>
               <button
-                className={`btn btn-sm ${filters.status === "yet to start" ? "btn-danger" : "btn-outline-secondary"}`}
-                onClick={() => handleStatusChange("yet to start")}
-                style={filters.status === "yet to start" ? {} : { borderColor: "#444", color: "#ccc" }}
-              >
-                New
-              </button>
-              <button
-                className={`btn btn-sm ${filters.status === "working" ? "btn-danger" : "btn-outline-secondary"}`}
-                onClick={() => handleStatusChange("working")}
-                style={filters.status === "working" ? {} : { borderColor: "#444", color: "#ccc" }}
-              >
-                Working
-              </button>
-              <button
                 className={`btn btn-sm ${filters.status === "resolved" ? "btn-danger" : "btn-outline-secondary"}`}
                 onClick={() => handleStatusChange("resolved")}
                 style={filters.status === "resolved" ? {} : { borderColor: "#444", color: "#ccc" }}
@@ -241,60 +226,40 @@ export default function SupportTickets() {
         ) : (
           <div className="table-responsive">
             <table
-              className="table"
-              style={{
-                backgroundColor: "#1a1a1a",
-                color: "#fff",
-                borderRadius: "8px",
-                overflow: "hidden",
-              }}
+              className="table tickets-table"
             >
-              <thead style={{ backgroundColor: "#222", borderBottom: "2px solid #FF5757" }}>
+              <thead>
                 <tr>
-                  <th style={{ padding: "12px", fontWeight: "600" }}>Ticket ID</th>
-                  <th style={{ padding: "12px", fontWeight: "600" }}>Name</th>
-                  <th style={{ padding: "12px", fontWeight: "600" }}>Email</th>
-                  <th style={{ padding: "12px", fontWeight: "600" }}>Subject</th>
-                  <th style={{ padding: "12px", fontWeight: "600" }}>Issue</th>
-                  <th style={{ padding: "12px", fontWeight: "600" }}>Status</th>
-                  <th style={{ padding: "12px", fontWeight: "600" }}>Created At</th>
+                  <th>Ticket ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Subject</th>
+                  <th>Issue</th>
+                  <th>Status</th>
+                  <th>Created At</th>
                 </tr>
               </thead>
               <tbody>
                 {tickets.map((ticket) => (
                   <tr
                     key={ticket.id}
-                    style={{ borderBottom: "1px solid #333", cursor: "pointer" }}
                     onClick={() => router.push(`/portal/support/tickets/${ticket.ticket_id}?source=${ticket.source}`)}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#222";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }}
                   >
-                    <td style={{ padding: "12px", fontFamily: "monospace" }}>
+                    <td className="ticket-id">
                       {ticket.ticket_id.substring(0, 8)}...
                     </td>
-                    <td style={{ padding: "12px" }}>{ticket.name}</td>
-                    <td style={{ padding: "12px", color: "#888" }}>{ticket.email}</td>
-                    <td style={{ padding: "12px" }}>{ticket.subject}</td>
-                    <td style={{ padding: "12px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <td className="ticket-name">{ticket.name}</td>
+                    <td className="ticket-email">{ticket.email}</td>
+                    <td className="ticket-subject">{ticket.subject}</td>
+                    <td className="ticket-issue">
                       {ticket.issue}
                     </td>
-                    <td style={{ padding: "12px" }}>
-                      <span
-                        className={`badge ${getStatusBadgeClass(ticket.status)}`}
-                        style={{
-                          padding: "4px 10px",
-                          borderRadius: "12px",
-                          fontSize: "12px",
-                        }}
-                      >
+                    <td className="ticket-status">
+                      <span className={`badge ${getStatusBadgeClass(ticket.status)}`}>
                         {getStatusLabel(ticket.status)}
                       </span>
                     </td>
-                    <td style={{ padding: "12px", fontSize: "14px", color: "#888" }}>
+                    <td className="ticket-date">
                       {formatDate(ticket.created_at)}
                     </td>
                   </tr>
@@ -341,18 +306,90 @@ export default function SupportTickets() {
         )}
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
+        table.tickets-table {
+          width: 100% !important;
+          border-collapse: separate !important;
+          border-spacing: 0 !important;
+          background-color: #1a1a1a !important;
+          color: #fff !important;
+          border-radius: 8px !important;
+          overflow: hidden !important;
+        }
+
+        table.tickets-table > thead {
+          background-color: #222 !important;
+          border-bottom: 2px solid #FF5757 !important;
+        }
+
+        table.tickets-table > thead > tr > th {
+          padding: 12px !important;
+          font-weight: 600 !important;
+          text-align: left !important;
+          color: #fff !important;
+          border: none !important;
+          background-color: transparent !important;
+        }
+
+        table.tickets-table > tbody > tr {
+          border-bottom: 1px solid #333 !important;
+          cursor: pointer !important;
+          transition: background-color 0.2s ease !important;
+          background-color: transparent !important;
+        }
+
+        table.tickets-table > tbody > tr:hover {
+          background-color: #222 !important;
+        }
+
+        table.tickets-table > tbody > tr:last-child {
+          border-bottom: none !important;
+        }
+
+        table.tickets-table > tbody > tr > td {
+          padding: 12px !important;
+          color: #fff !important;
+          border: none !important;
+          background-color: transparent !important;
+        }
+
+        table.tickets-table .ticket-id {
+          font-family: monospace !important;
+        }
+
+        table.tickets-table .ticket-email {
+          color: #888 !important;
+        }
+
+        table.tickets-table .ticket-issue {
+          max-width: 200px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        table.tickets-table .ticket-date {
+          font-size: 14px !important;
+          color: #888 !important;
+        }
+
+        table.tickets-table .ticket-status .badge {
+          padding: 4px 10px !important;
+          border-radius: 12px !important;
+          font-size: 12px !important;
+        }
+
         .badge-resolved {
-          background-color: #10b981;
-          color: white;
+          background-color: #10b981 !important;
+          color: white !important;
         }
         .badge-working {
-          background-color: #f59e0b;
-          color: white;
+          background-color: #f59e0b !important;
+          color: white !important;
         }
         .badge-pending {
-          background-color: #ef4444;
-          color: white;
+          background-color: #ef4444 !important;
+          color: white !important;
         }
         @keyframes spin {
           0% { transform: rotate(0deg); }

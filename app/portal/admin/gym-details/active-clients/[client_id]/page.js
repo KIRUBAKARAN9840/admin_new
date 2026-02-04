@@ -38,7 +38,6 @@ export default function GymClientDetail() {
         throw new Error(response.data.message || "Failed to fetch client data");
       }
     } catch (err) {
-      console.error("[GYM-CLIENT-DETAIL-PAGE] Error:", err);
       alert("Failed to load client details. Please try again.");
       router.push(`/portal/admin/gym-details/active-clients?id=${gymId}`);
     } finally {

@@ -36,7 +36,6 @@ export default function ClientDetail() {
         throw new Error(response.data.message || "Failed to fetch client data");
       }
     } catch (err) {
-      console.error("[CLIENT-DETAIL-PAGE] Error:", err);
       alert("Failed to load client details. Please try again.");
       router.push("/portal/admin/users");
     } finally {

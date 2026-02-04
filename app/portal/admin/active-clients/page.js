@@ -66,7 +66,6 @@ export default function ActiveClients() {
         setTotalClients(response.data.data.total);
       }
     } catch (error) {
-      console.error("[ACTIVE-CLIENTS-PAGE] Error fetching clients:", error);
       setClients([]);
     } finally {
       setLoading(false);

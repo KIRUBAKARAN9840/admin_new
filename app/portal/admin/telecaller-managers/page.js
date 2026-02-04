@@ -37,10 +37,8 @@ export default function TelecallerManagers() {
         setManagers(response.data.data.managers || []);
         setFilteredManagers(response.data.data.managers || []);
       } else {
-        console.error("Failed to fetch managers:", response.data.message);
       }
     } catch (error) {
-      console.error("Error fetching managers:", error);
     } finally {
       setLoading(false);
     }

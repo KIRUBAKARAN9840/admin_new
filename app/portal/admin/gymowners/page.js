@@ -69,7 +69,6 @@ export default function GymOwners() {
         setTotalOwners(response.data.data.total);
       }
     } catch (error) {
-      console.error("[GYM-OWNERS-PAGE] Error fetching owners:", error);
       setOwners([]);
     } finally {
       setLoading(false);

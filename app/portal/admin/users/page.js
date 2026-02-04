@@ -99,7 +99,6 @@ export default function Users() {
           skipInitialFetchRef.current = true;
         }
       } catch (e) {
-        console.error('[USERS-PAGE] Error restoring state:', e);
       }
     }
   }, [gymFromUrl]);
@@ -111,7 +110,6 @@ export default function Users() {
         setAvailablePlans(response.data.data);
       }
     } catch (error) {
-      console.error("[USERS-PAGE] Error fetching plans:", error);
     }
   };
 
@@ -122,7 +120,6 @@ export default function Users() {
         setClientCounts(response.data.data);
       }
     } catch (error) {
-      console.error("[USERS-PAGE] Error fetching client counts:", error);
     }
   };
 
@@ -133,7 +130,6 @@ export default function Users() {
         setOnlineOfflineCounts(response.data.data);
       }
     } catch (error) {
-      console.error("[USERS-PAGE] Error fetching online/offline counts:", error);
     }
   };
 
@@ -170,7 +166,6 @@ export default function Users() {
         setTotalUsers(response.data.data.total);
       }
     } catch (error) {
-      console.error("[USERS-PAGE] Error fetching users:", error);
       setUsers([]);
     } finally {
       setLoading(false);
@@ -278,7 +273,6 @@ export default function Users() {
         throw new Error(response.data.message || "Failed to export users");
       }
     } catch (error) {
-      console.error("[USERS-PAGE] Export error:", error);
       alert("Failed to export users data. Please try again.");
     } finally {
       setExportLoading(false);

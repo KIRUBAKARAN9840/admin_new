@@ -77,7 +77,6 @@ export default function AttendancePage() {
         );
       }
     } catch (err) {
-      console.error("[ATTENDANCE-PAGE] Error:", err);
       setAttendanceData([]);
     } finally {
       setLoading(false);
@@ -249,7 +248,6 @@ export default function AttendancePage() {
         );
       }
     } catch (err) {
-      console.error("[ATTENDANCE-PAGE] Export error:", err);
       alert("Failed to export attendance data. Please try again.");
     } finally {
       setExportLoading(false);

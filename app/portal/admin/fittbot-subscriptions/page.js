@@ -67,7 +67,6 @@ export default function FittbotSubscriptions() {
         setTotalUsers(response.data.data.total);
       }
     } catch (error) {
-      console.error("[FITTBOT-SUBSCRIPTIONS-PAGE] Error fetching users:", error);
       setUsers([]);
     } finally {
       setLoading(false);

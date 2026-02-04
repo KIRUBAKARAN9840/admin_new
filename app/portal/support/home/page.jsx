@@ -57,7 +57,6 @@ export default function Home() {
         );
       }
     } catch (err) {
-      console.error("[SUPPORT-HOME-PAGE] Error:", err);
     } finally {
       setLoading(false);
     }

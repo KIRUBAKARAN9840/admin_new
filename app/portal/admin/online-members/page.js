@@ -66,7 +66,6 @@ export default function OnlineMembers() {
         setTotalClients(response.data.data.total);
       }
     } catch (error) {
-      console.error("[ONLINE-MEMBERS-PAGE] Error fetching clients:", error);
       setClients([]);
     } finally {
       setLoading(false);

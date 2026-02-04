@@ -58,7 +58,6 @@ export default function BDEs() {
         throw new Error(response.data.message || "Failed to fetch BDEs list");
       }
     } catch (err) {
-      console.error("[BDEs-PAGE] Error fetching BDEs:", err);
       setError(
         err.response?.data?.detail || err.message || "Failed to load BDEs list"
       );

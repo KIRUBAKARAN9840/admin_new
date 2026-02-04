@@ -66,7 +66,6 @@ export default function InactiveClients() {
         setTotalClients(response.data.data.total);
       }
     } catch (error) {
-      console.error("[INACTIVE-CLIENTS-PAGE] Error fetching clients:", error);
       setClients([]);
     } finally {
       setLoading(false);

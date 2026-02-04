@@ -44,7 +44,6 @@ export default function RevenueAnalytics() {
         setGyms(response.data.data.business.gyms || []);
       }
     } catch (err) {
-      console.error("[REVENUE_ANALYTICS] Error fetching gyms:", err);
     }
   };
 
@@ -72,7 +71,6 @@ export default function RevenueAnalytics() {
         throw new Error(response.data.message || "Failed to fetch revenue analytics");
       }
     } catch (err) {
-      console.error("[REVENUE_ANALYTICS] Error:", err);
     } finally {
       setLoading(false);
     }

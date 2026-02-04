@@ -67,7 +67,6 @@ export default function Complimentary() {
         setTotalUsers(response.data.data.total);
       }
     } catch (error) {
-      console.error("[COMPLIMENTARY-PAGE] Error fetching users:", error);
       setUsers([]);
     } finally {
       setLoading(false);

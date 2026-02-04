@@ -75,7 +75,6 @@ export default function InactiveClients() {
         setGymLogo(response.data.data.gym_logo || "");
       }
     } catch (error) {
-      console.error("[INACTIVE-CLIENTS-PAGE] Error fetching clients:", error);
       setClients([]);
     } finally {
       setLoading(false);

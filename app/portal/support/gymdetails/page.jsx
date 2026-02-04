@@ -66,7 +66,6 @@ const GymDetails = () => {
           setGymName(response.data.data.gym_name);
         }
       } catch (error) {
-        console.error("Error fetching session plans:", error);
       } finally {
         setLoading(false);
       }

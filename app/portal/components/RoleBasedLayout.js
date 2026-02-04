@@ -283,7 +283,6 @@ export default function RoleBasedLayout({ children }) {
       // Call logout API
       await axiosInstance.post("/auth/logout");
     } catch (error) {
-      console.error("Logout error:", error);
     } finally {
       // Clear authentication data
       localStorage.removeItem("user");

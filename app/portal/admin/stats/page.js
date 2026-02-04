@@ -134,7 +134,6 @@ export default function GymStats() {
         setTotalGyms(response.data.data.total);
       }
     } catch (error) {
-      console.error("[STATS-PAGE] Error fetching gyms:", error);
       setGyms([]);
     } finally {
       setLoading(false);

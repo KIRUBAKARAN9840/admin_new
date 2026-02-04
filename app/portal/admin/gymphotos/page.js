@@ -97,7 +97,6 @@ export default function GymPhotos() {
         setTotalGyms(response.data.data.total);
       }
     } catch (error) {
-      console.error("[GYM-PHOTOS-PAGE] Error fetching gyms:", error);
       setGyms([]);
     } finally {
       setLoading(false);

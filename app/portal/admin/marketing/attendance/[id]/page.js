@@ -65,7 +65,6 @@ export default function EmployeeAttendanceHistory() {
         );
       }
     } catch (err) {
-      console.error("[ATTENDANCE-HISTORY] Error:", err);
       setAttendanceData([]);
     } finally {
       setLoading(false);

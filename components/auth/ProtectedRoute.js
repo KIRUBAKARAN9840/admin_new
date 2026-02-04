@@ -38,7 +38,6 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
           router.push('/');
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
         // Auth failed, redirect to login
         localStorage.removeItem('user');
         router.push('/');

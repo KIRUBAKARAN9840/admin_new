@@ -120,7 +120,6 @@ export default function BDMTracker() {
         setGymVisits(rejectedData);
       }
     } catch (err) {
-      console.error("[BDM-TRACKER] Error:", err);
       setError(err.response?.data?.detail || err.message || "Failed to load tracker data");
     } finally {
       setLoading(false);
@@ -193,7 +192,6 @@ export default function BDMTracker() {
           break;
       }
     } catch (err) {
-      console.error(`[BDM-TRACKER] Error fetching ${tab} data:`, err);
     } finally {
       setLoading(false);
     }

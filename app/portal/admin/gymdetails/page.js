@@ -88,7 +88,6 @@ const GymDetails = () => {
             setRecurringGymSubscribers(recurringResponse.data.data.total || 0);
           }
         } catch (recurringError) {
-          console.error("Error fetching recurring gym subscribers:", recurringError);
           setRecurringGymSubscribers(0);
         }
 
@@ -99,7 +98,6 @@ const GymDetails = () => {
             setRecurringDailypassPurchasers(dailypassResponse.data.data.total || 0);
           }
         } catch (dailypassError) {
-          console.error("Error fetching recurring dailypass purchasers:", dailypassError);
           setRecurringDailypassPurchasers(0);
         }
 
@@ -110,11 +108,9 @@ const GymDetails = () => {
             setRecurringSessionPurchasers(sessionResponse.data.data.total || 0);
           }
         } catch (sessionError) {
-          console.error("Error fetching recurring session purchasers:", sessionError);
           setRecurringSessionPurchasers(0);
         }
       } catch (error) {
-        console.error("Error fetching session plans:", error);
       } finally {
         setLoading(false);
       }

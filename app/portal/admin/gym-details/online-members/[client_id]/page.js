@@ -38,7 +38,6 @@ export default function OnlineMemberDetail() {
         throw new Error(response.data.message || "Failed to fetch client data");
       }
     } catch (err) {
-      console.error("[ONLINE-MEMBER-DETAIL-PAGE] Error:", err);
       alert("Failed to load client details. Please try again.");
       router.push(`/portal/admin/gym-details/online-members?id=${gymId}`);
     } finally {

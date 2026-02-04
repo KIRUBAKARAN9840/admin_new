@@ -118,7 +118,6 @@ export default function GymPlans() {
         setTotalGyms(response.data.data.total);
       }
     } catch (error) {
-      console.error("[GYM-PLANS-PAGE] Error fetching gyms:", error);
       setGyms([]);
     } finally {
       setLoading(false);

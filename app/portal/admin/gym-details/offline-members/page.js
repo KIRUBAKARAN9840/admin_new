@@ -75,7 +75,6 @@ export default function OfflineMembers() {
         setGymLogo(response.data.data.gym_logo || "");
       }
     } catch (error) {
-      console.error("[OFFLINE-MEMBERS-PAGE] Error fetching clients:", error);
       setClients([]);
     } finally {
       setLoading(false);

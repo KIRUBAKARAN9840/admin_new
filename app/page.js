@@ -56,7 +56,6 @@ export default function AdminLogin() {
           setCheckingAuth(false);
         }
       } catch (error) {
-        console.error("Auth check error:", error);
         // If verification fails, the axios interceptor will handle token refresh
         // If refresh also fails, user stays on login page
         localStorage.removeItem("user");
@@ -107,7 +106,6 @@ export default function AdminLogin() {
           setError(response?.data?.detail || "Failed to Login");
         }
       } catch (err) {
-        console.error("Login error:", err);
         if (err.response?.status === 400) {
           setError("Only admins are allowed to access this portal");
         } else {
@@ -170,7 +168,6 @@ export default function AdminLogin() {
           setError(response.data.message || "Incorrect OTP");
         }
       } catch (err) {
-        console.error("OTP verification error:", err);
         if (err.response?.status === 403) {
           setError("Only admins are allowed to access this portal");
         } else {
@@ -214,7 +211,6 @@ export default function AdminLogin() {
         setError(response?.data?.detail || "Failed to set password");
       }
     } catch (err) {
-      console.error("Set password error:", err);
       setError(
         err.response?.data?.detail ||
           "Failed to set password. Please try again."
@@ -251,7 +247,6 @@ export default function AdminLogin() {
         setError(response.data.message || "Failed to resend OTP");
       }
     } catch (err) {
-      console.error("Resend OTP error:", err);
       setError(err.response?.data?.detail || "Failed to resend OTP");
     } finally {
       setLoading(false);
@@ -277,7 +272,6 @@ export default function AdminLogin() {
           setError(response?.data?.detail || "Failed to send OTP");
         }
       } catch (err) {
-        console.error("Forgot password error:", err);
         setError(
           err.response?.data?.detail || "Failed to send OTP. Please try again."
         );
@@ -310,7 +304,6 @@ export default function AdminLogin() {
           setError(response.data.message || "Incorrect OTP");
         }
       } catch (err) {
-        console.error("OTP verification error:", err);
         if (err.response?.status === 403) {
           setError("Only admins are allowed to access this portal");
         } else {
@@ -360,7 +353,6 @@ export default function AdminLogin() {
         setError(response?.data?.detail || "Failed to reset password");
       }
     } catch (err) {
-      console.error("Password reset error:", err);
       setError(
         err.response?.data?.detail ||
           "Failed to reset password. Please try again."

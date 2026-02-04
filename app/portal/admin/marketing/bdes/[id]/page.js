@@ -111,7 +111,6 @@ export default function BDETracker() {
         setGymVisits(rejectedData);
       }
     } catch (err) {
-      console.error("[BDE-TRACKER] Error:", err);
       setError(err.response?.data?.detail || err.message || "Failed to load tracker data");
     } finally {
       setLoading(false);
@@ -184,7 +183,6 @@ export default function BDETracker() {
           break;
       }
     } catch (err) {
-      console.error(`[BDE-TRACKER] Error fetching ${tab} data:`, err);
     } finally {
       setLoading(false);
     }

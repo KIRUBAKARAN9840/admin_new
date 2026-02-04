@@ -58,7 +58,6 @@ export default function BDMs() {
         throw new Error(response.data.message || "Failed to fetch BDMs list");
       }
     } catch (err) {
-      console.error("[BDMs-PAGE] Error fetching BDMs:", err);
       setError(
         err.response?.data?.detail || err.message || "Failed to load BDMs list"
       );

@@ -75,7 +75,6 @@ export default function ActiveClients() {
         setGymLogo(response.data.data.gym_logo || "");
       }
     } catch (error) {
-      console.error("[ACTIVE-CLIENTS-PAGE] Error fetching clients:", error);
       setClients([]);
     } finally {
       setLoading(false);

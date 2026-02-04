@@ -25,10 +25,8 @@ export default function ManagerTelecallers() {
         setTelecallers(response.data.data.telecallers || []);
         setFilteredTelecallers(response.data.data.telecallers || []);
       } else {
-        console.error("Failed to fetch telecallers:", response.data.message);
       }
     } catch (error) {
-      console.error("Error fetching telecallers:", error);
     } finally {
       setLoading(false);
     }

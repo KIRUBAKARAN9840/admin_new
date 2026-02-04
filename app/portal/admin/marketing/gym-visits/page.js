@@ -84,7 +84,6 @@ export default function GymVisitsList() {
         );
       }
     } catch (err) {
-      console.error("[GYM-VISITS-LIST] Error fetching gym visits:", err);
       setError(
         err.response?.data?.detail ||
           err.message ||

@@ -25,18 +25,12 @@ export default function PurchaseHistory() {
   const fetchDailyPassData = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("[PURCHASE-HISTORY] Fetching data for client_id:", clientId);
       const response = await axiosInstance.get(`/admin/users/${clientId}/daily-pass-purchases`);
-      console.log("[PURCHASE-HISTORY] API response:", response.data);
       if (response.data.success) {
         setDailyPassData(response.data.data);
-        console.log("[PURCHASE-HISTORY] Daily pass data loaded:", response.data.data.length, "records");
       } else {
-        console.error("[PURCHASE-HISTORY] API returned success=false");
       }
     } catch (err) {
-      console.error("[PURCHASE-HISTORY] Error fetching daily pass data:", err);
-      console.error("[PURCHASE-HISTORY] Error details:", err.response?.data || err.message);
       alert("Failed to load daily pass data. Please try again.");
     } finally {
       setLoading(false);
@@ -47,18 +41,12 @@ export default function PurchaseHistory() {
   const fetchSessionData = useCallback(async () => {
     try {
       setSessionsLoading(true);
-      console.log("[PURCHASE-HISTORY] Fetching session data for client_id:", clientId);
       const response = await axiosInstance.get(`/admin/users/${clientId}/session-bookings`);
-      console.log("[PURCHASE-HISTORY] Sessions API response:", response.data);
       if (response.data.success) {
         setSessionData(response.data.data);
-        console.log("[PURCHASE-HISTORY] Session data loaded:", response.data.data.length, "records");
       } else {
-        console.error("[PURCHASE-HISTORY] Sessions API returned success=false");
       }
     } catch (err) {
-      console.error("[PURCHASE-HISTORY] Error fetching session data:", err);
-      console.error("[PURCHASE-HISTORY] Error details:", err.response?.data || err.message);
       alert("Failed to load session data. Please try again.");
     } finally {
       setSessionsLoading(false);
@@ -69,18 +57,12 @@ export default function PurchaseHistory() {
   const fetchSubscriptionData = useCallback(async () => {
     try {
       setSubscriptionLoading(true);
-      console.log("[PURCHASE-HISTORY] Fetching subscription data for client_id:", clientId);
       const response = await axiosInstance.get(`/admin/users/${clientId}/fittbot-subscription`);
-      console.log("[PURCHASE-HISTORY] Subscription API response:", response.data);
       if (response.data.success) {
         setSubscriptionData(response.data.data);
-        console.log("[PURCHASE-HISTORY] Subscription data loaded:", response.data.data.length, "records");
       } else {
-        console.error("[PURCHASE-HISTORY] Subscription API returned success=false");
       }
     } catch (err) {
-      console.error("[PURCHASE-HISTORY] Error fetching subscription data:", err);
-      console.error("[PURCHASE-HISTORY] Error details:", err.response?.data || err.message);
       alert("Failed to load subscription data. Please try again.");
     } finally {
       setSubscriptionLoading(false);
@@ -91,18 +73,12 @@ export default function PurchaseHistory() {
   const fetchGymMembershipData = useCallback(async () => {
     try {
       setGymMembershipLoading(true);
-      console.log("[PURCHASE-HISTORY] Fetching gym membership data for client_id:", clientId);
       const response = await axiosInstance.get(`/admin/users/${clientId}/gym-membership`);
-      console.log("[PURCHASE-HISTORY] Gym Membership API response:", response.data);
       if (response.data.success) {
         setGymMembershipData(response.data.data);
-        console.log("[PURCHASE-HISTORY] Gym Membership data loaded:", response.data.data.length, "records");
       } else {
-        console.error("[PURCHASE-HISTORY] Gym Membership API returned success=false");
       }
     } catch (err) {
-      console.error("[PURCHASE-HISTORY] Error fetching gym membership data:", err);
-      console.error("[PURCHASE-HISTORY] Error details:", err.response?.data || err.message);
       alert("Failed to load gym membership data. Please try again.");
     } finally {
       setGymMembershipLoading(false);

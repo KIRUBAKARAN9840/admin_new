@@ -50,10 +50,8 @@ export default function TelecallerDetails() {
         setFilteredGyms(response.data.data.gyms || []);
         setCounts(response.data.data.counts || {});
       } else {
-        console.error("Failed to fetch telecaller details:", response.data.message);
       }
     } catch (error) {
-      console.error("Error fetching telecaller details:", error);
     } finally {
       setLoading(false);
     }

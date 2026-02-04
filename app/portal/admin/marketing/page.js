@@ -75,7 +75,6 @@ export default function Marketing() {
         );
       }
     } catch (err) {
-      console.error("[MARKETING-PAGE] Error fetching stats:", err);
       setError(
         err.response?.data?.detail ||
           err.message ||
@@ -96,7 +95,6 @@ export default function Marketing() {
         setManagers(response.data.data);
       }
     } catch (err) {
-      console.error("[MARKETING-PAGE] Error fetching managers:", err);
     }
   };
 
@@ -117,7 +115,6 @@ export default function Marketing() {
         setGymVisitsStats(response.data.data);
       }
     } catch (err) {
-      console.error("[MARKETING-PAGE] Error fetching gym visits stats:", err);
     } finally {
       setGymVisitsLoading(false);
     }
@@ -133,7 +130,6 @@ export default function Marketing() {
         setAttendanceStats(response.data.data);
       }
     } catch (err) {
-      console.error("[MARKETING-PAGE] Error fetching attendance stats:", err);
     }
   };
 

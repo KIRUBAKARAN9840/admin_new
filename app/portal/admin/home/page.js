@@ -115,7 +115,6 @@ export default function Home() {
       // Fetch recurring subscribers count
       try {
         const recurringResponse = await axiosInstance.get("/admin/dashboard/recurring-subscribers");
-        console.log("[HOME-PAGE] Recurring subscribers response:", recurringResponse.data);
         if (recurringResponse.data.success && recurringResponse.data.data) {
           setDashboardData(prev => ({
             ...prev,
@@ -124,13 +123,10 @@ export default function Home() {
             }
           }));
         } else {
-          console.log("[HOME-PAGE] Recurring subscribers response was not successful:", recurringResponse.data);
         }
       } catch (recurringErr) {
-        console.error("[HOME-PAGE] Error fetching recurring subscribers:", recurringErr);
       }
     } catch (err) {
-      console.error("[HOME-PAGE] Error:", err);
     } finally {
       setLoading(false);
     }
@@ -163,7 +159,6 @@ export default function Home() {
         }));
       }
     } catch (err) {
-      console.error("[HOME-PAGE] Error fetching custom data:", err);
     }
   };
 
@@ -250,7 +245,6 @@ export default function Home() {
           );
         }
       } catch (err) {
-        console.error("[HOME-PAGE] Error:", err);
       } finally {
         setLoading(false);
       }

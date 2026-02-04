@@ -38,7 +38,6 @@ export default function OfflineMemberDetail() {
         throw new Error(response.data.message || "Failed to fetch client data");
       }
     } catch (err) {
-      console.error("[OFFLINE-MEMBER-DETAIL-PAGE] Error:", err);
       alert("Failed to load client details. Please try again.");
       router.push(`/portal/admin/gym-details/offline-members?id=${gymId}`);
     } finally {

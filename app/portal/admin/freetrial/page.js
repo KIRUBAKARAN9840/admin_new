@@ -67,7 +67,6 @@ export default function FreeTrial() {
         setTotalUsers(response.data.data.total);
       }
     } catch (error) {
-      console.error("[FREE-TRIAL-PAGE] Error fetching users:", error);
       setUsers([]);
     } finally {
       setLoading(false);

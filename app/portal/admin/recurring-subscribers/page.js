@@ -66,7 +66,6 @@ export default function RecurringSubscribers() {
         throw new Error(response.data.message || "Failed to fetch recurring subscribers");
       }
     } catch (err) {
-      console.error("[RECURRING-SUBSCRIBERS-PAGE] Error:", err);
     } finally {
       setLoading(false);
     }

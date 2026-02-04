@@ -79,7 +79,6 @@ export default function GymVisitDetail() {
         );
       }
     } catch (err) {
-      console.error("[GYM-VISIT-DETAIL] Error:", err);
       setError(
         err.response?.data?.detail ||
           err.message ||

@@ -51,7 +51,6 @@ const PortalLayout = ({ children }) => {
           router.push('/');
         }
       } catch (error) {
-        console.error("Auth verification error:", error);
         // Auth failed, clear data and redirect to login
         localStorage.removeItem('user');
         router.push('/');
