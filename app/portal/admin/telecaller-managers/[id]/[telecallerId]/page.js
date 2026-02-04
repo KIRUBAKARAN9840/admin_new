@@ -40,7 +40,7 @@ export default function TelecallerDetails() {
     try {
       setLoading(true);
       const response = await axiosInstance.get(
-        `/admin/telecaller-managers/${managerId}/telecallers/${telecallerId}/details`,
+        `/api/admin/telecaller-managers/${managerId}/telecallers/${telecallerId}/details`,
         { params: status ? { status } : {} }
       );
 

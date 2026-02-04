@@ -59,7 +59,7 @@ export default function OfflineMembers() {
         params.search = debouncedSearchTerm;
       }
 
-      const response = await axiosInstance.get("/admin/users/offline-members", { params });
+      const response = await axiosInstance.get("/api/admin/users/offline-members", { params });
 
       if (response.data.success) {
         setClients(response.data.data.clients);

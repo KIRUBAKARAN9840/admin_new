@@ -48,7 +48,7 @@ export default function BDEs() {
       setLoading(true);
       setError(null);
 
-      const response = await axiosInstance.get("/admin/marketing/bdes", {
+      const response = await axiosInstance.get("/api/admin/marketing/bdes", {
         params: { time_filter: timeFilter },
       });
 

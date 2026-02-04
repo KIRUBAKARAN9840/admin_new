@@ -66,7 +66,7 @@ export default function InactiveClients() {
         params.search = debouncedSearchTerm;
       }
 
-      const response = await axiosInstance.get(`/admin/gym-stats/${gymId}/inactive-clients`, { params });
+      const response = await axiosInstance.get(`/api/admin/gym-stats/${gymId}/inactive-clients`, { params });
 
       if (response.data.success) {
         setClients(response.data.data.clients);

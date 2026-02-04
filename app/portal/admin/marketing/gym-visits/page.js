@@ -66,7 +66,7 @@ export default function GymVisitsList() {
       setError(null);
 
       const response = await axiosInstance.get(
-        "/admin/marketing/gym-visits/list",
+        "/api/admin/marketing/gym-visits/list",
         {
           params: {
             filter_type: filterType,

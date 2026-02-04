@@ -9,7 +9,6 @@ export default function PurchaseHistory() {
   const params = useParams();
   const router = useRouter();
   const clientId = params.client_id;
-  const [userName, setUserName] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dailypass");
@@ -25,7 +24,7 @@ export default function PurchaseHistory() {
   const fetchDailyPassData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/admin/users/${clientId}/daily-pass-purchases`);
+      const response = await axiosInstance.get(`/api/admin/users/${clientId}/daily-pass-purchases`);
       if (response.data.success) {
         setDailyPassData(response.data.data);
       } else {
@@ -41,7 +40,7 @@ export default function PurchaseHistory() {
   const fetchSessionData = useCallback(async () => {
     try {
       setSessionsLoading(true);
-      const response = await axiosInstance.get(`/admin/users/${clientId}/session-bookings`);
+      const response = await axiosInstance.get(`/api/admin/users/${clientId}/session-bookings`);
       if (response.data.success) {
         setSessionData(response.data.data);
       } else {
@@ -57,7 +56,7 @@ export default function PurchaseHistory() {
   const fetchSubscriptionData = useCallback(async () => {
     try {
       setSubscriptionLoading(true);
-      const response = await axiosInstance.get(`/admin/users/${clientId}/fittbot-subscription`);
+      const response = await axiosInstance.get(`/api/admin/users/${clientId}/fittbot-subscription`);
       if (response.data.success) {
         setSubscriptionData(response.data.data);
       } else {
@@ -73,7 +72,7 @@ export default function PurchaseHistory() {
   const fetchGymMembershipData = useCallback(async () => {
     try {
       setGymMembershipLoading(true);
-      const response = await axiosInstance.get(`/admin/users/${clientId}/gym-membership`);
+      const response = await axiosInstance.get(`/api/admin/users/${clientId}/gym-membership`);
       if (response.data.success) {
         setGymMembershipData(response.data.data);
       } else {
@@ -110,7 +109,7 @@ export default function PurchaseHistory() {
 
   const formatTime = (timeString) => {
     if (!timeString) return "-";
-    const [hours, minutes, seconds] = timeString.split(":");
+    const [hours, minutes] = timeString.split(":");
     const hour = parseInt(hours, 10);
     const ampm = hour >= 12 ? "PM" : "AM";
     const formattedHour = hour % 12 || 12;

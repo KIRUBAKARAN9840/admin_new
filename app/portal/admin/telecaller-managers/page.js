@@ -31,7 +31,7 @@ export default function TelecallerManagers() {
   const fetchManagers = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/admin/telecaller-managers/list");
+      const response = await axiosInstance.get("/api/admin/telecaller-managers/list");
 
       if (response.data.success) {
         setManagers(response.data.data.managers || []);

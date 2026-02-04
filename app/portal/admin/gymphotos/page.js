@@ -90,7 +90,7 @@ export default function GymPhotos() {
         params.search = debouncedSearchTerm;
       }
 
-      const response = await axiosInstance.get("/admin/gym-stats/photos", { params });
+      const response = await axiosInstance.get("/api/admin/gym-stats/photos", { params });
 
       if (response.data.success) {
         setGyms(response.data.data.gyms);

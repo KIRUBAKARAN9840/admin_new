@@ -65,7 +65,7 @@ export default function Marketing() {
       setLoading(true);
       setError(null);
 
-      const response = await axiosInstance.get("/admin/marketing/stats");
+      const response = await axiosInstance.get("/api/admin/marketing/stats");
 
       if (response.data.status === 200) {
         setMarketingStats(response.data.data);
@@ -87,7 +87,7 @@ export default function Marketing() {
 
   const fetchManagers = async () => {
     try {
-      const response = await axiosInstance.get("/admin/marketing/bdms", {
+      const response = await axiosInstance.get("/api/admin/marketing/bdms", {
         params: { time_filter: "all" },
       });
 
@@ -102,7 +102,7 @@ export default function Marketing() {
     try {
       setGymVisitsLoading(true);
       const response = await axiosInstance.get(
-        "/admin/marketing/gym-visits/summary",
+        "/api/admin/marketing/gym-visits/summary",
         {
           params: {
             time_filter: timeFilter,
@@ -123,7 +123,7 @@ export default function Marketing() {
   const fetchAttendanceStats = async () => {
     try {
       const response = await axiosInstance.get(
-        "/admin/marketing/attendance/stats"
+        "/api/admin/marketing/attendance/stats"
       );
 
       if (response.data.status === 200) {

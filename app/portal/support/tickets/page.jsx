@@ -47,7 +47,7 @@ export default function SupportTickets() {
       if (filters.status && filters.status !== "") params.append("status", filters.status);
       if (filters.issueType) params.append("issue_type", filters.issueType);
 
-      const response = await axiosInstance.get(`/admin/dashboard/support-tickets-list?${params.toString()}`);
+      const response = await axiosInstance.get(`/api/admin/dashboard/support-tickets-list?${params.toString()}`);
 
       if (response.data.success) {
         setTickets(response.data.data.tickets);

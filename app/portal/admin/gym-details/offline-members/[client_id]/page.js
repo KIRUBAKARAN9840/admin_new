@@ -31,7 +31,7 @@ export default function OfflineMemberDetail() {
   const fetchClientData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/admin/users/${clientId}`);
+      const response = await axiosInstance.get(`/api/admin/users/${clientId}`);
       if (response.data.success) {
         setClientData(response.data.data);
       } else {

@@ -13,7 +13,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
     const checkAuth = async () => {
       try {
         // Try to verify the session with the backend
-        const response = await axiosInstance.get('/admin/auth/verify');
+        const response = await axiosInstance.get('/api/admin/auth/verify');
 
         if (response.data.status === 200) {
           // Get user from localStorage

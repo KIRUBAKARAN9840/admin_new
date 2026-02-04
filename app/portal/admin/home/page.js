@@ -100,7 +100,7 @@ export default function Home() {
         business_filter: businessGymOwnersFilter,
       };
 
-      const response = await axiosInstance.get("/admin/dashboard/overview", {
+      const response = await axiosInstance.get("/api/admin/dashboard/overview", {
         params,
       });
 
@@ -114,7 +114,7 @@ export default function Home() {
 
       // Fetch recurring subscribers count
       try {
-        const recurringResponse = await axiosInstance.get("/admin/dashboard/recurring-subscribers");
+        const recurringResponse = await axiosInstance.get("/api/admin/dashboard/recurring-subscribers");
         if (recurringResponse.data.success && recurringResponse.data.data) {
           setDashboardData(prev => ({
             ...prev,
@@ -142,7 +142,7 @@ export default function Home() {
         custom_end_date: endDate,
       };
 
-      const response = await axiosInstance.get("/admin/dashboard/overview", {
+      const response = await axiosInstance.get("/api/admin/dashboard/overview", {
         params,
       });
 
@@ -219,7 +219,7 @@ export default function Home() {
         };
         params[config.apiFilter] = "custom";
 
-        const response = await axiosInstance.get("/admin/dashboard/overview", {
+        const response = await axiosInstance.get("/api/admin/dashboard/overview", {
           params,
         });
 

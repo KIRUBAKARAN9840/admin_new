@@ -18,7 +18,7 @@ export default function ManagerTelecallers() {
   const fetchTelecallers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/admin/telecaller-managers/${managerId}/telecallers`);
+      const response = await axiosInstance.get(`/api/admin/telecaller-managers/${managerId}/telecallers`);
 
       if (response.data.success) {
         setManager(response.data.data.manager);

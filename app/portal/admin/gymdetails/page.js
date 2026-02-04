@@ -67,7 +67,7 @@ const GymDetails = () => {
       }
 
       try {
-        const response = await axiosInstance.get(`/admin/gym-stats/${gymId}/session-plans`);
+        const response = await axiosInstance.get(`/api/admin/gym-stats/${gymId}/session-plans`);
         if (response.data.success) {
           setSessionPlans(response.data.data.session_plans);
           setMembershipPlans(response.data.data.membership_plans || []);
@@ -83,7 +83,7 @@ const GymDetails = () => {
 
         // Fetch recurring gym subscribers count
         try {
-          const recurringResponse = await axiosInstance.get(`/admin/gym-stats/${gymId}/recurring-gym-subscribers`);
+          const recurringResponse = await axiosInstance.get(`/api/admin/gym-stats/${gymId}/recurring-gym-subscribers`);
           if (recurringResponse.data.success) {
             setRecurringGymSubscribers(recurringResponse.data.data.total || 0);
           }
@@ -93,7 +93,7 @@ const GymDetails = () => {
 
         // Fetch recurring dailypass purchasers count
         try {
-          const dailypassResponse = await axiosInstance.get(`/admin/gym-stats/${gymId}/recurring-dailypass-purchasers`);
+          const dailypassResponse = await axiosInstance.get(`/api/admin/gym-stats/${gymId}/recurring-dailypass-purchasers`);
           if (dailypassResponse.data.success) {
             setRecurringDailypassPurchasers(dailypassResponse.data.data.total || 0);
           }
@@ -103,7 +103,7 @@ const GymDetails = () => {
 
         // Fetch recurring session purchasers count
         try {
-          const sessionResponse = await axiosInstance.get(`/admin/gym-stats/${gymId}/recurring-session-purchasers`);
+          const sessionResponse = await axiosInstance.get(`/api/admin/gym-stats/${gymId}/recurring-session-purchasers`);
           if (sessionResponse.data.success) {
             setRecurringSessionPurchasers(sessionResponse.data.data.total || 0);
           }

@@ -84,7 +84,7 @@ export default function AdminLogin() {
       setError("");
 
       try {
-        const response = await axiosInstance.post("/admin/auth/login", {
+        const response = await axiosInstance.post("/api/admin/auth/login", {
           mobile_number: mobileNumber,
           password: password,
         });
@@ -152,7 +152,7 @@ export default function AdminLogin() {
       setError("");
 
       try {
-        const response = await axiosInstance.post("/admin/auth/verify_otp", {
+        const response = await axiosInstance.post("/api/admin/auth/verify_otp", {
           mobile_number: mobileNumber,
           otp: otpValue,
           device: "web",
@@ -200,7 +200,7 @@ export default function AdminLogin() {
 
     try {
       // API call to set password after OTP verification
-      const response = await axiosInstance.post("/admin/auth/change_password", {
+      const response = await axiosInstance.post("/api/admin/auth/change_password", {
         mobile_number: mobileNumber,
         new_password: newPassword,
       });
@@ -233,7 +233,7 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      const response = await axiosInstance.post("/admin/auth/resend-otp", {
+      const response = await axiosInstance.post("/api/admin/auth/resend-otp", {
         data: mobileNumber,
       });
 
@@ -262,7 +262,7 @@ export default function AdminLogin() {
 
       try {
         // Using same login endpoint as placeholder
-        const response = await axiosInstance.post("/admin/auth/send_otp", {
+        const response = await axiosInstance.post("/api/admin/auth/send_otp", {
           mobile_number: mobileNumber,
         });
 
@@ -290,7 +290,7 @@ export default function AdminLogin() {
       setError("");
 
       try {
-        const response = await axiosInstance.post("/admin/auth/verify_otp", {
+        const response = await axiosInstance.post("/api/admin/auth/verify_otp", {
           mobile_number: mobileNumber,
           otp: otpValue,
           device: "web",
@@ -336,7 +336,7 @@ export default function AdminLogin() {
 
     try {
       // Call the change_password endpoint to update the password in database
-      const response = await axiosInstance.post("/admin/auth/change_password", {
+      const response = await axiosInstance.post("/api/admin/auth/change_password", {
         mobile_number: mobileNumber,
         new_password: newPassword,
       });

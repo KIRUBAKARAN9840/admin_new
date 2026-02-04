@@ -29,7 +29,7 @@ export default function ClientDetail() {
   const fetchClientData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/admin/users/${clientId}`);
+      const response = await axiosInstance.get(`/api/admin/users/${clientId}`);
       if (response.data.success) {
         setClientData(response.data.data);
       } else {
@@ -53,17 +53,6 @@ export default function ClientDetail() {
       day: "2-digit",
       month: "short",
       year: "numeric",
-    });
-  };
-
-  const formatDateTime = (dateString) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 

@@ -105,7 +105,7 @@ export default function Users() {
 
   const fetchAvailablePlans = async () => {
     try {
-      const response = await axiosInstance.get("/admin/users/plans");
+      const response = await axiosInstance.get("/api/admin/users/plans");
       if (response.data.success) {
         setAvailablePlans(response.data.data);
       }
@@ -115,7 +115,7 @@ export default function Users() {
 
   const fetchClientCounts = async () => {
     try {
-      const response = await axiosInstance.get("/admin/users/client-counts");
+      const response = await axiosInstance.get("/api/admin/users/client-counts");
       if (response.data.success) {
         setClientCounts(response.data.data);
       }
@@ -125,7 +125,7 @@ export default function Users() {
 
   const fetchOnlineOfflineCounts = async () => {
     try {
-      const response = await axiosInstance.get("/admin/users/online-offline-counts");
+      const response = await axiosInstance.get("/api/admin/users/online-offline-counts");
       if (response.data.success) {
         setOnlineOfflineCounts(response.data.data);
       }
@@ -159,7 +159,7 @@ export default function Users() {
         }
       }
 
-      const response = await axiosInstance.get("/admin/users", { params });
+      const response = await axiosInstance.get("/api/admin/users", { params });
 
       if (response.data.success) {
         setUsers(response.data.data.users);
@@ -222,7 +222,7 @@ export default function Users() {
       setShowExportConfirm(false);
       setExportLoading(true);
 
-      const response = await axiosInstance.get("/admin/users/export/all");
+      const response = await axiosInstance.get("/api/admin/users/export/all");
 
       if (response.data.success) {
         // Dynamically import xlsx library

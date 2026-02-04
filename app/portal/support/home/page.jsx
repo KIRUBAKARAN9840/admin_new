@@ -47,7 +47,7 @@ export default function Home() {
     try {
       setLoading(true);
 
-      const response = await axiosInstance.get("/admin/dashboard/overview");
+      const response = await axiosInstance.get("/api/admin/dashboard/overview");
 
       if (response.data.success) {
         setDashboardData(response.data.data);

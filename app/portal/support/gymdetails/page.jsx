@@ -57,7 +57,7 @@ const GymDetails = () => {
       }
 
       try {
-        const response = await axiosInstance.get(`/admin/gym-stats/${gymId}/session-plans`);
+        const response = await axiosInstance.get(`/api/admin/gym-stats/${gymId}/session-plans`);
         if (response.data.success) {
           setSessionPlans(response.data.data.session_plans);
           setMembershipPlans(response.data.data.membership_plans || []);

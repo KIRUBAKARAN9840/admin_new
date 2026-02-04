@@ -60,7 +60,7 @@ export default function Complimentary() {
         params.search = debouncedSearchTerm;
       }
 
-      const response = await axiosInstance.get("/admin/complimentary/list", { params });
+      const response = await axiosInstance.get("/api/admin/complimentary/list", { params });
 
       if (response.data.success) {
         setUsers(response.data.data.users);

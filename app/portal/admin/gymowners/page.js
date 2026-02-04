@@ -62,7 +62,7 @@ export default function GymOwners() {
         params.search = debouncedSearchTerm;
       }
 
-      const response = await axiosInstance.get("/admin/gym-owners/list", { params });
+      const response = await axiosInstance.get("/api/admin/gym-owners/list", { params });
 
       if (response.data.success) {
         setOwners(response.data.data.owners);

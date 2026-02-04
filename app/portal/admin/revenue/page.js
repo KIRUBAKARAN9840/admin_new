@@ -38,7 +38,7 @@ export default function RevenueAnalytics() {
 
   const fetchGyms = async () => {
     try {
-      const response = await axiosInstance.get("/admin/dashboard/overview");
+      const response = await axiosInstance.get("/api/admin/dashboard/overview");
       if (response.data.success && response.data.data.business) {
         // You might want to add a gyms list endpoint, for now using gym breakdown
         setGyms(response.data.data.business.gyms || []);
@@ -61,7 +61,7 @@ export default function RevenueAnalytics() {
         params.gym_id = gymId;
       }
 
-      const response = await axiosInstance.get("/admin/dashboard/revenue-analytics", {
+      const response = await axiosInstance.get("/api/admin/dashboard/revenue-analytics", {
         params,
       });
 

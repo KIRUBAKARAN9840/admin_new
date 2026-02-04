@@ -111,7 +111,7 @@ export default function GymPlans() {
         params.price_sort = priceSort;
       }
 
-      const response = await axiosInstance.get("/admin/gym-stats", { params });
+      const response = await axiosInstance.get("/api/admin/gym-stats", { params });
 
       if (response.data.success) {
         setGyms(response.data.data.gyms);

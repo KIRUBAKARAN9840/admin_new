@@ -60,7 +60,7 @@ export default function FreeTrial() {
         params.search = debouncedSearchTerm;
       }
 
-      const response = await axiosInstance.get("/admin/free-trial/list", { params });
+      const response = await axiosInstance.get("/api/admin/free-trial/list", { params });
 
       if (response.data.success) {
         setUsers(response.data.data.users);

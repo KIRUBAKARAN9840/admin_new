@@ -41,7 +41,7 @@ export default function TicketDetail() {
         setLoading(true);
         setError(null);
 
-        const endpoint = source === "Fittbot Business" ? "/admin/dashboard/gym-ticket-detail" : "/admin/dashboard/client-ticket-detail";
+        const endpoint = source === "Fittbot Business" ? "/api/admin/dashboard/gym-ticket-detail" : "/api/admin/dashboard/client-ticket-detail";
         const response = await axiosInstance.get(`${endpoint}?ticket_id=${ticketId}`);
 
         if (response.data.success && isMounted.current) {
@@ -65,13 +65,13 @@ export default function TicketDetail() {
 
   const handleMarkResolved = async () => {
     try {
-      const endpoint = source === "Fittbot Business" ? "/admin/dashboard/gym-ticket-resolve" : "/admin/dashboard/client-ticket-resolve";
+      const endpoint = source === "Fittbot Business" ? "/api/admin/dashboard/gym-ticket-resolve" : "/api/admin/dashboard/client-ticket-resolve";
       await axiosInstance.post(endpoint, { ticket_id: ticketId });
 
       // Manually refresh after marking resolved
       if (isMounted.current) {
         setLoading(true);
-        const endpointDetail = source === "Fittbot Business" ? "/admin/dashboard/gym-ticket-detail" : "/admin/dashboard/client-ticket-detail";
+        const endpointDetail = source === "Fittbot Business" ? "/api/admin/dashboard/gym-ticket-detail" : "/api/admin/dashboard/client-ticket-detail";
         const response = await axiosInstance.get(`${endpointDetail}?ticket_id=${ticketId}`);
 
         if (response.data.success && isMounted.current) {

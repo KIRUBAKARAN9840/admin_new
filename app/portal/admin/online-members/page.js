@@ -59,7 +59,7 @@ export default function OnlineMembers() {
         params.search = debouncedSearchTerm;
       }
 
-      const response = await axiosInstance.get("/admin/users/online-members", { params });
+      const response = await axiosInstance.get("/api/admin/users/online-members", { params });
 
       if (response.data.success) {
         setClients(response.data.data.clients);

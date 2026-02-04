@@ -60,7 +60,7 @@ export default function FittbotSubscriptions() {
         params.search = debouncedSearchTerm;
       }
 
-      const response = await axiosInstance.get("/admin/fittbot-subscriptions/list", { params });
+      const response = await axiosInstance.get("/api/admin/fittbot-subscriptions/list", { params });
 
       if (response.data.success) {
         setUsers(response.data.data.users);

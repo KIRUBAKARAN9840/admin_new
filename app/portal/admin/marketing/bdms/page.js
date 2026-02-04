@@ -48,7 +48,7 @@ export default function BDMs() {
       setLoading(true);
       setError(null);
 
-      const response = await axiosInstance.get("/admin/marketing/bdms", {
+      const response = await axiosInstance.get("/api/admin/marketing/bdms", {
         params: { time_filter: timeFilter },
       });
 

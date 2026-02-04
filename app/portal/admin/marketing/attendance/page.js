@@ -61,7 +61,7 @@ export default function AttendancePage() {
 
       // Fetch all employees attendance
       const response = await axiosInstance.get(
-        "/admin/marketing/attendance/today",
+        "/api/admin/marketing/attendance/today",
         { params }
       );
 
@@ -127,7 +127,7 @@ export default function AttendancePage() {
       // For "all", don't add date parameters
 
       const response = await axiosInstance.get(
-        "/admin/marketing/attendance/export",
+        "/api/admin/marketing/attendance/export",
         { params }
       );
 
