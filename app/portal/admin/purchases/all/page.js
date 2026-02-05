@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 
 export default function AllPurchases() {
@@ -15,6 +15,7 @@ export default function AllPurchases() {
     hasPrev: false,
   });
   const [search, setSearch] = useState("");
+  const [expandedRows, setExpandedRows] = useState(new Set());
 
   useEffect(() => {
     fetchPurchases();
@@ -57,6 +58,16 @@ export default function AllPurchases() {
     fetchPurchases();
   };
 
+  const toggleRow = (id) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedRows(newExpanded);
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -69,8 +80,26 @@ export default function AllPurchases() {
     });
   };
 
+  const formatScheduleDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   const formatAmount = (amount) => {
     return `₹${amount?.toFixed(2) || "0.00"}`;
+  };
+
+  const getDisplayValue = (purchase) => {
+    if (purchase.type === "Daily Pass") {
+      return purchase.days_total || "N/A";
+    } else {
+      return purchase.session_display || "N/A";
+    }
   };
 
   return (
@@ -140,23 +169,97 @@ export default function AllPurchases() {
           <table className="table purchases-table">
             <thead>
               <tr>
+                <th style={{ width: "40px" }}></th>
                 <th>Client Name</th>
                 <th>Gym Name</th>
-                <th>Days Total</th>
+                <th>Type</th>
+                <th>Sessions / Days</th>
                 <th>Amount</th>
                 <th>Purchased At</th>
               </tr>
             </thead>
             <tbody>
-              {purchases.map((purchase) => (
-                <tr key={purchase.id}>
-                  <td className="client-name">{purchase.client_name || "N/A"}</td>
-                  <td className="gym-name">{purchase.gym_name || "N/A"}</td>
-                  <td className="days-total">{purchase.days_total || 0}</td>
-                  <td className="amount">{formatAmount(purchase.amount)}</td>
-                  <td className="purchased-at">{formatDate(purchase.purchased_at)}</td>
-                </tr>
-              ))}
+              {purchases.map((purchase) => {
+                const hasSchedule = purchase.type === "Session" && purchase.session_schedule?.length > 0;
+                const isExpanded = expandedRows.has(purchase.id);
+
+                return (
+                  <React.Fragment key={purchase.id}>
+                    <tr>
+                      <td style={{ padding: "8px !important" }}>
+                        {hasSchedule && (
+                          <button
+                            onClick={() => toggleRow(purchase.id)}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              color: "#FF5757",
+                              cursor: "pointer",
+                              padding: "4px 8px",
+                              fontSize: "16px",
+                              transition: "transform 0.2s",
+                              transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+                            }}
+                          >
+                            ▶
+                          </button>
+                        )}
+                      </td>
+                      <td className="client-name">{purchase.client_name || "N/A"}</td>
+                      <td className="gym-name">{purchase.gym_name || "N/A"}</td>
+                      <td className="type">{purchase.type}</td>
+                      <td className="days-total">{getDisplayValue(purchase)}</td>
+                      <td className="amount">{formatAmount(purchase.amount)}</td>
+                      <td className="purchased-at">{formatDate(purchase.purchased_at)}</td>
+                    </tr>
+                    {isExpanded && hasSchedule && (
+                      <tr className="schedule-row">
+                        <td colSpan="7" style={{ padding: "0 !important" }}>
+                          <div
+                            style={{
+                              backgroundColor: "#151515",
+                              padding: "16px",
+                              borderBottom: "1px solid #333",
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontSize: "14px",
+                                fontWeight: "600",
+                                color: "#FF5757",
+                                marginBottom: "12px",
+                              }}
+                            >
+                              Session Schedule
+                            </p>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+                              {purchase.session_schedule.map((schedule, idx) => (
+                                <div
+                                  key={`${purchase.id}-schedule-${idx}`}
+                                  style={{
+                                    backgroundColor: "#1a1a1a",
+                                    border: "1px solid #333",
+                                    borderRadius: "6px",
+                                    padding: "10px 14px",
+                                    fontSize: "13px",
+                                  }}
+                                >
+                                  <div style={{ color: "#fff", fontWeight: "500" }}>
+                                    {formatScheduleDate(schedule.date)}
+                                  </div>
+                                  <div style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}>
+                                    {schedule.start_time}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -252,6 +355,10 @@ export default function AllPurchases() {
           color: #ccc !important;
         }
 
+        table.purchases-table .type {
+          font-weight: 500 !important;
+        }
+
         table.purchases-table .amount {
           font-weight: 600 !important;
           color: #4ade80 !important;
@@ -260,6 +367,14 @@ export default function AllPurchases() {
         table.purchases-table .purchased-at {
           font-size: 14px !important;
           color: #888 !important;
+        }
+
+        table.purchases-table .schedule-row {
+          background-color: #151515 !important;
+        }
+
+        table.purchases-table .schedule-row:hover {
+          background-color: #151515 !important;
         }
 
         @keyframes spin {
