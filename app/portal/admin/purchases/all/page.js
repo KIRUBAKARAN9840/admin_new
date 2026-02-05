@@ -82,8 +82,6 @@ export default function AllPurchases() {
       day: "2-digit",
       month: "short",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
@@ -180,7 +178,7 @@ export default function AllPurchases() {
                 <th>Client Name</th>
                 <th>Gym Name</th>
                 <th>Type</th>
-                <th>Sessions / Days</th>
+                <th>Days / Sessions</th>
                 <th>Amount</th>
                 <th>Purchased At</th>
               </tr>
