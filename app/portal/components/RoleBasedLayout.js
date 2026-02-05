@@ -64,6 +64,11 @@ export default function RoleBasedLayout({ children }) {
             icon: HiOutlineSpeakerphone,
             path: "/portal/admin/marketing",
           },
+          {
+            name: "Purchases",
+            icon: HiOutlineCurrencyDollar,
+            path: "/portal/admin/purchases",
+          },
           // {
           //   name: "Support",
           //   icon: HiOutlineExclamationCircle,
