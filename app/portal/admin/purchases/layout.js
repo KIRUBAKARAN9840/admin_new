@@ -10,6 +10,8 @@ export default function PurchasesLayout({ children }) {
   useEffect(() => {
     if (pathname.includes("/today")) {
       setActiveTab("today");
+    } else if (pathname.includes("/gym-memberships")) {
+      setActiveTab("gym-memberships");
     } else {
       setActiveTab("all");
     }
@@ -18,6 +20,7 @@ export default function PurchasesLayout({ children }) {
   const tabs = [
     { id: "all", name: "All Purchases", path: "/portal/admin/purchases/all" },
     { id: "today", name: "Today's Schedule", path: "/portal/admin/purchases/today" },
+    { id: "gym-memberships", name: "Gym Memberships", path: "/portal/admin/purchases/gym-memberships" },
   ];
 
   const handleTabClick = (tab) => {
@@ -28,11 +31,6 @@ export default function PurchasesLayout({ children }) {
   return (
     <div className="dashboard-container">
       <div className="section-container">
-        {/* Header */}
-        <h3 className="section-heading mb-4">
-          <span style={{ color: "#FF5757" }}>Purchases</span>
-        </h3>
-
         {/* Tabs */}
         <div
           style={{

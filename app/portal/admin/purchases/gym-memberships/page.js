@@ -2,11 +2,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axiosInstance from "@/lib/axios";
 
-export default function TodaySchedule() {
+export default function GymMemberships() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [schedule, setSchedule] = useState([]);
-  const [todayDate, setTodayDate] = useState("");
+  const [memberships, setMemberships] = useState([]);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({
     total: 0,
@@ -18,7 +17,7 @@ export default function TodaySchedule() {
 
   const isFetchingRef = useRef(false);
 
-  const fetchTodaySchedule = useCallback(async (pageNum) => {
+  const fetchGymMemberships = useCallback(async (pageNum) => {
     if (isFetchingRef.current) return;
 
     try {
@@ -26,7 +25,7 @@ export default function TodaySchedule() {
       setLoading(true);
       setError(null);
 
-      const response = await axiosInstance.get("/api/admin/purchases/today-schedule", {
+      const response = await axiosInstance.get("/api/admin/purchases/gym-memberships", {
         params: {
           page: pageNum,
           limit: 10,
@@ -34,16 +33,15 @@ export default function TodaySchedule() {
       });
 
       if (response.data.success) {
-        setSchedule(response.data.data.schedule);
-        setTodayDate(response.data.data.date);
+        setMemberships(response.data.data.memberships);
         setPagination(response.data.data.pagination);
       } else {
-        throw new Error(response.data.message || "Failed to fetch today's schedule");
+        throw new Error(response.data.message || "Failed to fetch gym memberships");
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.detail || err.message || "Failed to fetch today's schedule";
+      const errorMsg = err.response?.data?.detail || err.message || "Failed to fetch gym memberships";
       setError(errorMsg);
-      setSchedule([]);
+      setMemberships([]);
     } finally {
       setLoading(false);
       isFetchingRef.current = false;
@@ -51,8 +49,8 @@ export default function TodaySchedule() {
   }, []);
 
   useEffect(() => {
-    fetchTodaySchedule(page);
-  }, [page, fetchTodaySchedule]);
+    fetchGymMemberships(page);
+  }, [page, fetchGymMemberships]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -64,46 +62,19 @@ export default function TodaySchedule() {
     });
   };
 
-  const formatDateTime = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+  const formatType = (type) => {
+    if (type === "gym_membership") return "Gym Membership";
+    if (type === "personal_training") return "Personal Training";
+    return type || "N/A";
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "scheduled":
-        return "#FFA500";
-      case "attended":
-        return "#4ade80";
-      case "missed":
-        return "#ef4444";
-      case "rescheduled":
-        return "#3b82f6";
-      case "canceled":
-        return "#888";
-      default:
-        return "#ccc";
-    }
+  const formatAmount = (amount) => {
+    return `₹${amount?.toFixed(2) || "0.00"}`;
   };
 
   return (
     <div>
-      {/* Date Header */}
-      <div className="mb-4">
-        <h5 style={{ color: "#888", fontSize: "14px", fontWeight: "400", marginBottom: "0" }}>
-          Schedule for:
-        </h5>
-        <p style={{ color: "#fff", fontSize: "18px", fontWeight: "600" }}>
-          {todayDate ? formatDate(todayDate) : "Today"}
-        </p>
-      </div>
-
-      {/* Schedule */}
+      {/* Memberships Table */}
       {loading ? (
         <div className="text-center py-5">
           <div
@@ -117,61 +88,43 @@ export default function TodaySchedule() {
               margin: "0 auto 1rem",
             }}
           />
-          <p style={{ fontSize: "14px", color: "#ccc" }}>Loading schedule...</p>
+          <p style={{ fontSize: "14px", color: "#ccc" }}>Loading gym memberships...</p>
         </div>
       ) : error ? (
         <div className="text-center py-5">
           <p style={{ fontSize: "16px", color: "#ef4444" }}>Error: {error}</p>
           <button
             className="btn btn-sm mt-3"
-            onClick={() => fetchTodaySchedule(page)}
+            onClick={() => fetchGymMemberships(page)}
             style={{ backgroundColor: "#FF5757", border: "none", color: "#fff" }}
           >
             Retry
           </button>
         </div>
-      ) : schedule.length === 0 ? (
+      ) : memberships.length === 0 ? (
         <div className="text-center py-5">
-          <p style={{ fontSize: "16px", color: "#888" }}>No schedule found for today</p>
+          <p style={{ fontSize: "16px", color: "#888" }}>No gym memberships found</p>
         </div>
       ) : (
         <div className="table-responsive">
-          <table className="table schedule-table">
+          <table className="table memberships-table">
             <thead>
               <tr>
                 <th>Client Name</th>
                 <th>Gym Name</th>
                 <th>Type</th>
-                <th>Scheduled Date</th>
-                <th>Status</th>
-                {/* <th>Amount</th> */}
+                <th>Amount</th>
                 <th>Purchased At</th>
               </tr>
             </thead>
             <tbody>
-              {schedule.map((item) => (
+              {memberships.map((item) => (
                 <tr key={item.id}>
                   <td className="client-name">{item.client_name || "N/A"}</td>
                   <td className="gym-name">{item.gym_name || "N/A"}</td>
-                  <td className="type">{item.type}</td>
-                  <td className="scheduled-date">{formatDate(item.scheduled_date)}</td>
-                  <td className="status">
-                    <span
-                      style={{
-                        padding: "4px 12px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                        textTransform: "uppercase",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                        color: getStatusColor(item.status),
-                      }}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  {/* <td className="amount">{formatAmount(item.amount)}</td> */}
-                  <td className="purchased-at">{formatDateTime(item.purchased_at)}</td>
+                  <td className="type">{formatType(item.type)}</td>
+                  <td className="amount">{formatAmount(item.amount)}</td>
+                  <td className="purchased-at">{formatDate(item.purchased_at)}</td>
                 </tr>
               ))}
             </tbody>
@@ -180,11 +133,11 @@ export default function TodaySchedule() {
       )}
 
       {/* Pagination */}
-      {!loading && schedule.length > 0 && (
+      {!loading && memberships.length > 0 && (
         <div className="d-flex justify-content-between align-items-center mt-4">
           <div style={{ color: "#888", fontSize: "14px" }}>
             Showing {((page - 1) * pagination.limit) + 1} to{" "}
-            {Math.min(page * pagination.limit, pagination.total)} of {pagination.total} schedules
+            {Math.min(page * pagination.limit, pagination.total)} of {pagination.total} memberships
           </div>
           <div className="btn-group">
             <button
@@ -218,7 +171,7 @@ export default function TodaySchedule() {
       )}
 
       <style jsx global>{`
-        table.schedule-table {
+        table.memberships-table {
           width: 100% !important;
           border-collapse: separate !important;
           border-spacing: 0 !important;
@@ -228,12 +181,12 @@ export default function TodaySchedule() {
           overflow: hidden !important;
         }
 
-        table.schedule-table > thead {
+        table.memberships-table > thead {
           background-color: #222 !important;
           border-bottom: 2px solid #FF5757 !important;
         }
 
-        table.schedule-table > thead > tr > th {
+        table.memberships-table > thead > tr > th {
           padding: 12px !important;
           font-weight: 600 !important;
           text-align: left !important;
@@ -242,49 +195,45 @@ export default function TodaySchedule() {
           background-color: transparent !important;
         }
 
-        table.schedule-table > tbody > tr {
+        table.memberships-table > tbody > tr {
           border-bottom: 1px solid #333 !important;
           transition: background-color 0.2s ease !important;
           background-color: transparent !important;
         }
 
-        table.schedule-table > tbody > tr:hover {
+        table.memberships-table > tbody > tr:hover {
           background-color: #222 !important;
         }
 
-        table.schedule-table > tbody > tr:last-child {
+        table.memberships-table > tbody > tr:last-child {
           border-bottom: none !important;
         }
 
-        table.schedule-table > tbody > tr > td {
+        table.memberships-table > tbody > tr > td {
           padding: 12px !important;
           color: #fff !important;
           border: none !important;
           background-color: transparent !important;
         }
 
-        table.schedule-table .client-name {
+        table.memberships-table .client-name {
           font-weight: 500 !important;
         }
 
-        table.schedule-table .gym-name {
+        table.memberships-table .gym-name {
           color: #ccc !important;
         }
 
-        table.schedule-table .scheduled-date {
+        table.memberships-table .type {
           font-weight: 500 !important;
         }
 
-        table.schedule-table .days-total {
-          font-weight: 500 !important;
-        }
-
-        table.schedule-table .amount {
+        table.memberships-table .amount {
           font-weight: 600 !important;
           color: #4ade80 !important;
         }
 
-        table.schedule-table .purchased-at {
+        table.memberships-table .purchased-at {
           font-size: 14px !important;
           color: #888 !important;
         }
