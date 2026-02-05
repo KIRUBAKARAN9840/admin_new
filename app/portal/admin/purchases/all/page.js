@@ -1,14 +1,14 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import axiosInstance from "@/lib/axios";
 
 export default function AllPurchases() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [purchases, setPurchases] = useState([]);
+  const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({
     total: 0,
-    page: 1,
     limit: 10,
     totalPages: 0,
     hasNext: false,
@@ -17,21 +17,22 @@ export default function AllPurchases() {
   const [search, setSearch] = useState("");
   const [expandedRows, setExpandedRows] = useState(new Set());
 
-  useEffect(() => {
-    fetchPurchases();
-  }, [pagination.page, search]);
+  const isFetchingRef = useRef(false);
 
-  const fetchPurchases = async () => {
+  const fetchPurchases = useCallback(async (pageNum, searchQuery) => {
+    if (isFetchingRef.current) return;
+
     try {
+      isFetchingRef.current = true;
       setLoading(true);
       setError(null);
 
       const params = {
-        page: pagination.page,
+        page: pageNum,
         limit: 10,
       };
 
-      if (search) params.search = search;
+      if (searchQuery) params.search = searchQuery;
 
       const response = await axiosInstance.get("/api/admin/purchases/all-purchases", {
         params,
@@ -49,23 +50,29 @@ export default function AllPurchases() {
       setPurchases([]);
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchPurchases(page, search);
+  }, [page, search, fetchPurchases]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPagination({ ...pagination, page: 1 });
-    fetchPurchases();
+    setPage(1);
   };
 
   const toggleRow = (id) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedRows(newExpanded);
+    setExpandedRows(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(id)) {
+        newExpanded.delete(id);
+      } else {
+        newExpanded.add(id);
+      }
+      return newExpanded;
+    });
   };
 
   const formatDate = (dateString) => {
@@ -154,7 +161,7 @@ export default function AllPurchases() {
           <p style={{ fontSize: "16px", color: "#ef4444" }}>Error: {error}</p>
           <button
             className="btn btn-sm mt-3"
-            onClick={fetchPurchases}
+            onClick={() => fetchPurchases(page, search)}
             style={{ backgroundColor: "#FF5757", border: "none", color: "#fff" }}
           >
             Retry
@@ -269,30 +276,32 @@ export default function AllPurchases() {
       {!loading && purchases.length > 0 && (
         <div className="d-flex justify-content-between align-items-center mt-4">
           <div style={{ color: "#888", fontSize: "14px" }}>
-            Showing {((pagination.page - 1) * pagination.limit) + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} purchases
+            Showing {((page - 1) * pagination.limit) + 1} to{" "}
+            {Math.min(page * pagination.limit, pagination.total)} of {pagination.total} purchases
           </div>
           <div className="btn-group">
             <button
               className="btn btn-sm"
-              disabled={!pagination.hasPrev}
-              onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+              disabled={!pagination.hasPrev || loading}
+              onClick={() => setPage(page - 1)}
               style={{
                 backgroundColor: "#1a1a1a",
                 border: "1px solid #333",
-                color: pagination.hasPrev ? "#fff" : "#555",
+                color: pagination.hasPrev && !loading ? "#fff" : "#555",
+                cursor: pagination.hasPrev && !loading ? "pointer" : "not-allowed",
               }}
             >
               Previous
             </button>
             <button
               className="btn btn-sm"
-              disabled={!pagination.hasNext}
-              onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+              disabled={!pagination.hasNext || loading}
+              onClick={() => setPage(page + 1)}
               style={{
                 backgroundColor: "#1a1a1a",
                 border: "1px solid #333",
-                color: pagination.hasNext ? "#fff" : "#555",
+                color: pagination.hasNext && !loading ? "#fff" : "#555",
+                cursor: pagination.hasNext && !loading ? "pointer" : "not-allowed",
               }}
             >
               Next
