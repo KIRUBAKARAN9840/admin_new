@@ -60,15 +60,15 @@ export default function RoleBasedLayout({ children }) {
             path: "/portal/admin/telecaller-managers",
           },
           {
-            name: "Marketing",
-            icon: HiOutlineSpeakerphone,
-            path: "/portal/admin/marketing",
-          },
-          {
             name: "Purchases",
             icon: HiOutlineCurrencyDollar,
             path: "/portal/admin/purchases",
           },
+          // {
+          //   name: "Marketing",
+          //   icon: HiOutlineSpeakerphone,
+          //   path: "/portal/admin/marketing",
+          // },
           // {
           //   name: "Support",
           //   icon: HiOutlineExclamationCircle,

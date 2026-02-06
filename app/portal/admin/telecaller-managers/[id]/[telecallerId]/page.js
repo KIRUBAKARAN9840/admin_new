@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-import { FaArrowLeft, FaPhone, FaBuilding } from "react-icons/fa";
+import { FaArrowLeft, FaPhone, FaBuilding, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const TABS = [
   { key: "pending", label: "Pending" },
@@ -34,55 +34,100 @@ export default function TelecallerDetails() {
   const [counts, setCounts] = useState({});
   const [activeTab, setActiveTab] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredGyms, setFilteredGyms] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    limit: 50,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
 
-  const fetchTelecallerDetails = useCallback(async (status) => {
+  // Refs to track latest values without causing re-renders
+  const activeTabRef = useRef(activeTab);
+  const pageRef = useRef(page);
+  const searchTermRef = useRef(searchTerm);
+
+  // Sync refs with state
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+
+  useEffect(() => {
+    searchTermRef.current = searchTerm;
+  }, [searchTerm]);
+
+  // Debounce search and trigger fetch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Reset to page 1 when search changes
+      if (pageRef.current !== 1) {
+        setPage(1);
+        pageRef.current = 1;
+      }
+      // Trigger fetch by updating a dummy state or directly calling fetch
+      fetchTelecallerDetails();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch when activeTab or page changes
+  useEffect(() => {
+    fetchTelecallerDetails();
+  }, [activeTab, page]);
+
+  const fetchTelecallerDetails = async () => {
     try {
       setLoading(true);
+
+      const params = {
+        status: activeTabRef.current,
+        page: pageRef.current,
+        limit: 50
+      };
+
+      const currentSearch = searchTermRef.current;
+      if (currentSearch && currentSearch.trim()) {
+        params.search = currentSearch.trim();
+      }
+
       const response = await axiosInstance.get(
         `/api/admin/telecaller-managers/${managerId}/telecallers/${telecallerId}/details`,
-        { params: status ? { status } : {} }
+        { params }
       );
 
       if (response.data.success) {
         setTelecaller(response.data.data.telecaller);
         setGyms(response.data.data.gyms || []);
-        setFilteredGyms(response.data.data.gyms || []);
         setCounts(response.data.data.counts || {});
-      } else {
+        setPagination(response.data.data.pagination || {
+          total: 0,
+          limit: 50,
+          totalPages: 0,
+          hasNext: false,
+          hasPrev: false,
+        });
       }
     } catch (error) {
+      console.error('Fetch error:', error);
     } finally {
       setLoading(false);
     }
-  }, [managerId, telecallerId]);
-
-  useEffect(() => {
-    if (telecallerId) {
-      fetchTelecallerDetails(activeTab);
-    }
-  }, [telecallerId, activeTab, fetchTelecallerDetails]);
-
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = gyms.filter((gym) => {
-        const gymDetails = gym.gym_details || {};
-        return (
-          gymDetails.gym_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          gymDetails.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          gymDetails.contact_phone?.includes(searchTerm) ||
-          gymDetails.area?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          gymDetails.city?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      });
-      setFilteredGyms(filtered);
-    } else {
-      setFilteredGyms(gyms);
-    }
-  }, [searchTerm, gyms]);
+  };
 
   const handleTabChange = (tabKey) => {
+    if (activeTab === tabKey) return;
     setActiveTab(tabKey);
+    setPage(1);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    setPage(newPage);
   };
 
   return (
@@ -388,7 +433,7 @@ export default function TelecallerDetails() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredGyms.length === 0 ? (
+                  {gyms.length === 0 ? (
                     <tr>
                       <td colSpan="5" style={{
                         padding: "60px",
@@ -420,7 +465,7 @@ export default function TelecallerDetails() {
                       </td>
                     </tr>
                   ) : (
-                    filteredGyms.map((gym, index) => {
+                    gyms.map((gym, index) => {
                       const gymDetails = gym.gym_details || {};
                       const statusColor = TAB_COLORS[gym.call_status] || "#888";
 
@@ -428,7 +473,7 @@ export default function TelecallerDetails() {
                         <tr
                           key={gym.log_id || gym.gym_id}
                           style={{
-                            borderBottom: index !== filteredGyms.length - 1 ? "1px solid #333" : "none",
+                            borderBottom: index !== gyms.length - 1 ? "1px solid #333" : "none",
                             transition: "background-color 0.2s",
                           }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#2a2a2a"}
@@ -483,6 +528,75 @@ export default function TelecallerDetails() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && pagination.totalPages > 1 && (
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "20px",
+            padding: "16px",
+            backgroundColor: "#2a2a2a",
+            borderRadius: "8px"
+          }}>
+            <div style={{ color: "#888", fontSize: "14px" }}>
+              Showing {((page - 1) * pagination.limit) + 1} to{" "}
+              {Math.min(page * pagination.limit, pagination.total)} of {pagination.total} gyms
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={!pagination.hasPrev || loading}
+                style={{
+                  backgroundColor: pagination.hasPrev && !loading ? "#FF5757" : "#3a3a3a",
+                  border: "none",
+                  color: "#fff",
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  cursor: pagination.hasPrev && !loading ? "pointer" : "not-allowed",
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  opacity: (!pagination.hasPrev || loading) ? 0.5 : 1,
+                }}
+              >
+                <FaChevronLeft size={12} />
+                Previous
+              </button>
+              <span style={{
+                color: "#ccc",
+                fontSize: "14px",
+                display: "flex",
+                alignItems: "center",
+                padding: "0 8px"
+              }}>
+                Page {page} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={!pagination.hasNext || loading}
+                style={{
+                  backgroundColor: pagination.hasNext && !loading ? "#FF5757" : "#3a3a3a",
+                  border: "none",
+                  color: "#fff",
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  cursor: pagination.hasNext && !loading ? "pointer" : "not-allowed",
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  opacity: (!pagination.hasNext || loading) ? 0.5 : 1,
+                }}
+              >
+                Next
+                <FaChevronRight size={12} />
+              </button>
             </div>
           </div>
         )}

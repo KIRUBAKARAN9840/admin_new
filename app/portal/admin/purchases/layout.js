@@ -18,7 +18,7 @@ export default function PurchasesLayout({ children }) {
   }, [pathname]);
 
   const tabs = [
-    { id: "all", name: "All Purchases", path: "/portal/admin/purchases/all" },
+    { id: "all", name: "Session/Daily pass", path: "/portal/admin/purchases/all" },
     { id: "today", name: "Today's Schedule", path: "/portal/admin/purchases/today" },
     { id: "gym-memberships", name: "Gym Memberships", path: "/portal/admin/purchases/gym-memberships" },
   ];
