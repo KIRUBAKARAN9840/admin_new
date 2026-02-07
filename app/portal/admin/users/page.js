@@ -45,6 +45,8 @@ export default function Users() {
     offline_members: 0,
     total_members: 0
   });
+  // Track if initial data has been loaded
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   // Debounce search term
   useEffect(() => {
@@ -68,12 +70,66 @@ export default function Users() {
     return () => document.head.removeChild(style);
   }, []);
 
-  // Fetch plans for filter and restore state if returning
-  useEffect(() => {
-    fetchAvailablePlans();
-    fetchClientCounts();
-    fetchOnlineOfflineCounts();
+  // Track if we've already fetched initial data to prevent duplicate calls
+  const hasFetchedInitialData = useRef(false);
+  // Track if we've completed the initial mount phase
+  const isInitialMount = useRef(true);
+  // Track if fetchUsers has been called at least once (to allow first user interaction)
+  const hasCalledFetchUsers = useRef(false);
 
+  // Fetch initial data - memoized to prevent re-creation on every render
+  const fetchInitialData = useCallback(async () => {
+    // Prevent duplicate calls
+    if (hasFetchedInitialData.current) {
+      console.log("[fetchInitialData] Skipping - already fetched");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const params = {
+        page: 1,
+        limit: 10,
+        sort_order: "desc",
+      };
+
+      if (gymFromUrl) {
+        params.gym = gymFromUrl;
+      }
+
+      console.log("[fetchInitialData] Calling /api/admin/users/overview with params:", params);
+
+      // Single API call to get all initial data
+      const response = await axiosInstance.get("/api/admin/users/overview", { params });
+
+      if (response.data.success) {
+        const data = response.data.data;
+
+        // Set all data from single response
+        setUsers(data.users);
+        setTotalUsers(data.total);
+        setAvailablePlans(data.plans);
+        setClientCounts(data.clientCounts);
+        setOnlineOfflineCounts(data.onlineOfflineCounts);
+        setInitialDataLoaded(true);
+        hasFetchedInitialData.current = true;
+
+        // Note: isInitialMount stays true until the second useEffect runs
+      }
+    } catch (error) {
+      console.error("[fetchInitialData] Error fetching initial data:", error);
+      console.error("[fetchInitialData] Error response:", error.response?.data);
+      // Fall back to individual API calls if overview endpoint fails
+      console.warn("[fetchInitialData] Overview endpoint failed, falling back to individual calls");
+      // You can add fallback logic here if needed
+    } finally {
+      setLoading(false);
+    }
+  }, [gymFromUrl]);
+
+  // Fetch initial data and restore state if returning - only run once on mount
+  useEffect(() => {
     // Check if we're returning from user detail page
     const savedState = sessionStorage.getItem('usersListState');
     if (savedState) {
@@ -90,50 +146,32 @@ export default function Users() {
           setSortOrder(state.sortOrder || "desc");
           setCurrentPage(state.currentPage || 1);
           setItemsPerPage(state.itemsPerPage || 10);
+          setInitialDataLoaded(state.initialDataLoaded || false);
 
           // Clear the returning flag
           const updatedState = { ...state, isReturning: false };
           sessionStorage.setItem('usersListState', JSON.stringify(updatedState));
 
-          // Skip the initial fetch since we'll fetch after state is restored
+          // Mark as fetched since we're restoring state
+          hasFetchedInitialData.current = true;
+          isInitialMount.current = false;
           skipInitialFetchRef.current = true;
+          return;
         }
       } catch (e) {
       }
     }
-  }, [gymFromUrl]);
 
-  const fetchAvailablePlans = async () => {
-    try {
-      const response = await axiosInstance.get("/api/admin/users/plans");
-      if (response.data.success) {
-        setAvailablePlans(response.data.data);
-      }
-    } catch (error) {
-    }
-  };
-
-  const fetchClientCounts = async () => {
-    try {
-      const response = await axiosInstance.get("/api/admin/users/client-counts");
-      if (response.data.success) {
-        setClientCounts(response.data.data);
-      }
-    } catch (error) {
-    }
-  };
-
-  const fetchOnlineOfflineCounts = async () => {
-    try {
-      const response = await axiosInstance.get("/api/admin/users/online-offline-counts");
-      if (response.data.success) {
-        setOnlineOfflineCounts(response.data.data);
-      }
-    } catch (error) {
-    }
-  };
+    // If not returning, fetch initial data
+    fetchInitialData();
+  }, []); // Empty dependency array = only run once on mount
 
   const fetchUsers = useCallback(async () => {
+    // Skip if initial mount - fetchInitialData will handle it
+    if (isInitialMount.current) {
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -159,11 +197,20 @@ export default function Users() {
         }
       }
 
-      const response = await axiosInstance.get("/api/admin/users", { params });
+      if (gymFromUrl) {
+        params.gym = gymFromUrl;
+      }
+
+      // Use the overview endpoint for all user fetches
+      const response = await axiosInstance.get("/api/admin/users/overview", { params });
 
       if (response.data.success) {
-        setUsers(response.data.data.users);
-        setTotalUsers(response.data.data.total);
+        const data = response.data.data;
+        setUsers(data.users);
+        setTotalUsers(data.total);
+        // Also update counts in case they changed
+        setClientCounts(data.clientCounts);
+        setOnlineOfflineCounts(data.onlineOfflineCounts);
       }
     } catch (error) {
       setUsers([]);
@@ -177,10 +224,22 @@ export default function Users() {
     // Skip fetch if we're restoring state (will fetch after restoration)
     if (skipInitialFetchRef.current) {
       skipInitialFetchRef.current = false;
+      isInitialMount.current = false;
+      hasCalledFetchUsers.current = true;
       return;
     }
-    fetchUsers();
-  }, [fetchUsers]);
+    // Only fetch after initial data is loaded to avoid duplicate calls
+    if (initialDataLoaded) {
+      if (!hasCalledFetchUsers.current) {
+        // First time after initial load - skip fetch to avoid duplicate
+        hasCalledFetchUsers.current = true;
+        isInitialMount.current = false;
+        return;
+      }
+      // Subsequent changes - fetch users normally
+      fetchUsers();
+    }
+  }, [fetchUsers, initialDataLoaded]);
 
   // Save state to sessionStorage whenever it changes
   useEffect(() => {
@@ -193,10 +252,11 @@ export default function Users() {
       sortOrder,
       currentPage,
       itemsPerPage,
+      initialDataLoaded,
       isReturning: false
     };
     sessionStorage.setItem('usersListState', JSON.stringify(stateToSave));
-  }, [searchTerm, planFilter, dateFilter, customStartDate, customEndDate, sortOrder, currentPage, itemsPerPage]);
+  }, [searchTerm, planFilter, dateFilter, customStartDate, customEndDate, sortOrder, currentPage, itemsPerPage, initialDataLoaded]);
 
   const handleFilterChange = (filterType, value) => {
     setCurrentPage(1);
