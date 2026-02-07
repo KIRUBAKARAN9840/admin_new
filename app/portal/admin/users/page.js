@@ -128,44 +128,6 @@ export default function Users() {
     }
   }, [gymFromUrl]);
 
-  // Fetch initial data and restore state if returning - only run once on mount
-  useEffect(() => {
-    // Check if we're returning from user detail page
-    const savedState = sessionStorage.getItem('usersListState');
-    if (savedState) {
-      try {
-        const state = JSON.parse(savedState);
-        if (state.isReturning) {
-          // Restore all state
-          setSearchTerm(state.searchTerm || gymFromUrl);
-          setDebouncedSearchTerm(state.searchTerm || gymFromUrl);
-          setPlanFilter(state.planFilter || "all");
-          setDateFilter(state.dateFilter || "all");
-          setCustomStartDate(state.customStartDate || "");
-          setCustomEndDate(state.customEndDate || "");
-          setSortOrder(state.sortOrder || "desc");
-          setCurrentPage(state.currentPage || 1);
-          setItemsPerPage(state.itemsPerPage || 10);
-          setInitialDataLoaded(state.initialDataLoaded || false);
-
-          // Clear the returning flag
-          const updatedState = { ...state, isReturning: false };
-          sessionStorage.setItem('usersListState', JSON.stringify(updatedState));
-
-          // Mark as fetched since we're restoring state
-          hasFetchedInitialData.current = true;
-          isInitialMount.current = false;
-          skipInitialFetchRef.current = true;
-          return;
-        }
-      } catch (e) {
-      }
-    }
-
-    // If not returning, fetch initial data
-    fetchInitialData();
-  }, []); // Empty dependency array = only run once on mount
-
   const fetchUsers = useCallback(async () => {
     // Skip if initial mount - fetchInitialData will handle it
     if (isInitialMount.current) {
@@ -217,7 +179,49 @@ export default function Users() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, planFilter, debouncedSearchTerm, sortOrder, dateFilter, customStartDate, customEndDate]);
+  }, [currentPage, itemsPerPage, planFilter, debouncedSearchTerm, sortOrder, dateFilter, customStartDate, customEndDate, gymFromUrl]);
+
+  // Fetch initial data and restore state if returning - only run once on mount
+  useEffect(() => {
+    // Check if we're returning from user detail page
+    const savedState = sessionStorage.getItem('usersListState');
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        if (state.isReturning) {
+          // Restore all state
+          setSearchTerm(state.searchTerm || gymFromUrl);
+          setDebouncedSearchTerm(state.searchTerm || gymFromUrl);
+          setPlanFilter(state.planFilter || "all");
+          setDateFilter(state.dateFilter || "all");
+          setCustomStartDate(state.customStartDate || "");
+          setCustomEndDate(state.customEndDate || "");
+          setSortOrder(state.sortOrder || "desc");
+          setCurrentPage(state.currentPage || 1);
+          setItemsPerPage(state.itemsPerPage || 10);
+          setInitialDataLoaded(state.initialDataLoaded || false);
+
+          // Clear the returning flag
+          const updatedState = { ...state, isReturning: false };
+          sessionStorage.setItem('usersListState', JSON.stringify(updatedState));
+
+          // Mark as fetched to skip initial fetch
+          hasFetchedInitialData.current = true;
+          isInitialMount.current = false;
+          skipInitialFetchRef.current = true;
+          hasCalledFetchUsers.current = true;
+
+          // Fetch users with restored filters
+          fetchUsers();
+          return;
+        }
+      } catch (e) {
+      }
+    }
+
+    // If not returning, fetch initial data
+    fetchInitialData();
+  }, [fetchUsers, fetchInitialData, gymFromUrl]);
 
   // Fetch users when filters change
   useEffect(() => {
