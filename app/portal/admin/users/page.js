@@ -988,13 +988,19 @@ export default function Users() {
                     </td>
                     <td>{formatDate(user.last_purchase_date)}</td>
                     <td>
-                      {user.purchase_gym_name && user.purchase_source_type ? (
-                        <>
-                          {user.purchase_gym_name}{" "}
+                      {user.purchase_source_type ? (
+                        user.purchase_source_type === "Subscription" ? (
                           <span style={{ color: "#28a745", fontWeight: "500" }}>
-                            {user.purchase_source_type}
+                            Subscription
                           </span>
-                        </>
+                        ) : (
+                          <>
+                            {user.purchase_gym_name || "Unknown"}{" "}
+                            <span style={{ color: "#28a745", fontWeight: "500" }}>
+                              {user.purchase_source_type}
+                            </span>
+                          </>
+                        )
                       ) : (
                         "-"
                       )}
