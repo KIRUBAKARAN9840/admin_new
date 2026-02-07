@@ -939,8 +939,9 @@ export default function Users() {
                 <th>Mobile</th>
                 <th>Gym Name</th>
                 <th>Plan</th>
-                <th>Joined Date</th>
                 <th>Last Purchase Date</th>
+                <th>Purchase Details</th>
+                <th>Joined Date</th>
               </tr>
             </thead>
             <tbody>
@@ -985,13 +986,25 @@ export default function Users() {
                         {user.plan_name || "No"}
                       </span>
                     </td>
-                    <td>{formatDate(user.created_at)}</td>
                     <td>{formatDate(user.last_purchase_date)}</td>
+                    <td>
+                      {user.purchase_gym_name && user.purchase_source_type ? (
+                        <>
+                          {user.purchase_gym_name}{" "}
+                          <span style={{ color: "#28a745", fontWeight: "500" }}>
+                            {user.purchase_source_type}
+                          </span>
+                        </>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td>{formatDate(user.created_at)}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="no-data">
+                  <td colSpan="7" className="no-data">
                     No users found matching your criteria
                   </td>
                 </tr>
