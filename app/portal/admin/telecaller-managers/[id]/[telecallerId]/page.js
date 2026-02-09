@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-import { FaArrowLeft, FaPhone, FaBuilding, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaArrowLeft, FaPhone, FaBuilding, FaChevronLeft, FaChevronRight, FaInfoCircle } from "react-icons/fa";
 
 const TABS = [
   { key: "pending", label: "Pending" },
@@ -42,6 +42,13 @@ export default function TelecallerDetails() {
     hasNext: false,
     hasPrev: false,
   });
+
+  // Modal state for call logs
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedGymId, setSelectedGymId] = useState(null);
+  const [selectedGymName, setSelectedGymName] = useState(null);
+  const [callLogsLoading, setCallLogsLoading] = useState(false);
+  const [callLogs, setCallLogs] = useState([]);
 
   // Refs to track latest values without causing re-renders
   const activeTabRef = useRef(activeTab);
@@ -128,6 +135,32 @@ export default function TelecallerDetails() {
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     setPage(newPage);
+  };
+
+  const openCallLogsModal = async (gymId, gymName) => {
+    setSelectedGymId(gymId);
+    setSelectedGymName(gymName);
+    setModalOpen(true);
+    setCallLogsLoading(true);
+    setCallLogs([]);
+
+    try {
+      const response = await axiosInstance.get(`/api/admin/telecaller-managers/gym-call-logs/${gymId}`);
+      if (response.data.success) {
+        setCallLogs(response.data.data.call_logs || []);
+      }
+    } catch (error) {
+      console.error("Error fetching call logs:", error);
+    } finally {
+      setCallLogsLoading(false);
+    }
+  };
+
+  const closeCallLogsModal = () => {
+    setModalOpen(false);
+    setSelectedGymId(null);
+    setSelectedGymName(null);
+    setCallLogs([]);
   };
 
   return (
@@ -430,12 +463,26 @@ export default function TelecallerDetails() {
                     }}>
                       Last Call
                     </th>
+                    {activeTab !== "pending" && (
+                      <th style={{
+                        padding: "16px",
+                        textAlign: "center",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        color: "#ccc",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        width: "80px"
+                      }}>
+                        Action
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {gyms.length === 0 ? (
                     <tr>
-                      <td colSpan="5" style={{
+                      <td colSpan={activeTab === "pending" ? 5 : 6} style={{
                         padding: "60px",
                         textAlign: "center",
                         color: "#888"
@@ -522,6 +569,43 @@ export default function TelecallerDetails() {
                                 })
                               : "Never"}
                           </td>
+                          <td style={{ padding: "16px", textAlign: "center" }}>
+                            {/* Don't show Action button for Pending tab */}
+                            {activeTab !== "pending" && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openCallLogsModal(gym.gym_id, gymDetails.gym_name);
+                                }}
+                                style={{
+                                  backgroundColor: "rgba(59, 130, 246, 0.1)",
+                                  border: "1px solid rgba(59, 130, 246, 0.3)",
+                                  borderRadius: "6px",
+                                  padding: "8px 12px",
+                                  color: "#3b82f6",
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: "4px",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                  transition: "all 0.2s",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.backgroundColor = "rgba(59, 130, 246, 0.2)";
+                                  e.target.style.borderColor = "rgba(59, 130, 246, 0.5)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = "rgba(59, 130, 246, 0.1)";
+                                  e.target.style.borderColor = "rgba(59, 130, 246, 0.3)";
+                                }}
+                              >
+                                <FaInfoCircle size={12} />
+                                <span>Logs</span>
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       );
                     })
@@ -601,6 +685,273 @@ export default function TelecallerDetails() {
           </div>
         )}
       </div>
+
+      {/* Call Logs Modal */}
+      {modalOpen && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "20px"
+        }}>
+          <div style={{
+            backgroundColor: "#1e1e1e",
+            borderRadius: "12px",
+            maxWidth: "600px",
+            width: "100%",
+            maxHeight: "80vh",
+            display: "flex",
+            flexDirection: "column",
+            border: "1px solid #333"
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: "20px",
+              borderBottom: "1px solid #333",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              <div>
+                <h2 style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#fff",
+                  margin: "0"
+                }}>
+                  Call Logs
+                </h2>
+                <p style={{
+                  fontSize: "14px",
+                  color: "#888",
+                  margin: "4px 0 0 0"
+                }}>
+                  {selectedGymName || "Gym"}
+                </p>
+              </div>
+              <button
+                onClick={closeCallLogsModal}
+                style={{
+                  backgroundColor: "transparent",
+                  border: "none",
+                  color: "#888",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  padding: "0",
+                  width: "32px",
+                  height: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "4px",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = "#3a3a3a";
+                  e.target.style.color = "#fff";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "transparent";
+                  e.target.style.color = "#888";
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable */}
+            <div style={{
+              padding: "20px",
+              overflowY: "auto",
+              flex: 1
+            }}>
+              {callLogsLoading ? (
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "40px"
+                }}>
+                  <div
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      border: "3px solid #3a3a3a",
+                      borderTop: "3px solid #3b82f6",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite"
+                    }}
+                  />
+                </div>
+              ) : callLogs.length === 0 ? (
+                <div style={{
+                  textAlign: "center",
+                  padding: "40px",
+                  color: "#888"
+                }}>
+                  <FaInfoCircle style={{ fontSize: "48px", opacity: 0.3, marginBottom: "16px" }} />
+                  <div style={{ fontSize: "16px" }}>No call logs found</div>
+                  <div style={{ fontSize: "14px", marginTop: "8px" }}>
+                    This gym hasn't been called yet
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {callLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      style={{
+                        backgroundColor: "#2a2a2a",
+                        borderRadius: "8px",
+                        padding: "16px",
+                        border: "1px solid #333"
+                      }}
+                    >
+                      {/* Card Header */}
+                      <div style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "12px",
+                        paddingBottom: "12px",
+                        borderBottom: "1px solid #3a3a3a"
+                      }}>
+                        <div style={{
+                          fontSize: "13px",
+                          color: "#888",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px"
+                        }}>
+                          <FaPhone style={{ fontSize: "12px" }} />
+                          {log.telecaller_name || "Unknown"}
+                        </div>
+                        <div style={{
+                          fontSize: "12px",
+                          color: "#666"
+                        }}>
+                          {log.created_at
+                            ? new Date(log.created_at).toLocaleString("en-IN", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })
+                            : ""}
+                        </div>
+                      </div>
+
+                      {/* Card Content */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                        {/* Call Status */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "12px", color: "#888", minWidth: "80px" }}>
+                            Status:
+                          </span>
+                          <span style={{
+                            backgroundColor: `${TAB_COLORS[log.call_status] || "#888"}22`,
+                            color: TAB_COLORS[log.call_status] || "#888",
+                            padding: "4px 10px",
+                            borderRadius: "12px",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            textTransform: "capitalize"
+                          }}>
+                            {log.call_status?.replace(/_/g, " ") || "Pending"}
+                          </span>
+                        </div>
+
+                        {/* Remarks */}
+                        <div>
+                          <span style={{ fontSize: "12px", color: "#888" }}>Remarks:</span>
+                          <p style={{
+                            margin: "4px 0 0 0",
+                            fontSize: "14px",
+                            color: "#ccc",
+                            lineHeight: "1.4"
+                          }}>
+                            {log.remarks || "-"}
+                          </p>
+                        </div>
+
+                        {/* Additional Info */}
+                        {(log.follow_up_date || log.interest_level || log.total_members) && (
+                          <div style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "16px",
+                            paddingTop: "8px",
+                            borderTop: "1px solid #3a3a3a"
+                          }}>
+                            {log.follow_up_date && (
+                              <div style={{ fontSize: "12px" }}>
+                                <span style={{ color: "#888" }}>Follow-up:</span>{" "}
+                                <span style={{ color: "#ccc" }}>
+                                  {new Date(log.follow_up_date).toLocaleDateString("en-IN", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric"
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                            {log.interest_level && (
+                              <div style={{ fontSize: "12px" }}>
+                                <span style={{ color: "#888" }}>Interest:</span>{" "}
+                                <span style={{ color: "#ccc" }}>{log.interest_level}</span>
+                              </div>
+                            )}
+                            {log.total_members && (
+                              <div style={{ fontSize: "12px" }}>
+                                <span style={{ color: "#888" }}>Members:</span>{" "}
+                                <span style={{ color: "#ccc" }}>{log.total_members}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              padding: "16px 20px",
+              borderTop: "1px solid #333",
+              display: "flex",
+              justifyContent: "flex-end"
+            }}>
+              <button
+                onClick={closeCallLogsModal}
+                style={{
+                  backgroundColor: "#3a3a3a",
+                  border: "1px solid #444",
+                  borderRadius: "6px",
+                  padding: "8px 16px",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#4a4a4a"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#3a3a3a"}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
