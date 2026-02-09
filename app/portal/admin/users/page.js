@@ -15,9 +15,6 @@ export default function Users() {
   const router = useRouter();
   const gymFromUrl = searchParams.get("gym") || "";
 
-  // Ref to track if we need to skip initial fetch (for state restoration)
-  const skipInitialFetchRef = useRef(false);
-
   // State variables
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
@@ -47,6 +44,8 @@ export default function Users() {
   });
   // Track if initial data has been loaded
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  // Track if we've completed the initial mount phase
+  const isInitialMount = useRef(true);
 
   // Debounce search term
   useEffect(() => {
@@ -72,10 +71,6 @@ export default function Users() {
 
   // Track if we've already fetched initial data to prevent duplicate calls
   const hasFetchedInitialData = useRef(false);
-  // Track if we've completed the initial mount phase
-  const isInitialMount = useRef(true);
-  // Track if fetchUsers has been called at least once (to allow first user interaction)
-  const hasCalledFetchUsers = useRef(false);
 
   // Fetch initial data - memoized to prevent re-creation on every render
   const fetchInitialData = useCallback(async () => {
@@ -189,58 +184,112 @@ export default function Users() {
       try {
         const state = JSON.parse(savedState);
         if (state.isReturning) {
-          // Restore all state
-          setSearchTerm(state.searchTerm || gymFromUrl);
-          setDebouncedSearchTerm(state.searchTerm || gymFromUrl);
-          setPlanFilter(state.planFilter || "all");
-          setDateFilter(state.dateFilter || "all");
-          setCustomStartDate(state.customStartDate || "");
-          setCustomEndDate(state.customEndDate || "");
-          setSortOrder(state.sortOrder || "desc");
-          setCurrentPage(state.currentPage || 1);
-          setItemsPerPage(state.itemsPerPage || 10);
-          setInitialDataLoaded(state.initialDataLoaded || false);
+          console.log("[Users] Restoring state from session storage");
 
-          // Clear the returning flag
-          const updatedState = { ...state, isReturning: false };
-          sessionStorage.setItem('usersListState', JSON.stringify(updatedState));
+          // Restore all state in a batch
+          const restoredSearchTerm = state.searchTerm || gymFromUrl;
+          const restoredPlanFilter = state.planFilter || "all";
+          const restoredDateFilter = state.dateFilter || "all";
+          const restoredCustomStartDate = state.customStartDate || "";
+          const restoredCustomEndDate = state.customEndDate || "";
+          const restoredSortOrder = state.sortOrder || "desc";
+          const restoredCurrentPage = state.currentPage || 1;
+          const restoredItemsPerPage = state.itemsPerPage || 10;
 
+          // Clear the returning flag immediately
+          sessionStorage.removeItem('usersListState');
+
+          // Mark as NOT initial mount so fetchUsers will work
+          isInitialMount.current = false;
           // Mark as fetched to skip initial fetch
           hasFetchedInitialData.current = true;
-          isInitialMount.current = false;
-          skipInitialFetchRef.current = true;
-          hasCalledFetchUsers.current = true;
 
-          // Fetch users with restored filters
-          fetchUsers();
+          // Restore all state - use batched state updates
+          setSearchTerm(restoredSearchTerm);
+          setDebouncedSearchTerm(restoredSearchTerm);
+          setPlanFilter(restoredPlanFilter);
+          setDateFilter(restoredDateFilter);
+          setCustomStartDate(restoredCustomStartDate);
+          setCustomEndDate(restoredCustomEndDate);
+          setSortOrder(restoredSortOrder);
+          setCurrentPage(restoredCurrentPage);
+          setItemsPerPage(restoredItemsPerPage);
+          setInitialDataLoaded(true);
+
+          // Fetch users with the restored parameters directly
+          // We need to construct the params manually since we just updated state
+          const fetchUsersWithRestoredState = async () => {
+            try {
+              setLoading(true);
+
+              const params = {
+                page: restoredCurrentPage,
+                limit: restoredItemsPerPage,
+                sort_order: restoredSortOrder,
+              };
+
+              if (restoredSearchTerm) {
+                params.search = restoredSearchTerm;
+              }
+
+              if (restoredPlanFilter && restoredPlanFilter !== "all") {
+                params.plan = restoredPlanFilter;
+              }
+
+              if (restoredDateFilter && restoredDateFilter !== "all") {
+                params.date_filter = restoredDateFilter;
+                if (restoredDateFilter === "custom" && restoredCustomStartDate && restoredCustomEndDate) {
+                  params.custom_start_date = restoredCustomStartDate;
+                  params.custom_end_date = restoredCustomEndDate;
+                }
+              }
+
+              if (gymFromUrl) {
+                params.gym = gymFromUrl;
+              }
+
+              const response = await axiosInstance.get("/api/admin/users/overview", { params });
+
+              if (response.data.success) {
+                const data = response.data.data;
+                setUsers(data.users);
+                setTotalUsers(data.total);
+                setAvailablePlans(data.plans);
+                setClientCounts(data.clientCounts);
+                setOnlineOfflineCounts(data.onlineOfflineCounts);
+              }
+            } catch (error) {
+              setUsers([]);
+            } finally {
+              setLoading(false);
+            }
+          };
+
+          // Call the fetch with restored values
+          fetchUsersWithRestoredState();
+
           return;
         }
       } catch (e) {
+        console.error("[Users] Error restoring state:", e);
       }
     }
 
     // If not returning, fetch initial data
-    fetchInitialData();
-  }, [fetchUsers, fetchInitialData, gymFromUrl]);
-
-  // Fetch users when filters change
-  useEffect(() => {
-    // Skip fetch if we're restoring state (will fetch after restoration)
-    if (skipInitialFetchRef.current) {
-      skipInitialFetchRef.current = false;
+    fetchInitialData().finally(() => {
       isInitialMount.current = false;
-      hasCalledFetchUsers.current = true;
+    });
+  }, [gymFromUrl]);
+
+  // Fetch users when filters change - but skip on initial mount
+  useEffect(() => {
+    // Skip if initial mount
+    if (isInitialMount.current) {
       return;
     }
-    // Only fetch after initial data is loaded to avoid duplicate calls
+
+    // Only fetch after initial data is loaded
     if (initialDataLoaded) {
-      if (!hasCalledFetchUsers.current) {
-        // First time after initial load - skip fetch to avoid duplicate
-        hasCalledFetchUsers.current = true;
-        isInitialMount.current = false;
-        return;
-      }
-      // Subsequent changes - fetch users normally
       fetchUsers();
     }
   }, [fetchUsers, initialDataLoaded]);
@@ -261,12 +310,6 @@ export default function Users() {
     };
     sessionStorage.setItem('usersListState', JSON.stringify(stateToSave));
   }, [searchTerm, planFilter, dateFilter, customStartDate, customEndDate, sortOrder, currentPage, itemsPerPage, initialDataLoaded]);
-
-  const handleFilterChange = (filterType, value) => {
-    setCurrentPage(1);
-    if (filterType === "search") setSearchTerm(value);
-    if (filterType === "plan") setPlanFilter(value);
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -857,7 +900,10 @@ export default function Users() {
                 className="search-input"
                 placeholder="Search by name, mobile, gym..."
                 value={searchTerm}
-                onChange={(e) => handleFilterChange("search", e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
           </div>
@@ -866,7 +912,10 @@ export default function Users() {
             <select
               className="filter-select"
               value={planFilter}
-              onChange={(e) => handleFilterChange("plan", e.target.value)}
+              onChange={(e) => {
+                setPlanFilter(e.target.value);
+                setCurrentPage(1);
+              }}
             >
               <option value="all">All Plans</option>
               {availablePlans.map((plan) => (
