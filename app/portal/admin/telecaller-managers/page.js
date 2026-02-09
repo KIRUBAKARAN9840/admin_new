@@ -12,6 +12,22 @@ export default function TelecallerManagers() {
   const [filteredManagers, setFilteredManagers] = useState([]);
 
   useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get("/api/admin/telecaller-managers/list");
+
+        if (response.data.success) {
+          setManagers(response.data.data.managers || []);
+          setFilteredManagers(response.data.data.managers || []);
+        }
+      } catch (error) {
+        console.error("Error fetching managers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchManagers();
   }, []);
 
@@ -27,22 +43,6 @@ export default function TelecallerManagers() {
       setFilteredManagers(managers);
     }
   }, [searchTerm, managers]);
-
-  const fetchManagers = async () => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get("/api/admin/telecaller-managers/list");
-
-      if (response.data.success) {
-        setManagers(response.data.data.managers || []);
-        setFilteredManagers(response.data.data.managers || []);
-      } else {
-      }
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="dashboard-container">
