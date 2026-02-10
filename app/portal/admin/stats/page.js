@@ -457,7 +457,12 @@ export default function GymStats() {
                     >
                       <td style={{ position: 'relative' }}>
                         <div className="user-name">{gym.gym_name || "-"}</div>
-                        {gym.address && (
+                        {(gym.address && gym.address !== '-' && gym.address !== 'N/A') ||
+                         (gym.street_address && gym.street_address !== '-') ||
+                         (gym.area && gym.area !== '-') ||
+                         (gym.city && gym.city !== '-') ||
+                         (gym.state && gym.state !== '-') ||
+                         (gym.pincode && gym.pincode !== '-') ? (
                           <FaInfoCircle
                             style={{
                               color: '#FF5757',
@@ -474,7 +479,7 @@ export default function GymStats() {
                             }}
                             title="View full address"
                           />
-                        )}
+                        ) : null}
                       </td>
                       <td>{gym.owner_name || "-"}</td>
                       <td>{gym.contact_number || "-"}</td>
@@ -618,6 +623,9 @@ export default function GymStats() {
                   <span style={{ color: '#888', fontSize: '13px' }}>Pincode: </span>
                   <span>{selectedGym.pincode}</span>
                 </div>
+              )}
+              {!selectedGym.street_address && !selectedGym.area && !selectedGym.city && !selectedGym.state && !selectedGym.pincode && (
+                <div style={{ color: '#888' }}>No address details available</div>
               )}
             </div>
             <button
