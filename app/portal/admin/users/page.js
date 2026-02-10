@@ -8,6 +8,8 @@ import {
   FaSortDown,
   FaChevronLeft,
   FaChevronRight,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 
 export default function Users() {
@@ -46,6 +48,10 @@ export default function Users() {
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   // Track if we've completed the initial mount phase
   const isInitialMount = useRef(true);
+  // Track expanded cards and their purchase data
+  const [expandedCards, setExpandedCards] = useState({});
+  const [purchasesData, setPurchasesData] = useState({});
+  const [loadingPurchases, setLoadingPurchases] = useState({});
 
   // Debounce search term
   useEffect(() => {
@@ -318,6 +324,100 @@ export default function Users() {
       month: "short",
       year: "numeric",
     });
+  };
+
+  // Fetch purchases for a specific user
+  const fetchUserPurchases = async (clientId) => {
+    // Return cached data if available
+    if (purchasesData[clientId]) {
+      return purchasesData[clientId];
+    }
+
+    setLoadingPurchases(prev => ({ ...prev, [clientId]: true }));
+
+    try {
+      const response = await axiosInstance.get(`/api/admin/users/${clientId}/last-purchases`);
+      if (response.data.success) {
+        const data = response.data.data;
+        setPurchasesData(prev => ({ ...prev, [clientId]: data }));
+        return data;
+      }
+    } catch (error) {
+      console.error(`Error fetching purchases for user ${clientId}:`, error);
+    } finally {
+      setLoadingPurchases(prev => ({ ...prev, [clientId]: false }));
+    }
+
+    return null;
+  };
+
+  // Toggle card expansion
+  const toggleCard = async (clientId) => {
+    const isCurrentlyExpanded = expandedCards[clientId];
+
+    if (isCurrentlyExpanded) {
+      // Collapse
+      setExpandedCards(prev => ({ ...prev, [clientId]: false }));
+    } else {
+      // Expand and fetch purchases if not already loaded
+      setExpandedCards(prev => ({ ...prev, [clientId]: true }));
+      if (!purchasesData[clientId]) {
+        await fetchUserPurchases(clientId);
+      }
+    }
+  };
+
+  // Render purchase item for dropdown
+  const renderPurchaseItem = (purchase, type) => {
+    if (!purchase) return null;
+
+    // Only show amount for subscription and membership types
+    const showAmount = type === "subscription" || type === "membership";
+
+    return (
+      <div
+        key={type}
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: "20px",
+          padding: "12px 16px",
+          backgroundColor: "#2a2a2a",
+          borderRadius: "8px",
+          border: "1px solid #333",
+          flex: "1 1 0",
+          minWidth: "0",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: "0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+            <span style={{ color: "#28a745", fontWeight: "600", fontSize: "14px" }}>
+              {purchase.type}
+            </span>
+            {purchase.gym_name && (
+              <>
+                <span style={{ color: "#666" }}>•</span>
+                <span style={{ color: "#ccc", fontSize: "13px" }}>{purchase.gym_name}</span>
+              </>
+            )}
+          </div>
+          <div style={{ fontSize: "12px", color: "#888" }}>
+            Last Purchase: {formatDate(purchase.purchase_date)}
+          </div>
+        </div>
+        {showAmount && purchase.amount_paid !== undefined && (
+          <div style={{ fontSize: "14px", fontWeight: "600", color: "#fff", flexShrink: 0 }}>
+            ₹{purchase.amount_paid?.toFixed(0) || 0}
+          </div>
+        )}
+        {showAmount && purchase.payable_rupees !== undefined && (
+          <div style={{ fontSize: "14px", fontWeight: "600", color: "#fff", flexShrink: 0 }}>
+            ₹{purchase.payable_rupees?.toFixed(0) || 0}
+          </div>
+        )}
+      </div>
+    );
   };
 
   const handleExportClick = () => {
@@ -978,94 +1078,156 @@ export default function Users() {
         </div>
       </div>
 
-      {/* Table Section */}
+      {/* Cards Section */}
       <div className="table-container">
-        <div className="table-responsive">
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Gym Name</th>
-                <th>Plan</th>
-                <th>Last Purchase Date</th>
-                <th>Purchase Details</th>
-                <th>Joined Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.length > 0 ? (
-                users.map((user) => (
-                  <tr
-                    key={user.client_id}
-                    onClick={() => {
-                      // Save current state before navigating
-                      const currentState = {
-                        searchTerm,
-                        planFilter,
-                        dateFilter,
-                        customStartDate,
-                        customEndDate,
-                        sortOrder,
-                        currentPage,
-                        itemsPerPage,
-                        isReturning: true
-                      };
-                      sessionStorage.setItem('usersListState', JSON.stringify(currentState));
-                      router.push(`/portal/admin/users/${user.client_id}`);
+        {/* Table Header */}
+        <div className="users-table-header">
+          <div className="table-header-cell table-col-name">Name</div>
+          <div className="table-header-cell table-col-gym">Gym</div>
+          <div className="table-header-cell table-col-plan">Plan</div>
+          <div className="table-header-cell table-col-joined">Joined Date</div>
+          <div className="table-header-cell table-col-action"></div>
+        </div>
+
+        {/* Table Body */}
+        <div className="users-table-body">
+          {users.length > 0 ? (
+            users.map((user) => (
+              <div key={user.client_id} className="user-table-row">
+                {/* Name Column */}
+                <div
+                  className="table-cell table-col-name"
+                  data-label="Name"
+                  onClick={() => {
+                    const currentState = {
+                      searchTerm,
+                      planFilter,
+                      dateFilter,
+                      customStartDate,
+                      customEndDate,
+                      sortOrder,
+                      currentPage,
+                      itemsPerPage,
+                      isReturning: true
+                    };
+                    sessionStorage.setItem('usersListState', JSON.stringify(currentState));
+                    router.push(`/portal/admin/users/${user.client_id}`);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="user-name">{user.name || "-"}</div>
+                  <div className="user-contact">{user.contact || "-"}</div>
+                </div>
+
+                {/* Gym Column */}
+                <div className="table-cell table-col-gym" data-label="Gym">
+                  <div className="cell-value">{user.gym_name || "-"}</div>
+                </div>
+
+                {/* Plan Column */}
+                <div className="table-cell table-col-plan" data-label="Plan">
+                  <span
+                    className="plan-badge"
+                    style={{
+                      color: user.plan_name ? "#FFFFFF" : "red",
+                      backgroundColor: user.plan_name
+                        ? "rgba(79, 140, 79, 0.1)"
+                        : "rgba(255, 0, 0, 0.1)",
+                      borderColor: user.plan_name ? "green" : "red",
                     }}
-                    style={{ cursor: "pointer" }}
                   >
-                    <td>
-                      <div className="user-name">{user.name || "-"}</div>
-                    </td>
-                    <td>{user.contact || "-"}</td>
-                    <td>{user.gym_name || "-"}</td>
-                    <td>
-                      <span
-                        className="plan-badge"
+                    {user.plan_name || "No"}
+                  </span>
+                </div>
+
+                {/* Joined Date Column */}
+                <div className="table-cell table-col-joined" data-label="Joined Date">
+                  <div className="cell-value">{formatDate(user.created_at)}</div>
+                </div>
+
+                {/* Action Column */}
+                <div className="table-cell table-col-action" data-label="">
+                  <button
+                    className="toggle-button"
+                    onClick={() => toggleCard(user.client_id)}
+                  >
+                    {expandedCards[user.client_id] ? (
+                      <FaChevronUp />
+                    ) : (
+                      <FaChevronDown />
+                    )}
+                  </button>
+                </div>
+
+                {/* Dropdown Content - Purchase Details */}
+                {expandedCards[user.client_id] && (
+                  <div className="user-row-dropdown">
+                    {loadingPurchases[user.client_id] ? (
+                      <div
                         style={{
-                          color: user.plan_name ? "#FFFFFF" : "red",
-                          backgroundColor: user.plan_name
-                            ? "rgba(79, 140, 79, 0.1)"
-                            : "rgba(255, 0, 0, 0.1)",
-                          borderColor: user.plan_name ? "green" : "red",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          padding: "20px",
                         }}
                       >
-                        {user.plan_name || "No"}
-                      </span>
-                    </td>
-                    <td>{formatDate(user.last_purchase_date)}</td>
-                    <td>
-                      {user.purchase_source_type ? (
-                        user.purchase_source_type === "Subscription" ? (
-                          <span style={{ color: "#28a745", fontWeight: "500" }}>
-                            Subscription
-                          </span>
-                        ) : (
-                          <>
-                            {user.purchase_gym_name || "Unknown"}{" "}
-                            <span style={{ color: "#28a745", fontWeight: "500" }}>
-                              {user.purchase_source_type}
-                            </span>
-                          </>
-                        )
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td>{formatDate(user.created_at)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="no-data">
-                    No users found matching your criteria
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                        <div
+                          style={{
+                            width: "24px",
+                            height: "24px",
+                            border: "3px solid #3a3a3a",
+                            borderTop: "3px solid #FF5757",
+                            borderRadius: "50%",
+                            animation: "spin 1s linear infinite",
+                          }}
+                        />
+                      </div>
+                    ) : purchasesData[user.client_id] ? (
+                      <div className="purchases-list">
+                        <div style={{ marginBottom: "12px", fontSize: "14px", color: "#888", fontWeight: "500" }}>
+                          Purchase Details
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "row", gap: "12px", flexWrap: "wrap" }}>
+                          {renderPurchaseItem(purchasesData[user.client_id].daily_pass, "daily_pass")}
+                          {renderPurchaseItem(purchasesData[user.client_id].session, "session")}
+                          {renderPurchaseItem(purchasesData[user.client_id].membership, "membership")}
+                          {renderPurchaseItem(purchasesData[user.client_id].subscription, "subscription")}
+                        </div>
+                        {!purchasesData[user.client_id].daily_pass &&
+                          !purchasesData[user.client_id].session &&
+                          !purchasesData[user.client_id].membership &&
+                          !purchasesData[user.client_id].subscription && (
+                          <div
+                            style={{
+                              padding: "20px",
+                              textAlign: "center",
+                              color: "#666",
+                              fontSize: "14px",
+                            }}
+                          >
+                            No purchase history found
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          padding: "20px",
+                          textAlign: "center",
+                          color: "#666",
+                          fontSize: "14px",
+                        }}
+                      >
+                        Failed to load purchase details
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="no-data">No users found matching your criteria</div>
+          )}
         </div>
       </div>
 
