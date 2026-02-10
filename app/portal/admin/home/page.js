@@ -73,6 +73,9 @@ export default function Home() {
     recurringSubscribers: {
       total: 0,
     },
+    rewardProgram: {
+      totalParticipants: 0,
+    },
   });
 
   useEffect(() => {
@@ -1030,35 +1033,23 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Fymble Rewards Section */}
+      {/* Reward Program Participants Section */}
       <div className="section-container">
         <h3 className="section-heading">
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> Rewards
+          <span style={{ color: "#FF5757" }}>Reward Program</span> Participants
         </h3>
         <div className="row g-4">
-          {/* Modal Shown Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div className="dashboard-card">
               <div className="card-header-custom extra-space">
-                <h6 className="card-title">Modal Shown</h6>
+                <h6 className="card-title">Total Participants</h6>
               </div>
               <div className="card-body-custom">
                 <div className="metric-number">
-                  {dashboardData.rewards.total || 0}
+                  {dashboardData.rewardProgram?.totalParticipants ?? 0}
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Interest Shown Card */}
-          <div className="col-xl-4 col-lg-6 col-md-6">
-            <div className="dashboard-card">
-              <div className="card-header-custom extra-space">
-                <h6 className="card-title">Interest Shown</h6>
-              </div>
-              <div className="card-body-custom">
-                <div className="metric-number">
-                  {dashboardData.rewards.interested || 0}
+                <div className="metric-description">
+                  Reward program opt-ins
                 </div>
               </div>
             </div>
