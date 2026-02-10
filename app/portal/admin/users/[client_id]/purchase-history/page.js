@@ -1,13 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { FaDownload } from "react-icons/fa";
 import axiosInstance from "@/lib/axios";
 import * as XLSX from "xlsx";
 
 export default function PurchaseHistory() {
   const params = useParams();
-  const router = useRouter();
   const clientId = params.client_id;
 
   const [loading, setLoading] = useState(true);
@@ -239,24 +238,6 @@ export default function PurchaseHistory() {
     <div className="purchase-history-container">
       {/* Header */}
       <div className="purchase-history-header">
-        <button
-          onClick={() => router.push(`/portal/admin/users/${clientId}`)}
-          style={{
-            background: "transparent",
-            border: "1px solid #444",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "13px",
-            fontWeight: "500",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-          }}
-        >
-          ← Back to Client
-        </button>
         <h2 className="purchase-history-title">
           <span style={{ color: "#FF5757" }}>Purchase</span> History
         </h2>

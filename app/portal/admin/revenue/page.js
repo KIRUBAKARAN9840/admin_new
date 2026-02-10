@@ -182,7 +182,7 @@ export default function RevenueAnalytics() {
             style={{
               background: "transparent",
               border: "1px solid #FF5757",
-              color: "#FF5757",
+              color: "#ffffff",
               padding: "8px 16px",
               borderRadius: "6px",
               cursor: "pointer",
@@ -192,7 +192,7 @@ export default function RevenueAnalytics() {
             onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(255, 87, 87, 0.1)"}
             onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
           >
-            ← Back to Dashboard
+            ←
           </button>
           <h1 style={{ fontSize: "28px", fontWeight: "600", margin: 0 }}>Total Revenue Analytics</h1>
         </div>
