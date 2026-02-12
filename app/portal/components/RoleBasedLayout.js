@@ -60,6 +60,11 @@ export default function RoleBasedLayout({ children }) {
             path: "/portal/admin/telecaller-managers",
           },
           {
+            name: "User Conversion",
+            icon: HiOutlineChartBar,
+            path: "/portal/admin/user-conversion",
+          },
+          {
             name: "Purchases",
             icon: HiOutlineCurrencyDollar,
             path: "/portal/admin/purchases",
