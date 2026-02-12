@@ -9,8 +9,6 @@ export default function Home() {
   const [fittbotTotalUsersFilter, setFittbotTotalUsersFilter] =
     useState("month");
   const [fittbotRevenueFilter, setFittbotRevenueFilter] = useState("month");
-  const [fittbotSubscribedUsersFilter, setFittbotSubscribedUsersFilter] =
-    useState("month");
   const [businessGymOwnersFilter, setBusinessGymOwnersFilter] =
     useState("month");
   const [businessGymsFilter, setBusinessGymsFilter] = useState("month");
@@ -23,12 +21,11 @@ export default function Home() {
     show: false,
     startDate: "",
     endDate: "",
-    activeMetric: null, // 'totalUsers' | 'revenue' | 'subscribedUsers' | 'gymOwners' | 'gyms'
+    activeMetric: null, // 'totalUsers' | 'revenue' | 'gymOwners' | 'gyms'
   });
   const [customRangeData, setCustomRangeData] = useState({
     totalUsers: { value: 0, applied: false, startDate: "", endDate: "" },
     revenue: { value: "₹0", applied: false, startDate: "", endDate: "" },
-    subscribedUsers: { value: 0, applied: false, startDate: "", endDate: "" },
     gymOwners: { value: 0, applied: false, startDate: "", endDate: "" },
     gyms: { value: 0, applied: false, startDate: "", endDate: "" },
   });
@@ -92,7 +89,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [fittbotTotalUsersFilter, fittbotRevenueFilter, fittbotSubscribedUsersFilter, businessGymOwnersFilter, businessGymsFilter, customRangeData.gymOwners.applied, customRangeData.gyms.applied]);
+  }, [fittbotTotalUsersFilter, fittbotRevenueFilter, businessGymOwnersFilter, businessGymsFilter, customRangeData.gymOwners.applied, customRangeData.gyms.applied]);
 
   const fetchDashboardData = async () => {
     try {
@@ -183,13 +180,6 @@ export default function Home() {
           responseKey: "revenue",
           dataSection: "fittbot",
           filterSetter: setFittbotRevenueFilter,
-          apiFilter: "fittbot_filter",
-        },
-        subscribedUsers: {
-          filterKey: "subscribedUsers",
-          responseKey: "subscribedUsers",
-          dataSection: "fittbot",
-          filterSetter: setFittbotSubscribedUsersFilter,
           apiFilter: "fittbot_filter",
         },
         gymOwners: {
@@ -518,7 +508,7 @@ export default function Home() {
       {/* Fittbot Section */}
       <div className="section-container">
         <h5 className="section-heading">
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span>
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span>
         </h5>
         <div className="row g-4">
           {/* Total Users Card */}
@@ -625,55 +615,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Subscribed Users Card */}
-          <div className="col-xl-4 col-lg-6 col-md-6">
-            <div className="dashboard-card">
-              <div className="card-header-custom">
-                <h6 className="card-title">Subscribed Users</h6>
-                <select
-                  className="filter-dropdown"
-                  value={fittbotSubscribedUsersFilter}
-                  onChange={(e) => {
-                    // Clear any pending blur timeout
-                    if (selectBlurTimeoutRef.current) {
-                      clearTimeout(selectBlurTimeoutRef.current);
-                      selectBlurTimeoutRef.current = null;
-                    }
-
-                    const value = e.target.value;
-                    if (value === "custom") {
-                      setFittbotSubscribedUsersFilter("custom");
-                      openCustomDateModal("subscribedUsers");
-                    } else {
-                      setFittbotSubscribedUsersFilter(value);
-                      setCustomRangeData(prev => ({
-                        ...prev,
-                        subscribedUsers: { value: 0, applied: false, startDate: "", endDate: "" }
-                      }));
-                    }
-                  }}
-                  onFocus={handleSelectFocus}
-                  onBlur={(e) => handleSelectBlur(e, "subscribedUsers")}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <option value="today">Today</option>
-                  <option value="week">Last 7 days</option>
-                  <option value="month">Last 30 days</option>
-                  <option value="overall">Overall</option>
-                  <option value="custom">Custom Range</option>
-                </select>
-              </div>
-              <div className="card-body-custom">
-                <div className="metric-number">
-                  {fittbotSubscribedUsersFilter === "custom" && customRangeData.subscribedUsers.applied
-                    ? customRangeData.subscribedUsers.value
-                    : dashboardData.fittbot.subscribedUsers[
-                        fittbotSubscribedUsersFilter
-                      ]}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -681,7 +622,7 @@ export default function Home() {
       <div className="section-container">
         <h3 className="section-heading">
           {" "}
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> Business
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Business
         </h3>
         <div className="row g-4">
           {/* Gym Owners Card */}
@@ -793,7 +734,7 @@ export default function Home() {
       {/* Plans Section */}
       <div className="section-container">
         <h3 className="section-heading">
-          <span style={{ color: "#FF5757" }}>Plans</span>
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Subscriptions
         </h3>
         <div className="row g-4">
           {/* Free Trial Card */}

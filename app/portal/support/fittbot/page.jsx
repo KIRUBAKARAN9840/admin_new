@@ -402,7 +402,7 @@ const FittbotTicketsPage = () => {
       {/* Support Tickets Section */}
       <div className="section-container">
         <h3 className="section-heading">
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> Support Tickets
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Support Tickets
         </h3>
         <div className="row g-4">
           <div className="col-xl-3 col-lg-6 col-md-6">

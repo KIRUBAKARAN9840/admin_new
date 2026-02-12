@@ -453,7 +453,7 @@ export default function Shipments() {
     <div className="users-container" style={{ backgroundColor: "#121717" }}>
       <div className="users-header">
         <h2 className="users-title">
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> XPAD Shipments
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> XPAD Shipments
           {gymFromUrl && (
             <span
               style={{ fontSize: "14px", color: "#666", marginLeft: "10px" }}

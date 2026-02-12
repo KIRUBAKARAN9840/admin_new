@@ -528,7 +528,7 @@ export default function Users() {
       <div className="users-container">
         <div className="users-header">
           <h2 className="users-title">
-            <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> Users
+            <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Users
           </h2>
         </div>
         <div
@@ -805,7 +805,7 @@ export default function Users() {
 
       <div className="users-header">
         <h2 className="users-title">
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> Users
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Users
           {gymFromUrl && (
             <span
               style={{ fontSize: "14px", color: "#666", marginLeft: "10px" }}

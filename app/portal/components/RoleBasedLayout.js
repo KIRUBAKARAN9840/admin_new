@@ -363,7 +363,7 @@ export default function RoleBasedLayout({ children }) {
               <span
                 style={{ fontWeight: "600", fontSize: "24px", color: "white" }}
               >
-                <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span>
+                <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span>
               </span>
             </div>
           )}
@@ -477,7 +477,7 @@ export default function RoleBasedLayout({ children }) {
                   margin: "4px 0 0 0",
                 }}
               >
-                Welcome to <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span>{" "}
+                Welcome to <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span>{" "}
                 {userInfo.dashboardType}
               </p>
             </div>

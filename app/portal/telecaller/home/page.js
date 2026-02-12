@@ -18,7 +18,7 @@ const Home = () => {
       {/* Fittbot Section */}
       <div className="section-container">
         <h5 className="section-heading">
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span>
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span>
         </h5>
         <div className="row g-4">
           {/* Total Users Card */}

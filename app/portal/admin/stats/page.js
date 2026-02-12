@@ -209,7 +209,7 @@ export default function GymStats() {
       <div className="users-container">
         <div className="users-header">
           <h2 className="users-title">
-            <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> Business Users
+            <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Business Users
           </h2>
         </div>
         <div
@@ -244,7 +244,7 @@ export default function GymStats() {
     <div className="users-container">
       <div className="users-header">
         <h2 className="users-title">
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> Business Users
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Business Users
         </h2>
         <div className="users-count">Total: {totalGyms} gyms</div>
       </div>

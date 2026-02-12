@@ -319,7 +319,7 @@ const Employees = () => {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h2 className="mb-1" style={{ color: "#ffffff" }}>
-                <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#4a6fa5" }}>mble</span> Employees
+                <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Employees
               </h2>
               <div style={{ color: "#888" }}>
                 Total: {filteredAndSortedEmployees.length} employees
