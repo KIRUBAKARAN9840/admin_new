@@ -127,6 +127,11 @@ export default function GymStats() {
         params.has_daily_pass = true;
       }
 
+      // Add registered users filter
+      if (registeredUsersFilter) {
+        params.registered_users_filter = registeredUsersFilter;
+      }
+
       const response = await axiosInstance.get("/api/admin/gym-stats", { params });
 
       if (response.data.success) {
@@ -138,7 +143,7 @@ export default function GymStats() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, sortOrder, currentPage, itemsPerPage, planTypeFilters]);
+  }, [debouncedSearchTerm, sortOrder, currentPage, itemsPerPage, planTypeFilters, registeredUsersFilter]);
 
   // Fetch gyms when filters change
   useEffect(() => {
