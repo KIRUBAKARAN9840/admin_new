@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
-import { FaDownload } from "react-icons/fa";
+import { useParams, useRouter } from "next/navigation";
+import { FaDownload, FaChevronLeft } from "react-icons/fa";
 import axiosInstance from "@/lib/axios";
 import * as XLSX from "xlsx";
 
 export default function PurchaseHistory() {
   const params = useParams();
+  const router = useRouter();
   const clientId = params.client_id;
 
   const [loading, setLoading] = useState(true);
@@ -238,7 +239,27 @@ export default function PurchaseHistory() {
     <div className="purchase-history-container">
       {/* Header */}
       <div className="purchase-history-header">
-        <h2 className="purchase-history-title">
+        <button
+          className="back-button"
+          onClick={() => router.back()}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#FF5757",
+            fontSize: "0.9rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.5rem 0",
+            transition: "color 0.2s ease",
+          }}
+          onMouseEnter={(e) => e.target.style.color = "#ff4545"}
+          onMouseLeave={(e) => e.target.style.color = "#FF5757"}
+        >
+          <FaChevronLeft size={16} />
+        </button>
+        <h2 className="purchase-history-title" style={{ margin: 0, marginLeft: "1rem" }}>
           <span style={{ color: "#FF5757" }}>Purchase</span> History
         </h2>
         <button

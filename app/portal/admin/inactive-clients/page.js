@@ -167,7 +167,28 @@ export default function InactiveClients() {
   return (
     <div className="users-container">
       <div className="users-header">
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <button
+          className="back-button"
+          onClick={() => router.back()}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#FF5757",
+            fontSize: "0.9rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.5rem 0",
+            transition: "color 0.2s ease",
+          }}
+          onMouseEnter={(e) => e.target.style.color = "#ff4545"}
+          onMouseLeave={(e) => e.target.style.color = "#FF5757"}
+        >
+          <FaChevronLeft size={16} />
+          Back
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginLeft: "1rem" }}>
           <h2 className="users-title" style={{ margin: 0 }}>
             <span style={{ color: "#FF5757" }}>I</span>nactive Clients
           </h2>

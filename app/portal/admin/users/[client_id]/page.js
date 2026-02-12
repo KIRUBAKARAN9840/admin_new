@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-import { FaInfoCircle } from "react-icons/fa";
+import { FaInfoCircle, FaChevronLeft } from "react-icons/fa";
 
 export default function ClientDetail() {
   const params = useParams();
@@ -108,7 +108,28 @@ export default function ClientDetail() {
     <div className="client-detail-container">
       {/* Header Section */}
       <div className="client-detail-header">
-        <h2 className="client-detail-title">
+        <button
+          className="back-button"
+          
+          onClick={() => router.back()}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#FF5757",
+            fontSize: "0.9rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.5rem 0",
+            transition: "color 0.2s ease",
+          }}
+          onMouseEnter={(e) => e.target.style.color = "#ff4545"}
+          onMouseLeave={(e) => e.target.style.color = "#FF5757"}
+        >
+          <FaChevronLeft size={16} />
+        </button>
+        <h2 className="client-detail-title" style={{ margin: 0 }}>
           <span style={{ color: "#FF5757" }}>Client</span> Details
         </h2>
       </div>
