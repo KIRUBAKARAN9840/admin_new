@@ -357,7 +357,10 @@ export default function TelecallerConvertedClients() {
                   rows.push(
                     <tr
                       key={clientId}
-                      style={{ cursor: "default" }}
+                      onClick={() => router.push(`/portal/admin/users/${clientId}`)}
+                      style={{ cursor: "pointer" }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1f1f"}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                     >
                       <td>
                         <div className="user-name">{client.name || "-"}</div>
@@ -385,7 +388,10 @@ export default function TelecallerConvertedClients() {
                       <td>
                         <button
                           className="toggle-button"
-                          onClick={() => toggleCard(clientId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCard(clientId);
+                          }}
                         >
                           {expandedCards[clientId] ? <FaChevronUp /> : <FaChevronDown />}
                         </button>

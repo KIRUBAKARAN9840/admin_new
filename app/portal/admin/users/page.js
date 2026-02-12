@@ -1093,28 +1093,30 @@ export default function Users() {
         <div className="users-table-body">
           {users.length > 0 ? (
             users.map((user) => (
-              <div key={user.client_id} className="user-table-row">
+              <div
+                key={user.client_id}
+                className="user-table-row"
+                onClick={() => {
+                  const currentState = {
+                    searchTerm,
+                    planFilter,
+                    dateFilter,
+                    customStartDate,
+                    customEndDate,
+                    sortOrder,
+                    currentPage,
+                    itemsPerPage,
+                    isReturning: true
+                  };
+                  sessionStorage.setItem('usersListState', JSON.stringify(currentState));
+                  router.push(`/portal/admin/users/${user.client_id}`);
+                }}
+                style={{ cursor: "pointer" }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1a1f1f"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+              >
                 {/* Name Column */}
-                <div
-                  className="table-cell table-col-name"
-                  data-label="Name"
-                  onClick={() => {
-                    const currentState = {
-                      searchTerm,
-                      planFilter,
-                      dateFilter,
-                      customStartDate,
-                      customEndDate,
-                      sortOrder,
-                      currentPage,
-                      itemsPerPage,
-                      isReturning: true
-                    };
-                    sessionStorage.setItem('usersListState', JSON.stringify(currentState));
-                    router.push(`/portal/admin/users/${user.client_id}`);
-                  }}
-                  style={{ cursor: "pointer" }}
-                >
+                <div className="table-cell table-col-name" data-label="Name">
                   <div className="user-name">{user.name || "-"}</div>
                   <div className="user-contact">{user.contact || "-"}</div>
                 </div>
@@ -1149,7 +1151,10 @@ export default function Users() {
                 <div className="table-cell table-col-action" data-label="">
                   <button
                     className="toggle-button"
-                    onClick={() => toggleCard(user.client_id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleCard(user.client_id);
+                    }}
                   >
                     {expandedCards[user.client_id] ? (
                       <FaChevronUp />
