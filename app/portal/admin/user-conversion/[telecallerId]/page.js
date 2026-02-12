@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-import { FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaSearch, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 export default function TelecallerConvertedClients() {
   const router = useRouter();
@@ -17,6 +17,11 @@ export default function TelecallerConvertedClients() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalClients, setTotalClients] = useState(0);
+
+  // Track expanded cards and their purchase data
+  const [expandedCards, setExpandedCards] = useState({});
+  const [purchasesData, setPurchasesData] = useState({});
+  const [loadingPurchases, setLoadingPurchases] = useState({});
 
   // Debounce search term
   useEffect(() => {
@@ -58,6 +63,45 @@ export default function TelecallerConvertedClients() {
     }
   }, [telecallerId, currentPage, itemsPerPage, debouncedSearchTerm]);
 
+  // Fetch purchase history for a client
+  const fetchPurchases = async (clientId) => {
+    try {
+      setLoadingPurchases((prev) => ({ ...prev, [clientId]: true }));
+
+      const response = await axiosInstance.get(`/api/admin/users/${clientId}/last-purchases`);
+
+      if (response.data.success) {
+        const data = response.data.data;
+        setPurchasesData((prev) => ({ ...prev, [clientId]: data }));
+        return data;
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`Error fetching purchases for client ${clientId}:`, error);
+      return null;
+    } finally {
+      setLoadingPurchases((prev) => ({ ...prev, [clientId]: false }));
+    }
+  };
+
+  // Toggle card expansion
+  const toggleCard = async (clientId) => {
+    const isCurrentlyExpanded = expandedCards[clientId];
+
+    if (isCurrentlyExpanded) {
+      // Collapse
+      setExpandedCards((prev) => ({ ...prev, [clientId]: false }));
+    } else {
+      // Expand - fetch purchases if not already loaded
+      setExpandedCards((prev) => ({ ...prev, [clientId]: true }));
+
+      if (!purchasesData[clientId]) {
+        await fetchPurchases(clientId);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchClients();
   }, [fetchClients]);
@@ -73,6 +117,59 @@ export default function TelecallerConvertedClients() {
       month: "short",
       year: "numeric",
     });
+  };
+
+  // Render purchase item for dropdown
+  const renderPurchaseItem = (purchase, type) => {
+    if (!purchase) return null;
+
+    // Only show amount for subscription and membership types
+    const showAmount = type === "subscription" || type === "membership";
+
+    return (
+      <div
+        key={type}
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: "20px",
+          padding: "12px 16px",
+          backgroundColor: "#2a2a2a",
+          borderRadius: "8px",
+          border: "1px solid #333",
+          flex: "1 1 0",
+          minWidth: "0",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: "0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+            <span style={{ color: "#28a745", fontWeight: "600", fontSize: "14px" }}>
+              {purchase.type}
+            </span>
+            {purchase.gym_name && (
+              <>
+                <span style={{ color: "#666" }}>•</span>
+                <span style={{ color: "#ccc", fontSize: "13px" }}>{purchase.gym_name}</span>
+              </>
+            )}
+          </div>
+          <div style={{ fontSize: "12px", color: "#888" }}>
+            Last Purchase: {formatDate(purchase.purchase_date)}
+          </div>
+        </div>
+        {showAmount && purchase.amount_paid !== undefined && (
+          <div style={{ fontSize: "14px", fontWeight: "600", color: "#fff", flexShrink: 0 }}>
+            ₹{purchase.amount_paid?.toFixed(0) || 0}
+          </div>
+        )}
+        {showAmount && purchase.payable_rupees !== undefined && (
+          <div style={{ fontSize: "14px", fontWeight: "600", color: "#fff", flexShrink: 0 }}>
+            ₹{purchase.payable_rupees?.toFixed(0) || 0}
+          </div>
+        )}
+      </div>
+    );
   };
 
   const totalPages = Math.ceil(totalClients / itemsPerPage);
@@ -159,12 +256,6 @@ export default function TelecallerConvertedClients() {
             <p style={{ fontSize: "14px", color: "#ccc" }}>Loading clients...</p>
           </div>
         </div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     );
   }
@@ -185,8 +276,8 @@ export default function TelecallerConvertedClients() {
             fontSize: "14px",
             transition: "color 0.2s",
           }}
-          onMouseEnter={(e) => e.target.style.color = "#fff"}
-          onMouseLeave={(e) => e.target.style.color = "#9ca3af"}
+          onMouseEnter={(e) => (e.target.style.color = "#fff")}
+          onMouseLeave={(e) => (e.target.style.color = "#9ca3af")}
         >
           <FaChevronLeft /> Back to Telecallers
         </button>
@@ -254,40 +345,128 @@ export default function TelecallerConvertedClients() {
                 <th>Gym</th>
                 <th>Purchased Plan</th>
                 <th>Converted Date</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {clients.length > 0 ? (
-                clients.map((client) => (
-                  <tr key={client.conversion_id}>
-                    <td>
-                      <div className="user-name">{client.name || "-"}</div>
-                      {client.email && (
-                        <div className="user-contact" style={{ fontSize: "12px", color: "#888" }}>
-                          {client.email}
-                        </div>
-                      )}
-                    </td>
-                    <td>{client.contact || "-"}</td>
-                    <td>{client.gym_name || "-"}</td>
-                    <td>
-                      <span
-                        className="plan-badge"
-                        style={{
-                          backgroundColor: client.purchased_plan ? "rgba(79, 140, 79, 0.1)" : "rgba(255, 0, 0, 0.1)",
-                          borderColor: client.purchased_plan ? "green" : "red",
-                          color: client.purchased_plan ? "#4ade80" : "#ef4444",
-                        }}
+                clients.map((client) => {
+                  const clientId = client.client_id;
+                  const rows = [];
+
+                  rows.push(
+                    <tr
+                      key={clientId}
+                      style={{ cursor: "default" }}
+                    >
+                      <td>
+                        <div className="user-name">{client.name || "-"}</div>
+                        {client.email && (
+                          <div className="user-contact" style={{ fontSize: "12px", color: "#888" }}>
+                            {client.email}
+                          </div>
+                        )}
+                      </td>
+                      <td>{client.contact || "-"}</td>
+                      <td>{client.gym_name || "-"}</td>
+                      <td>
+                        <span
+                          className="plan-badge"
+                          style={{
+                            backgroundColor: client.purchased_plan ? "rgba(79, 140, 79, 0.1)" : "rgba(255, 0, 0, 0.1)",
+                            borderColor: client.purchased_plan ? "green" : "red",
+                            color: client.purchased_plan ? "#4ade80" : "#ef4444",
+                          }}
+                        >
+                          {client.purchased_plan || "No Plan"}
+                        </span>
+                      </td>
+                      <td>{formatDate(client.converted_at)}</td>
+                      <td>
+                        <button
+                          className="toggle-button"
+                          onClick={() => toggleCard(clientId)}
+                        >
+                          {expandedCards[clientId] ? <FaChevronUp /> : <FaChevronDown />}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+
+                  if (expandedCards[clientId]) {
+                    rows.push(
+                      <tr
+                        key={`dropdown-${clientId}`}
+                        style={{ cursor: "default" }}
                       >
-                        {client.purchased_plan || "No Plan"}
-                      </span>
-                    </td>
-                    <td>{formatDate(client.converted_at)}</td>
-                  </tr>
-                ))
+                        <td
+                          colSpan="6"
+                          style={{
+                            padding: "0",
+                            border: "none",
+                            backgroundColor: "#1a1f1f",
+                          }}
+                        >
+                          <div className="user-row-dropdown">
+                            {loadingPurchases[clientId] ? (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                  padding: "20px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: "24px",
+                                    height: "24px",
+                                    border: "3px solid #3a3a3a",
+                                    borderTop: "3px solid #FF5757",
+                                    borderRadius: "50%",
+                                    animation: "spin 1s linear infinite",
+                                  }}
+                                />
+                              </div>
+                            ) : purchasesData[clientId] ? (
+                              <div className="purchases-list">
+                                <div style={{ marginBottom: "12px", fontSize: "14px", color: "#888", fontWeight: "500" }}>
+                                  Purchase Details
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "row", gap: "12px", flexWrap: "wrap" }}>
+                                  {renderPurchaseItem(purchasesData[clientId].daily_pass, "daily_pass")}
+                                  {renderPurchaseItem(purchasesData[clientId].session, "session")}
+                                  {renderPurchaseItem(purchasesData[clientId].membership, "membership")}
+                                  {renderPurchaseItem(purchasesData[clientId].subscription, "subscription")}
+                                </div>
+                                {!purchasesData[clientId].daily_pass &&
+                                  !purchasesData[clientId].session &&
+                                  !purchasesData[clientId].membership &&
+                                  !purchasesData[clientId].subscription && (
+                                    <div
+                                      style={{
+                                        padding: "20px",
+                                        textAlign: "center",
+                                        color: "#666",
+                                        fontSize: "14px",
+                                      }}
+                                    >
+                                      No purchase history found
+                                    </div>
+                                  )}
+                              </div>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return rows;
+                })
               ) : (
                 <tr>
-                  <td colSpan="5" className="no-data">
+                  <td colSpan="6" className="no-data">
                     No converted clients found
                   </td>
                 </tr>
@@ -318,9 +497,7 @@ export default function TelecallerConvertedClients() {
             {getPaginationNumbers().map((page, index) => (
               <button
                 key={index}
-                className={`pagination-btn ${page === currentPage ? "active" : ""} ${
-                  page === "..." ? "dots" : ""
-                }`}
+                className={`pagination-btn ${page === currentPage ? "active" : ""} ${page === "..." ? "dots" : ""}`}
                 onClick={() => typeof page === "number" && setCurrentPage(page)}
                 disabled={page === "..."}
               >
