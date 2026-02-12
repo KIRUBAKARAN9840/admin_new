@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 
 export default function UserConversion() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [telecallers, setTelecallers] = useState([]);
 
@@ -24,6 +26,10 @@ export default function UserConversion() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTelecallerClick = (telecallerId) => {
+    router.push(`/portal/admin/user-conversion/${telecallerId}`);
   };
 
   if (loading) {
@@ -85,7 +91,20 @@ export default function UserConversion() {
             <tbody>
               {telecallers.length > 0 ? (
                 telecallers.map((telecaller) => (
-                  <tr key={telecaller.id}>
+                  <tr
+                    key={telecaller.id}
+                    onClick={() => handleTelecallerClick(telecaller.id)}
+                    style={{
+                      cursor: "pointer",
+                      transition: "background-color 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#1a1f1f";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  >
                     <td>{telecaller.name || "-"}</td>
                     <td>{telecaller.mobile_number || "-"}</td>
                     <td>
