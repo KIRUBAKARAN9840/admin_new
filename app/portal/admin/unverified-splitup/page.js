@@ -450,8 +450,47 @@ export default function UnverifiedSplitup() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  Plans
+                  Daily Pass
                 </th>
+                <th
+                  style={{
+                    padding: "16px",
+                    textAlign: "center",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: "#ccc",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Session
+                </th>
+                <th
+                  style={{
+                    padding: "16px",
+                    textAlign: "center",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: "#ccc",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Membership
+                </th>
+                {/* <th
+                  style={{
+                    padding: "16px",
+                    textAlign: "center",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: "#ccc",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Plans
+                </th> */}
                 <th
                   style={{
                     padding: "16px",
@@ -484,7 +523,7 @@ export default function UnverifiedSplitup() {
               {gyms.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="7"
                     style={{
                       padding: "60px",
                       textAlign: "center",
@@ -540,6 +579,42 @@ export default function UnverifiedSplitup() {
                         textAlign: "center",
                       }}
                     >
+                      {gym.has_daily_pass ? (
+                        <FaCheckCircle size={18} style={{ color: "#4ade80" }} />
+                      ) : (
+                        <FaTimes size={18} style={{ color: "#f87171" }} />
+                      )}
+                    </td>
+                    <td
+                      style={{
+                        padding: "16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {gym.has_session ? (
+                        <FaCheckCircle size={18} style={{ color: "#4ade80" }} />
+                      ) : (
+                        <FaTimes size={18} style={{ color: "#f87171" }} />
+                      )}
+                    </td>
+                    <td
+                      style={{
+                        padding: "16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {gym.has_membership ? (
+                        <FaCheckCircle size={18} style={{ color: "#4ade80" }} />
+                      ) : (
+                        <FaTimes size={18} style={{ color: "#f87171" }} />
+                      )}
+                    </td>
+                    {/* <td
+                      style={{
+                        padding: "16px",
+                        textAlign: "center",
+                      }}
+                    >
                       <button
                         onClick={() => handlePlansClick(gym)}
                         style={{
@@ -570,7 +645,7 @@ export default function UnverifiedSplitup() {
                           ? `${gym.plans_completion_score}%`
                           : "Plans"}
                       </button>
-                    </td>
+                    </td> */}
                     <td
                       style={{
                         padding: "16px",
