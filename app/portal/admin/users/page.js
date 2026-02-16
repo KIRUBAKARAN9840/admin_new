@@ -190,7 +190,7 @@ export default function Users() {
       try {
         const state = JSON.parse(savedState);
         if (state.isReturning) {
-          console.log("[Users] Restoring state from session storage");
+          // console.log("[Users] Restoring state from session storage");
 
           // Restore all state in a batch
           const restoredSearchTerm = state.searchTerm || gymFromUrl;

@@ -209,8 +209,6 @@ export default function PurchaseHistory() {
       const subscriptionWorksheet = XLSX.utils.json_to_sheet(
         subscriptionData.map((sub) => ({
           "Purchase Date": formatDateTime(sub.captured_at || sub.created_at),
-          "Provider": sub.provider?.replace(/_/g, " ") || "-",
-          "Order Status": sub.order_status || sub.status || "-",
           "Amount": sub.amount ? `₹${(sub.amount / 100).toFixed(2)}` : "-",
         }))
       );
@@ -553,8 +551,6 @@ export default function PurchaseHistory() {
                   <thead>
                     <tr>
                       <th>Purchase Date</th>
-                      <th>Provider</th>
-                      <th>Order Status</th>
                       <th>Amount</th>
                     </tr>
                   </thead>
@@ -562,28 +558,6 @@ export default function PurchaseHistory() {
                     {subscriptionData.map((sub) => (
                       <tr key={sub.id}>
                         <td>{formatDateTime(sub.captured_at || sub.created_at)}</td>
-                        <td>
-                          <span
-                            style={{
-                              textTransform: "capitalize",
-                              fontWeight: "500",
-                            }}
-                          >
-                            {sub.provider?.replace(/_/g, " ") || "-"}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className="status-badge"
-                            style={{
-                              color: "#22c55e",
-                              backgroundColor: "rgba(34, 197, 94, 0.1)",
-                              borderColor: "#22c55e",
-                            }}
-                          >
-                            {sub.order_status || sub.status || "-"}
-                          </span>
-                        </td>
                         <td>
                           {sub.amount
                             ? `₹${(sub.amount / 100).toFixed(2)}`
