@@ -8,6 +8,8 @@ import {
   FaChevronRight,
   FaTag,
   FaLayerGroup,
+  FaCheckCircle,
+  FaTimes,
 } from "react-icons/fa";
 
 export default function UnverifiedSplitup() {
@@ -27,6 +29,11 @@ export default function UnverifiedSplitup() {
   const [selectedGym, setSelectedGym] = useState(null);
   const [selectedGymPlans, setSelectedGymPlans] = useState(null);
   const [loadingPlans, setLoadingPlans] = useState(false);
+
+  // Status modal state
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedGymStatus, setSelectedGymStatus] = useState(null);
+  const [loadingStatus, setLoadingStatus] = useState(false);
 
   // Debounce search term
   useEffect(() => {
@@ -130,6 +137,76 @@ export default function UnverifiedSplitup() {
     if (score >= 75) return "text-green-400";
     if (score >= 50) return "text-yellow-400";
     return "text-red-400";
+  };
+
+  // Status modal functions
+  const handleStatusClick = async (gym) => {
+    setSelectedGym(gym);
+    setShowStatusModal(true);
+    setLoadingStatus(true);
+    setSelectedGymStatus(null);
+
+    try {
+      const response = await axiosInstance.get(`/api/admin/unverified-gyms/gym-registration-status/${gym.gym_id}`);
+      setSelectedGymStatus(response.data.data);
+    } catch (error) {
+      console.error("Failed to fetch gym status:", error);
+    } finally {
+      setLoadingStatus(false);
+    }
+  };
+
+  const calculateCompletionPercentage = (registrationSteps) => {
+    if (!registrationSteps) return 40;
+
+    let trueCount = 0;
+
+    if (registrationSteps.account_details) trueCount++;
+    if (registrationSteps.services) trueCount++;
+    if (registrationSteps.operating_hours) trueCount++;
+    if (registrationSteps.agreement) trueCount++;
+
+    if (registrationSteps.documents && registrationSteps.documents.length > 0) {
+      const completedDocsCount = registrationSteps.documents.filter(doc => {
+        const value = Object.values(doc)[0];
+        return value === true;
+      }).length;
+
+      if (completedDocsCount >= 2) {
+        trueCount++;
+      }
+    }
+
+    if (registrationSteps.onboarding_pics && registrationSteps.onboarding_pics.length > 0) {
+      const completedPicsCount = registrationSteps.onboarding_pics.filter(pic => {
+        const value = Object.values(pic)[0];
+        return value === true;
+      }).length;
+
+      if (completedPicsCount >= 3) {
+        trueCount++;
+      }
+    }
+
+    return Math.min(100, 40 + (trueCount * 10));
+  };
+
+  const getPercentageColor = (percentage) => {
+    if (percentage >= 80) return "#4ade80"; // green-400
+    if (percentage >= 60) return "#facc15"; // yellow-400
+    return "#f87171"; // red-400
+  };
+
+  const getPercentageBgColor = (percentage) => {
+    if (percentage >= 80) return "rgba(34, 197, 94, 0.15)"; // green
+    if (percentage >= 60) return "rgba(234, 179, 8, 0.15)"; // yellow
+    return "rgba(239, 68, 68, 0.15)"; // red
+  };
+
+  const getPercentageBorderColor = (percentage) => {
+    if (percentage >= 80) return "#166534"; // green-700
+    if (percentage >= 60) return "#a16207"; // yellow-700
+    return "#991b1b"; // red-700
   };
 
   if (loading && gyms.length === 0) {
@@ -301,7 +378,7 @@ export default function UnverifiedSplitup() {
           />
           <input
             type="text"
-            placeholder="Search by gym name, owner, mobile, or city..."
+            placeholder="Search by gym name or city..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -360,32 +437,6 @@ export default function UnverifiedSplitup() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  Owner
-                </th>
-                <th
-                  style={{
-                    padding: "16px",
-                    textAlign: "left",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    color: "#ccc",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  Mobile
-                </th>
-                <th
-                  style={{
-                    padding: "16px",
-                    textAlign: "left",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    color: "#ccc",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                >
                   City
                 </th>
                 <th
@@ -399,7 +450,7 @@ export default function UnverifiedSplitup() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  Type
+                  Plans
                 </th>
                 <th
                   style={{
@@ -412,7 +463,7 @@ export default function UnverifiedSplitup() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  Plans
+                  Registration Status
                 </th>
                 <th
                   style={{
@@ -433,7 +484,7 @@ export default function UnverifiedSplitup() {
               {gyms.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="5"
                     style={{
                       padding: "60px",
                       textAlign: "center",
@@ -481,36 +532,7 @@ export default function UnverifiedSplitup() {
                       {gym.gym_name || "-"}
                     </td>
                     <td style={{ padding: "16px", color: "#ccc" }}>
-                      {gym.owner_name || "-"}
-                    </td>
-                    <td style={{ padding: "16px", color: "#ccc" }}>
-                      {gym.contact_number || "-"}
-                    </td>
-                    <td style={{ padding: "16px", color: "#ccc" }}>
                       {gym.city || gym.location || "-"}
-                    </td>
-                    <td
-                      style={{
-                        padding: "16px",
-                        textAlign: "center",
-                      }}
-                    >
-                      <span
-                        style={{
-                          backgroundColor:
-                            activeTab === "red"
-                              ? "rgba(239, 68, 68, 0.2)"
-                              : "rgba(234, 179, 8, 0.2)",
-                          color: activeTab === "red" ? "#ef4444" : "#eab308",
-                          padding: "6px 12px",
-                          borderRadius: "20px",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {gym.type}
-                      </span>
                     </td>
                     <td
                       style={{
@@ -547,6 +569,40 @@ export default function UnverifiedSplitup() {
                         {gym.plans_completion_score !== undefined && gym.plans_completion_score > 0
                           ? `${gym.plans_completion_score}%`
                           : "Plans"}
+                      </button>
+                    </td>
+                    <td
+                      style={{
+                        padding: "16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <button
+                        onClick={() => handleStatusClick(gym)}
+                        style={{
+                          padding: "8px 16px",
+                          borderRadius: "8px",
+                          border: `1px solid ${getPercentageBorderColor(gym.registration_completion || 40)}`,
+                          cursor: "pointer",
+                          fontSize: "13px",
+                          fontWeight: "500",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          transition: "all 0.2s",
+                          backgroundColor: getPercentageBgColor(gym.registration_completion || 40),
+                          color: getPercentageColor(gym.registration_completion || 40),
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "scale(1.05)";
+                          e.target.style.opacity = "0.8";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "scale(1)";
+                          e.target.style.opacity = "1";
+                        }}
+                      >
+                        {gym.registration_completion || 40}%
                       </button>
                     </td>
                     <td style={{ padding: "16px", color: "#888", fontSize: "14px" }}>
@@ -1112,6 +1168,454 @@ export default function UnverifiedSplitup() {
                 }}
               >
                 Failed to load plans data
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Status Modal */}
+      {showStatusModal && selectedGym && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "20px",
+          }}
+          onClick={() => setShowStatusModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: "#1e1e1e",
+              borderRadius: "12px",
+              padding: "24px",
+              width: "100%",
+              maxWidth: "500px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              border: "1px solid #333",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "24px",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "600",
+                  color: "#fff",
+                  margin: 0,
+                }}
+              >
+                Status - {selectedGym.gym_name}
+              </h3>
+              <button
+                onClick={() => setShowStatusModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#888",
+                  cursor: "pointer",
+                  fontSize: "24px",
+                  padding: "0",
+                  lineHeight: 1,
+                }}
+                onMouseEnter={(e) => e.target.style.color = "#fff"}
+                onMouseLeave={(e) => e.target.style.color = "#888"}
+              >
+                ×
+              </button>
+            </div>
+
+            {loadingStatus ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: "40px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    border: "4px solid #3a3a3a",
+                    borderTop: "4px solid #FF5757",
+                    borderRadius: "50%",
+                    animation: "spin 1s linear infinite",
+                  }}
+                />
+              </div>
+            ) : selectedGymStatus?.registration_steps ? (
+              <div>
+                {/* Account Details */}
+                <div
+                  style={{
+                    backgroundColor: selectedGymStatus.registration_steps.account_details ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                    border: `1px solid ${selectedGymStatus.registration_steps.account_details ? "#166534" : "#991b1b"}`,
+                    padding: "12px",
+                    borderRadius: "8px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#ccc",
+                      }}
+                    >
+                      Account Details
+                    </span>
+                    {selectedGymStatus.registration_steps.account_details ? (
+                      <FaCheckCircle style={{ color: "#4ade80" }} />
+                    ) : (
+                      <FaTimes style={{ color: "#f87171" }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Services */}
+                <div
+                  style={{
+                    backgroundColor: selectedGymStatus.registration_steps.services ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                    border: `1px solid ${selectedGymStatus.registration_steps.services ? "#166534" : "#991b1b"}`,
+                    padding: "12px",
+                    borderRadius: "8px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#ccc",
+                      }}
+                    >
+                      Services
+                    </span>
+                    {selectedGymStatus.registration_steps.services ? (
+                      <FaCheckCircle style={{ color: "#4ade80" }} />
+                    ) : (
+                      <FaTimes style={{ color: "#f87171" }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Operating Hours */}
+                <div
+                  style={{
+                    backgroundColor: selectedGymStatus.registration_steps.operating_hours ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                    border: `1px solid ${selectedGymStatus.registration_steps.operating_hours ? "#166534" : "#991b1b"}`,
+                    padding: "12px",
+                    borderRadius: "8px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#ccc",
+                      }}
+                    >
+                      Operating Hours
+                    </span>
+                    {selectedGymStatus.registration_steps.operating_hours ? (
+                      <FaCheckCircle style={{ color: "#4ade80" }} />
+                    ) : (
+                      <FaTimes style={{ color: "#f87171" }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Agreement */}
+                <div
+                  style={{
+                    backgroundColor: selectedGymStatus.registration_steps.agreement ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                    border: `1px solid ${selectedGymStatus.registration_steps.agreement ? "#166534" : "#991b1b"}`,
+                    padding: "12px",
+                    borderRadius: "8px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#ccc",
+                      }}
+                    >
+                      Agreement
+                    </span>
+                    {selectedGymStatus.registration_steps.agreement ? (
+                      <FaCheckCircle style={{ color: "#4ade80" }} />
+                    ) : (
+                      <FaTimes style={{ color: "#f87171" }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Documents */}
+                <div
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#ccc",
+                      }}
+                    >
+                      Documents (PAN & Passbook)
+                    </span>
+                  </div>
+                  {selectedGymStatus.registration_steps.documents?.map((doc, idx) => {
+                    const [key, value] = Object.entries(doc)[0];
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginLeft: "12px",
+                          marginBottom: idx < selectedGymStatus.registration_steps.documents.length - 1 ? "4px" : "0",
+                        }}
+                      >
+                        {value ? (
+                          <FaCheckCircle size={12} style={{ color: "#4ade80" }} />
+                        ) : (
+                          <FaTimes size={12} style={{ color: "#f87171" }} />
+                        )}
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            color: value ? "#4ade80" : "#f87171",
+                          }}
+                        >
+                          {key === "pancard" ? "PAN Card" : "Passbook"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Onboarding Pictures */}
+                <div
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#ccc",
+                      }}
+                    >
+                      Onboarding Pictures
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "6px",
+                      marginLeft: "12px",
+                    }}
+                  >
+                    {selectedGymStatus.registration_steps.onboarding_pics?.map((pic, idx) => {
+                      const [key, value] = Object.entries(pic)[0];
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          {value ? (
+                            <FaCheckCircle size={12} style={{ color: "#4ade80" }} />
+                          ) : (
+                            <FaTimes size={12} style={{ color: "#f87171" }} />
+                          )}
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: value ? "#4ade80" : "#f87171",
+                            }}
+                          >
+                            {key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Overall Progress */}
+                <div
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#ccc",
+                      }}
+                    >
+                      Overall Progress
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: "600",
+                        color: getPercentageColor(
+                          calculateCompletionPercentage(selectedGymStatus.registration_steps)
+                        ),
+                      }}
+                    >
+                      {calculateCompletionPercentage(selectedGymStatus.registration_steps)}%
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#3a3a3a",
+                      borderRadius: "4px",
+                      height: "8px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        backgroundColor:
+                          calculateCompletionPercentage(selectedGymStatus.registration_steps) >= 80
+                            ? "#22c55e"
+                            : calculateCompletionPercentage(selectedGymStatus.registration_steps) >= 60
+                            ? "#eab308"
+                            : "#ef4444",
+                        width: `${calculateCompletionPercentage(selectedGymStatus.registration_steps)}%`,
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setShowStatusModal(false)}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    backgroundColor: "#FF5757",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = "#ff4545"}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = "#FF5757"}
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <p
+                style={{
+                  textAlign: "center",
+                  color: "#888",
+                  fontSize: "14px",
+                }}
+              >
+                Failed to load status data
               </p>
             )}
           </div>
