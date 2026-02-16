@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import {
   FaSearch,
@@ -8,6 +9,7 @@ import {
 } from "react-icons/fa";
 
 export default function RecurringSubscribers() {
+  const router = useRouter();
   // State variables
   const [loading, setLoading] = useState(true);
   const [subscribers, setSubscribers] = useState([]);
@@ -99,33 +101,58 @@ export default function RecurringSubscribers() {
 
   if (loading) {
     return (
-      <div className="dashboard-container">
-        <div className="section-container">
-          <div
+      <div className="users-container">
+        <div className="users-header">
+          <button
+            className="back-button"
+            onClick={() => router.back()}
             style={{
+              background: "none",
+              border: "none",
+              color: "#FF5757",
+              fontSize: "0.9rem",
+              cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              minHeight: "400px",
-              padding: "40px",
+              gap: "0.5rem",
+              padding: "0.5rem 0",
+              transition: "color 0.2s ease",
             }}
+            onMouseEnter={(e) => e.target.style.color = "#ff4545"}
+            onMouseLeave={(e) => e.target.style.color = "#FF5757"}
           >
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  border: "4px solid #3a3a3a",
-                  borderTop: "4px solid #FF5757",
-                  borderRadius: "50%",
-                  animation: "spin 1s linear infinite",
-                  margin: "0 auto 1rem",
-                }}
-              />
-              <p style={{ fontSize: "14px", color: "#ccc" }}>
-                Loading recurring subscribers...
-              </p>
-            </div>
+            <FaChevronLeft size={16} />
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginLeft: "1rem" }}>
+            <h2 className="users-title" style={{ margin: 0 }}>
+              <span style={{ color: "#FF5757" }}>Recurring</span> Subscribers
+            </h2>
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "400px",
+            padding: "40px",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: "50px",
+                height: "50px",
+                border: "4px solid #3a3a3a",
+                borderTop: "4px solid #FF5757",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+                margin: "0 auto 1rem",
+              }}
+            />
+            <p style={{ fontSize: "14px", color: "#ccc" }}>
+              Loading recurring subscribers...
+            </p>
           </div>
         </div>
       </div>
@@ -133,33 +160,61 @@ export default function RecurringSubscribers() {
   }
 
   return (
-    <div className="dashboard-container">
-      <div className="section-container">
-        {/* Stats Summary */}
+    <div className="users-container">
+      <div className="users-header">
+        <button
+          className="back-button"
+          onClick={() => router.back()}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#FF5757",
+            fontSize: "0.9rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.5rem 0",
+            transition: "color 0.2s ease",
+          }}
+          onMouseEnter={(e) => e.target.style.color = "#ff4545"}
+          onMouseLeave={(e) => e.target.style.color = "#FF5757"}
+        >
+          <FaChevronLeft size={16} />
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginLeft: "1rem" }}>
+          <h2 className="users-title" style={{ margin: 0 }}>
+            <span style={{ color: "#FF5757" }}>Recurring</span> Subscribers
+          </h2>
+        </div>
+        <div className="users-count">Total: {totalCount} subscribers</div>
+      </div>
+
+      {/* Stats Summary */}
+      <div style={{
+        display: "flex",
+        gap: "20px",
+        marginBottom: "30px",
+        flexWrap: "wrap"
+      }}>
         <div style={{
-          display: "flex",
-          gap: "20px",
-          marginBottom: "30px",
-          flexWrap: "wrap"
+          backgroundColor: "#2a2a2a",
+          padding: "20px",
+          borderRadius: "8px",
+          minWidth: "200px",
+          flex: 1,
         }}>
-          <div style={{
-            backgroundColor: "#2a2a2a",
-            padding: "20px",
-            borderRadius: "8px",
-            minWidth: "200px",
-            flex: 1,
-          }}>
-            <div style={{ color: "#888", fontSize: "14px", marginBottom: "8px" }}>
-              Total Recurring Subscribers
-            </div>
-            <div style={{ fontSize: "32px", fontWeight: "600", color: "#fff" }}>
-              {totalCount}
-            </div>
+          <div style={{ color: "#888", fontSize: "14px", marginBottom: "8px" }}>
+            Total Recurring Subscribers
+          </div>
+          <div style={{ fontSize: "32px", fontWeight: "600", color: "#fff" }}>
+            {totalCount}
           </div>
         </div>
+      </div>
 
-        {/* Search Bar */}
-        <div style={{
+      {/* Search Bar */}
+      <div style={{
           marginBottom: "20px",
           display: "flex",
           gap: "15px",
@@ -495,7 +550,6 @@ export default function RecurringSubscribers() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
