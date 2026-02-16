@@ -737,7 +737,7 @@ export default function Home() {
             <div
               className="dashboard-card"
               style={{ cursor: "pointer" }}
-              onClick={() => router.push("/portal/admin/stats")}
+              onClick={() => router.push("/portal/admin/verified-gyms")}
             >
               <div className="card-header-custom extra-space">
                 <h6 className="card-title">Verified Gyms</h6>
