@@ -773,7 +773,11 @@ export default function Home() {
 
           {/* Unverified Splitup Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
-            <div className="dashboard-card">
+            <div
+              className="dashboard-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/admin/unverified-splitup")}
+            >
               <div className="card-header-custom extra-space">
                 <h6 className="card-title">Unverified Splitup</h6>
               </div>
