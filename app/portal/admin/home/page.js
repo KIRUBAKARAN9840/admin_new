@@ -43,6 +43,7 @@ export default function Home() {
       gyms: { today: 0, week: 0, month: 0, overall: 0 },
       dailyPassGyms: 0,
       verifiedGyms: { verified: 0, total: 0 },
+      unverifiedGyms: 0,
     },
     plans: {
       freeTrial: 0,
@@ -745,6 +746,24 @@ export default function Home() {
               <div className="card-body-custom">
                 <div className="metric-number">
                   {dashboardData.business.verifiedGyms?.verified || 0} / {dashboardData.business.verifiedGyms?.total || 0}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Unverified Gyms Card */}
+          <div className="col-xl-4 col-lg-6 col-md-6">
+            <div
+              className="dashboard-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/admin/unverified-gyms")}
+            >
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Unverified Gyms</h6>
+              </div>
+              <div className="card-body-custom">
+                <div className="metric-number">
+                  {dashboardData.business.unverifiedGyms || 0} / {dashboardData.business.verifiedGyms?.total || 0}
                 </div>
               </div>
             </div>
