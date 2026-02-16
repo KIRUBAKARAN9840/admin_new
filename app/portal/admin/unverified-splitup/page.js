@@ -7,6 +7,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaTag,
+  FaLayerGroup,
 } from "react-icons/fa";
 
 export default function UnverifiedSplitup() {
@@ -21,6 +22,11 @@ export default function UnverifiedSplitup() {
   const [itemsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  // Plans modal state
+  const [showPlansModal, setShowPlansModal] = useState(false);
+  const [selectedGym, setSelectedGym] = useState(null);
+  const [selectedGymPlans, setSelectedGymPlans] = useState(null);
+  const [loadingPlans, setLoadingPlans] = useState(false);
 
   // Debounce search term
   useEffect(() => {
@@ -96,6 +102,34 @@ export default function UnverifiedSplitup() {
       setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const handlePlansClick = async (gym) => {
+    setSelectedGym(gym);
+    setShowPlansModal(true);
+    setLoadingPlans(true);
+    setSelectedGymPlans(null);
+
+    try {
+      const response = await axiosInstance.get(`/api/admin/unverified-gyms/gym-plans/${gym.gym_id}`);
+      setSelectedGymPlans(response.data.data);
+    } catch (error) {
+      console.error("Failed to fetch gym plans:", error);
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
+
+  const getPlansButtonColor = (score) => {
+    if (score >= 70) return "border-green-700 bg-green-900/30 text-green-400";
+    if (score >= 40) return "border-green-700 bg-green-900/30 text-green-400";
+    return "border-green-700 bg-green-900/30 text-green-400";
+  };
+
+  const getPlansScoreColor = (score) => {
+    if (score >= 75) return "text-green-400";
+    if (score >= 50) return "text-yellow-400";
+    return "text-red-400";
   };
 
   if (loading && gyms.length === 0) {
@@ -370,6 +404,19 @@ export default function UnverifiedSplitup() {
                 <th
                   style={{
                     padding: "16px",
+                    textAlign: "center",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: "#ccc",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Plans
+                </th>
+                <th
+                  style={{
+                    padding: "16px",
                     textAlign: "left",
                     fontSize: "13px",
                     fontWeight: "600",
@@ -386,7 +433,7 @@ export default function UnverifiedSplitup() {
               {gyms.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     style={{
                       padding: "60px",
                       textAlign: "center",
@@ -464,6 +511,43 @@ export default function UnverifiedSplitup() {
                       >
                         {gym.type}
                       </span>
+                    </td>
+                    <td
+                      style={{
+                        padding: "16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <button
+                        onClick={() => handlePlansClick(gym)}
+                        style={{
+                          padding: "8px 16px",
+                          borderRadius: "8px",
+                          border: "1px solid #166534",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                          fontWeight: "500",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          transition: "all 0.2s",
+                          backgroundColor: "rgba(34, 197, 94, 0.15)",
+                          color: "#4ade80",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "scale(1.05)";
+                          e.target.style.opacity = "0.8";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "scale(1)";
+                          e.target.style.opacity = "1";
+                        }}
+                      >
+                        <FaLayerGroup size={14} />
+                        {gym.plans_completion_score !== undefined && gym.plans_completion_score > 0
+                          ? `${gym.plans_completion_score}%`
+                          : "Plans"}
+                      </button>
                     </td>
                     <td style={{ padding: "16px", color: "#888", fontSize: "14px" }}>
                       {formatDate(gym.created_at)}
@@ -602,6 +686,437 @@ export default function UnverifiedSplitup() {
           </div>
         )}
       </div>
+
+      {/* Plans Modal */}
+      {showPlansModal && selectedGym && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "20px",
+          }}
+          onClick={() => setShowPlansModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: "#1e1e1e",
+              borderRadius: "12px",
+              padding: "24px",
+              width: "100%",
+              maxWidth: "600px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              border: "1px solid #333",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "24px",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "600",
+                  color: "#fff",
+                  margin: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <FaLayerGroup style={{ color: "#FF5757" }} />
+                Plans - {selectedGym.gym_name}
+              </h3>
+              <button
+                onClick={() => setShowPlansModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#888",
+                  cursor: "pointer",
+                  fontSize: "24px",
+                  padding: "0",
+                  lineHeight: 1,
+                }}
+                onMouseEnter={(e) => e.target.style.color = "#fff"}
+                onMouseLeave={(e) => e.target.style.color = "#888"}
+              >
+                ×
+              </button>
+            </div>
+
+            {loadingPlans ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: "40px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    border: "4px solid #3a3a3a",
+                    borderTop: "4px solid #FF5757",
+                    borderRadius: "50%",
+                    animation: "spin 1s linear infinite",
+                  }}
+                />
+              </div>
+            ) : selectedGymPlans ? (
+              <div>
+                {/* Completion Score */}
+                <div
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#ccc",
+                      }}
+                    >
+                      Plans Completion Score
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: "600",
+                        color: getPlansScoreColor(selectedGymPlans.completion_score),
+                      }}
+                    >
+                      {selectedGymPlans.completion_score}%
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#3a3a3a",
+                      borderRadius: "4px",
+                      height: "8px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        backgroundColor:
+                          selectedGymPlans.completion_score >= 75
+                            ? "#22c55e"
+                            : selectedGymPlans.completion_score >= 50
+                            ? "#eab308"
+                            : "#ef4444",
+                        width: `${selectedGymPlans.completion_score}%`,
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#888",
+                      marginTop: "8px",
+                      margin: 0,
+                    }}
+                  >
+                    Based on: Daily Pass (33.33%), Sessions (33.33%), Gym Plans (33.34%)
+                  </p>
+                </div>
+
+                {/* Daily Pass Section */}
+                <div
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <FaTag size={18} style={{ color: "#3b82f6" }} />
+                    <h4
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#fff",
+                        margin: 0,
+                      }}
+                    >
+                      Daily Pass
+                    </h4>
+                  </div>
+                  {selectedGymPlans.daily_pass.count > 0 ? (
+                    <div>
+                      <p
+                        style={{
+                          fontSize: "14px",
+                          color: "#ccc",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        {selectedGymPlans.daily_pass.count} daily pass option(s) available
+                      </p>
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: "8px",
+                        }}
+                      >
+                        {selectedGymPlans.daily_pass.entries.map((pass, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              backgroundColor: "#1e1e1e",
+                              padding: "12px",
+                              borderRadius: "6px",
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: "14px",
+                                color: "#fff",
+                              }}
+                            >
+                              ₹{(pass.price / 100).toFixed(2)}
+                            </span>
+                            {pass.discount_price && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "#888",
+                                    textDecoration: "line-through",
+                                  }}
+                                >
+                                  ₹{(pass.price / 100).toFixed(2)}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: "14px",
+                                    color: "#22c55e",
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  ₹{(pass.discount_price / 100).toFixed(2)}
+                                </span>
+                                {pass.discount_percentage && (
+                                  <span
+                                    style={{
+                                      fontSize: "11px",
+                                      padding: "2px 8px",
+                                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                                      color: "#22c55e",
+                                      borderRadius: "12px",
+                                    }}
+                                  >
+                                    {pass.discount_percentage}% off
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: "14px", color: "#888" }}>
+                      No daily pass options available
+                    </p>
+                  )}
+                </div>
+
+                {/* Sessions Section */}
+                <div
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <FaLayerGroup size={18} style={{ color: "#a855f7" }} />
+                    <h4
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#fff",
+                        margin: 0,
+                      }}
+                    >
+                      Sessions
+                    </h4>
+                  </div>
+                  {selectedGymPlans.sessions.count > 0 ? (
+                    <div>
+                      <p
+                        style={{
+                          fontSize: "14px",
+                          color: "#ccc",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        {selectedGymPlans.sessions.count} session(s) created
+                      </p>
+                      {selectedGymPlans.sessions.lowest_price && (
+                        <div
+                          style={{
+                            backgroundColor: "#1e1e1e",
+                            padding: "12px",
+                            borderRadius: "6px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          <span style={{ fontSize: "14px", color: "#fff" }}>
+                            Starting from{" "}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "14px",
+                              color: "#22c55e",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {selectedGymPlans.sessions.lowest_price}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: "14px", color: "#888" }}>
+                      No sessions created
+                    </p>
+                  )}
+                </div>
+
+                {/* Gym Plans Section */}
+                <div
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <FaTag size={18} style={{ color: "#f97316" }} />
+                    <h4
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#fff",
+                        margin: 0,
+                      }}
+                    >
+                      Gym Plans
+                    </h4>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#ccc",
+                    }}
+                  >
+                    {selectedGymPlans.gym_plans.count} plan(s) created
+                  </p>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setShowPlansModal(false)}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    backgroundColor: "#FF5757",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = "#ff4545"}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = "#FF5757"}
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <p
+                style={{
+                  textAlign: "center",
+                  color: "#888",
+                  fontSize: "14px",
+                }}
+              >
+                Failed to load plans data
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
