@@ -42,6 +42,7 @@ export default function Home() {
       gymOwners: { today: 0, week: 0, month: 0, overall: 0 },
       gyms: { today: 0, week: 0, month: 0, overall: 0 },
       dailyPassGyms: 0,
+      verifiedGyms: { verified: 0, total: 0 },
     },
     plans: {
       freeTrial: 0,
@@ -625,7 +626,8 @@ export default function Home() {
           <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Business
         </h3>
         <div className="row g-4">
-          {/* Gym Owners Card */}
+          {/* Gym Owners Card - Commented out */}
+          {/*
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div
               className="dashboard-card"
@@ -638,7 +640,6 @@ export default function Home() {
                   className="filter-dropdown"
                   value={businessGymOwnersFilter}
                   onChange={(e) => {
-                    // Clear any pending blur timeout
                     if (selectBlurTimeoutRef.current) {
                       clearTimeout(selectBlurTimeoutRef.current);
                       selectBlurTimeoutRef.current = null;
@@ -676,8 +677,10 @@ export default function Home() {
               </div>
             </div>
           </div>
+          */}
 
-          {/* Gyms Card */}
+          {/* Gyms Card - Commented out */}
+          {/*
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div
               className="dashboard-card"
@@ -690,7 +693,6 @@ export default function Home() {
                   className="filter-dropdown"
                   value={businessGymsFilter}
                   onChange={(e) => {
-                    // Clear any pending blur timeout
                     if (selectBlurTimeoutRef.current) {
                       clearTimeout(selectBlurTimeoutRef.current);
                       selectBlurTimeoutRef.current = null;
@@ -724,6 +726,25 @@ export default function Home() {
                   {businessGymsFilter === "custom" && customRangeData.gyms.applied
                     ? customRangeData.gyms.value
                     : dashboardData.business.gyms[businessGymsFilter]}
+                </div>
+              </div>
+            </div>
+          </div>
+          */}
+
+          {/* Verified Gyms Card */}
+          <div className="col-xl-4 col-lg-6 col-md-6">
+            <div
+              className="dashboard-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/admin/stats")}
+            >
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Verified Gyms</h6>
+              </div>
+              <div className="card-body-custom">
+                <div className="metric-number">
+                  {dashboardData.business.verifiedGyms?.verified || 0} / {dashboardData.business.verifiedGyms?.total || 0}
                 </div>
               </div>
             </div>
