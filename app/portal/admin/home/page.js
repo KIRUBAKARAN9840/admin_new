@@ -884,13 +884,13 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Gym Photos Details Section */}
+      {/* Gym Photos Details Section - Commented out */}
+      {/*
       <div className="section-container">
         <h3 className="section-heading">
           <span style={{ color: "#FF5757" }}>Gym</span> Photos Details
         </h3>
         <div className="row g-4">
-          {/* Studio Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div
               className="dashboard-card"
@@ -908,7 +908,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Onboard Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div
               className="dashboard-card"
@@ -926,7 +925,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* No Uploads Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div
               className="dashboard-card"
@@ -945,6 +943,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+      */}
 
       {/* Recurring Subscribers Section */}
       <div className="section-container">
