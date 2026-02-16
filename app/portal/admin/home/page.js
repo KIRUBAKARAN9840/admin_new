@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useRole } from "../../layout";
 import axiosInstance from "@/lib/axios";
+import { FaTag } from "react-icons/fa";
 
 export default function Home() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function Home() {
       dailyPassGyms: 0,
       verifiedGyms: { verified: 0, total: 0 },
       unverifiedGyms: 0,
+      unverifiedSplitup: { red: 0, hold: 0 },
     },
     plans: {
       freeTrial: 0,
@@ -764,6 +766,44 @@ export default function Home() {
               <div className="card-body-custom">
                 <div className="metric-number">
                   {dashboardData.business.unverifiedGyms || 0} / {dashboardData.business.verifiedGyms?.total || 0}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Unverified Splitup Card */}
+          <div className="col-xl-4 col-lg-6 col-md-6">
+            <div className="dashboard-card">
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Unverified Splitup</h6>
+              </div>
+              <div className="card-body-custom">
+                <div style={{ display: "flex", gap: "20px" }}>
+                  {/* Red Section */}
+                  <div style={{ flex: 1, textAlign: "center" }}>
+                    <div style={{ marginBottom: "8px", display: "flex", justifyContent: "center" }}>
+                      <FaTag size={24} style={{ color: "#ef4444" }} />
+                    </div>
+                    <div className="metric-number" style={{ fontSize: "24px" }}>
+                      {dashboardData.business.unverifiedSplitup?.red || 0}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>
+                      Red
+                    </div>
+                  </div>
+
+                  {/* Hold Section */}
+                  <div style={{ flex: 1, textAlign: "center", borderLeft: "1px solid #333" }}>
+                    <div style={{ marginBottom: "8px", display: "flex", justifyContent: "center" }}>
+                      <FaTag size={24} style={{ color: "#eab308" }} />
+                    </div>
+                    <div className="metric-number" style={{ fontSize: "24px" }}>
+                      {dashboardData.business.unverifiedSplitup?.hold || 0}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>
+                      Hold
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
