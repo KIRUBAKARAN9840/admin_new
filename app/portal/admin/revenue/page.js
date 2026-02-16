@@ -8,52 +8,51 @@ export default function RevenueAnalytics() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState(null);
-  const [gyms, setGyms] = useState([]);
   const [hoveredSlice, setHoveredSlice] = useState(null);
 
   // Filter states
+  const [dateFilter, setDateFilter] = useState("last_30"); // last_30, overall, custom
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [source, setSource] = useState("all");
   const [gymId, setGymId] = useState("");
 
   useEffect(() => {
-    // Set default date range (last 30 days to today)
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // Set default date range (last 30 days to today) for last_30 filter
+    if (dateFilter === "last_30") {
+      const today = new Date();
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    setEndDate(today.toISOString().split('T')[0]);
-    setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
-
-    // Fetch gyms list
-    fetchGyms();
-  }, []);
+      setEndDate(today.toISOString().split('T')[0]);
+      setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
+    }
+  }, [dateFilter]);
 
   useEffect(() => {
-    if (startDate && endDate) {
-      fetchRevenueAnalytics();
+    if (dateFilter === "overall") {
+      // For overall, don't send date params
+      fetchRevenueAnalytics(true);
+    } else if (dateFilter === "custom" && startDate && endDate) {
+      // For custom, only fetch if both dates are set
+      fetchRevenueAnalytics(false);
+    } else if (dateFilter === "last_30" && startDate && endDate) {
+      // For last_30, fetch with the calculated dates
+      fetchRevenueAnalytics(false);
     }
-  }, [startDate, endDate, source, gymId]);
+  }, [startDate, endDate, source, gymId, dateFilter]);
 
-  const fetchGyms = async () => {
-    try {
-      const response = await axiosInstance.get("/api/admin/dashboard/overview");
-      if (response.data.success && response.data.data.business) {
-        // You might want to add a gyms list endpoint, for now using gym breakdown
-        setGyms(response.data.data.business.gyms || []);
-      }
-    } catch (err) {
-    }
-  };
-
-  const fetchRevenueAnalytics = async () => {
+  const fetchRevenueAnalytics = async (isOverall = false) => {
     try {
       setLoading(true);
-      const params = {
-        start_date: startDate,
-        end_date: endDate,
-      };
+      const params = {};
+
+      // Only send dates if not overall
+      if (!isOverall && startDate && endDate) {
+        params.start_date = startDate;
+        params.end_date = endDate;
+      }
+
       if (source !== "all") {
         params.source = source;
       }
@@ -87,6 +86,22 @@ export default function RevenueAnalytics() {
 
   const handleBack = () => {
     router.push("/portal/admin/home");
+  };
+
+  const handleDateFilterChange = (value) => {
+    setDateFilter(value);
+    if (value === "last_30") {
+      const today = new Date();
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      setEndDate(today.toISOString().split('T')[0]);
+      setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
+    } else if (value === "custom") {
+      // Clear dates and let user select
+      setStartDate("");
+      setEndDate("");
+    }
+    // For overall, we don't set dates
   };
 
   const handleExport = () => {
@@ -236,12 +251,11 @@ export default function RevenueAnalytics() {
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", alignItems: "flex-end" }}>
           <div style={{ flex: 1, minWidth: "200px" }}>
             <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#aaa" }}>
-              Start Date
+              Date Filter
             </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+            <select
+              value={dateFilter}
+              onChange={(e) => handleDateFilterChange(e.target.value)}
               style={{
                 width: "100%",
                 padding: "10px",
@@ -251,27 +265,54 @@ export default function RevenueAnalytics() {
                 color: "#ffffff",
                 fontSize: "14px",
               }}
-            />
+            >
+              <option value="last_30">Last 30 Days</option>
+              <option value="overall">Overall</option>
+              <option value="custom">Custom</option>
+            </select>
           </div>
-          <div style={{ flex: 1, minWidth: "200px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#aaa" }}>
-              End Date
-            </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "10px",
-                backgroundColor: "#2a2a2a",
-                border: "1px solid #3a3a3a",
-                borderRadius: "6px",
-                color: "#ffffff",
-                fontSize: "14px",
-              }}
-            />
-          </div>
+          {dateFilter === "custom" && (
+            <>
+              <div style={{ flex: 1, minWidth: "200px" }}>
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#aaa" }}>
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    backgroundColor: "#2a2a2a",
+                    border: "1px solid #3a3a3a",
+                    borderRadius: "6px",
+                    color: "#ffffff",
+                    fontSize: "14px",
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: "200px" }}>
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#aaa" }}>
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    backgroundColor: "#2a2a2a",
+                    border: "1px solid #3a3a3a",
+                    borderRadius: "6px",
+                    color: "#ffffff",
+                    fontSize: "14px",
+                  }}
+                />
+              </div>
+            </>
+          )}
           <div style={{ flex: 1, minWidth: "200px" }}>
             <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#aaa" }}>
               Source
@@ -358,7 +399,10 @@ export default function RevenueAnalytics() {
               {formatCurrency(analyticsData.totalRevenue)}
             </h2>
             <p style={{ fontSize: "13px", color: "#666", marginTop: "10px", margin: 0 }}>
-              {formatDate(analyticsData.filters.startDate)} - {formatDate(analyticsData.filters.endDate)}
+              {dateFilter === "overall"
+                ? "Overall"
+                : `${formatDate(analyticsData.filters.startDate)} - ${formatDate(analyticsData.filters.endDate)}`
+              }
               {analyticsData.filters.source !== "all" && ` • ${sourceLabels[analyticsData.filters.source] || analyticsData.filters.source}`}
               {analyticsData.filters.gymId !== "all" && ` • Gym ${analyticsData.filters.gymId}`}
             </p>

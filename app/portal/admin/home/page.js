@@ -7,8 +7,8 @@ import axiosInstance from "@/lib/axios";
 export default function Home() {
   const router = useRouter();
   const [fittbotTotalUsersFilter, setFittbotTotalUsersFilter] =
-    useState("month");
-  const [fittbotRevenueFilter, setFittbotRevenueFilter] = useState("month");
+    useState("overall");
+  const [fittbotRevenueFilter, setFittbotRevenueFilter] = useState("overall");
   const [businessGymOwnersFilter, setBusinessGymOwnersFilter] =
     useState("month");
   const [businessGymsFilter, setBusinessGymsFilter] = useState("month");
