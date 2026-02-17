@@ -18,6 +18,7 @@ export default function RevenueAnalytics() {
   const [endDate, setEndDate] = useState("");
   const [source, setSource] = useState("all");
   const [gymId, setGymId] = useState("");
+  const [gymName, setGymName] = useState("");
 
   useEffect(() => {
     // Set default date range (last 30 days to today) for last_30 filter
@@ -72,6 +73,16 @@ export default function RevenueAnalytics() {
 
       if (response.data.success) {
         setAnalyticsData(response.data.data);
+        // Set gym name if gym filter is active and gymName is not set
+        if (gymId && !gymName && response.data.data?.gymBreakdown) {
+          const gym = response.data.data.gymBreakdown.find(g => g.gym_id.toString() === gymId);
+          if (gym) setGymName(gym.gym_name);
+        }
+        // Also update gymName from current response if gymId matches
+        if (gymId && response.data.data?.gymBreakdown) {
+          const gym = response.data.data.gymBreakdown.find(g => g.gym_id.toString() === gymId);
+          if (gym && gym.gym_name) setGymName(gym.gym_name);
+        }
       } else {
         throw new Error(response.data.message || "Failed to fetch revenue analytics");
       }
@@ -105,6 +116,16 @@ export default function RevenueAnalytics() {
 
       if (response.data.success) {
         setPurchaseData(response.data.data);
+        // Set gym name if gym filter is active and gymName is not set
+        if (gymId && !gymName && response.data.data?.gymBreakdown) {
+          const gym = response.data.data.gymBreakdown.find(g => g.gym_id.toString() === gymId);
+          if (gym) setGymName(gym.gym_name);
+        }
+        // Also update gymName from current response if gymId matches
+        if (gymId && response.data.data?.gymBreakdown) {
+          const gym = response.data.data.gymBreakdown.find(g => g.gym_id.toString() === gymId);
+          if (gym && gym.gym_name) setGymName(gym.gym_name);
+        }
       } else {
         throw new Error(response.data.message || "Failed to fetch purchase analytics");
       }
@@ -300,6 +321,25 @@ export default function RevenueAnalytics() {
     sessions: "#4CAF50",
     fittbot_subscription: "#9C27B0",
     gym_membership: "#2196F3"
+  };
+
+  // Combined gym list from both analytics data for dropdown
+  const getAllGyms = () => {
+    const gymMap = new Map();
+
+    // Add gyms from revenue analytics
+    analyticsData?.gymBreakdown?.forEach(gym => {
+      gymMap.set(gym.gym_id.toString(), gym);
+    });
+
+    // Add gyms from purchase analytics
+    purchaseData?.gymBreakdown?.forEach(gym => {
+      if (!gymMap.has(gym.gym_id.toString())) {
+        gymMap.set(gym.gym_id.toString(), gym);
+      }
+    });
+
+    return Array.from(gymMap.values()).sort((a, b) => b.revenue - a.revenue);
   };
 
   return (
@@ -507,7 +547,18 @@ export default function RevenueAnalytics() {
             </label>
             <select
               value={gymId}
-              onChange={(e) => setGymId(e.target.value)}
+              onChange={(e) => {
+                const selectedGymId = e.target.value;
+                setGymId(selectedGymId);
+                // Find and set gym name from combined gym list, or clear if "All Gyms" is selected
+                if (selectedGymId === "") {
+                  setGymName("");
+                } else {
+                  const allGyms = getAllGyms();
+                  const selectedGym = allGyms.find(g => g.gym_id.toString() === selectedGymId);
+                  setGymName(selectedGym?.gym_name || "");
+                }
+              }}
               style={{
                 width: "100%",
                 padding: "10px",
@@ -519,7 +570,7 @@ export default function RevenueAnalytics() {
               }}
             >
               <option value="">All Gyms</option>
-              {analyticsData?.gymBreakdown?.map((gym) => (
+              {getAllGyms().map((gym) => (
                 <option key={gym.gym_id} value={gym.gym_id.toString()}>
                   {gym.gym_name}
                 </option>
@@ -569,7 +620,7 @@ export default function RevenueAnalytics() {
                 : `${formatDate(analyticsData.filters.startDate)} - ${formatDate(analyticsData.filters.endDate)}`
               }
               {analyticsData.filters.source !== "all" && ` • ${sourceLabels[analyticsData.filters.source] || analyticsData.filters.source}`}
-              {analyticsData.filters.gymId !== "all" && ` • Gym ${analyticsData.filters.gymId}`}
+              {analyticsData.filters.gymId !== "all" && ` • ${gymName || analyticsData.filters.gymId}`}
             </p>
           </div>
 
