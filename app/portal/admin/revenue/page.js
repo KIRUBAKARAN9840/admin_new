@@ -19,6 +19,7 @@ export default function RevenueAnalytics() {
   const [source, setSource] = useState("all");
   const [gymId, setGymId] = useState("");
   const [gymName, setGymName] = useState("");
+  const [allGymsList, setAllGymsList] = useState([]); // Store all gyms separately from filtered data
 
   useEffect(() => {
     // Set default date range (last 30 days to today) for last_30 filter
@@ -42,8 +43,8 @@ export default function RevenueAnalytics() {
       // For custom, only fetch if both dates are set
       if (activeTab === "revenue") fetchRevenueAnalytics(false);
       if (activeTab === "purchases") fetchPurchaseAnalytics(false);
-    } else if (dateFilter === "last_30" && startDate && endDate) {
-      // For last_30, fetch with the calculated dates
+    } else if (dateFilter === "last_30") {
+      // For last_30, always fetch (dates should be set by the time this runs)
       if (activeTab === "revenue") fetchRevenueAnalytics(false);
       if (activeTab === "purchases") fetchPurchaseAnalytics(false);
     }
@@ -73,6 +74,18 @@ export default function RevenueAnalytics() {
 
       if (response.data.success) {
         setAnalyticsData(response.data.data);
+        // Update all gyms list from response (only when not filtered by gym)
+        if (response.data.data?.gymBreakdown) {
+          setAllGymsList(prev => {
+            const newGyms = response.data.data.gymBreakdown;
+            const gymMap = new Map();
+            // Keep existing gyms
+            prev.forEach(g => gymMap.set(g.gym_id.toString(), g));
+            // Add/update new gyms
+            newGyms.forEach(g => gymMap.set(g.gym_id.toString(), g));
+            return Array.from(gymMap.values()).sort((a, b) => b.revenue - a.revenue);
+          });
+        }
         // Set gym name if gym filter is active and gymName is not set
         if (gymId && !gymName && response.data.data?.gymBreakdown) {
           const gym = response.data.data.gymBreakdown.find(g => g.gym_id.toString() === gymId);
@@ -116,6 +129,18 @@ export default function RevenueAnalytics() {
 
       if (response.data.success) {
         setPurchaseData(response.data.data);
+        // Update all gyms list from response (only when not filtered by gym)
+        if (response.data.data?.gymBreakdown) {
+          setAllGymsList(prev => {
+            const newGyms = response.data.data.gymBreakdown;
+            const gymMap = new Map();
+            // Keep existing gyms
+            prev.forEach(g => gymMap.set(g.gym_id.toString(), g));
+            // Add/update new gyms
+            newGyms.forEach(g => gymMap.set(g.gym_id.toString(), g));
+            return Array.from(gymMap.values()).sort((a, b) => b.revenue - a.revenue);
+          });
+        }
         // Set gym name if gym filter is active and gymName is not set
         if (gymId && !gymName && response.data.data?.gymBreakdown) {
           const gym = response.data.data.gymBreakdown.find(g => g.gym_id.toString() === gymId);
@@ -325,6 +350,11 @@ export default function RevenueAnalytics() {
 
   // Combined gym list from both analytics data for dropdown
   const getAllGyms = () => {
+    // Use the persisted allGymsList if available, otherwise fall back to current data
+    if (allGymsList.length > 0) {
+      return allGymsList;
+    }
+
     const gymMap = new Map();
 
     // Add gyms from revenue analytics
@@ -537,46 +567,48 @@ export default function RevenueAnalytics() {
               <option value="all">All Sources</option>
               <option value="daily_pass">Daily Pass</option>
               <option value="sessions">Sessions</option>
-              <option value="fittbot_subscription">Fittbot Subscription</option>
+              <option value="fittbot_subscription">Fymble Subscription</option>
               <option value="gym_membership">Gym Membership</option>
             </select>
           </div>
-          <div style={{ flex: 1, minWidth: "200px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#aaa" }}>
-              Gym
-            </label>
-            <select
-              value={gymId}
-              onChange={(e) => {
-                const selectedGymId = e.target.value;
-                setGymId(selectedGymId);
-                // Find and set gym name from combined gym list, or clear if "All Gyms" is selected
-                if (selectedGymId === "") {
-                  setGymName("");
-                } else {
-                  const allGyms = getAllGyms();
-                  const selectedGym = allGyms.find(g => g.gym_id.toString() === selectedGymId);
-                  setGymName(selectedGym?.gym_name || "");
-                }
-              }}
-              style={{
-                width: "100%",
-                padding: "10px",
-                backgroundColor: "#2a2a2a",
-                border: "1px solid #3a3a3a",
-                borderRadius: "6px",
-                color: "#ffffff",
-                fontSize: "14px",
-              }}
-            >
-              <option value="">All Gyms</option>
-              {getAllGyms().map((gym) => (
-                <option key={gym.gym_id} value={gym.gym_id.toString()}>
-                  {gym.gym_name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {activeTab === "revenue" && (
+            <div style={{ flex: 1, minWidth: "200px" }}>
+              <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#aaa" }}>
+                Gym
+              </label>
+              <select
+                value={gymId}
+                onChange={(e) => {
+                  const selectedGymId = e.target.value;
+                  setGymId(selectedGymId);
+                  // Find and set gym name from combined gym list, or clear if "All Gyms" is selected
+                  if (selectedGymId === "") {
+                    setGymName("");
+                  } else {
+                    const allGyms = getAllGyms();
+                    const selectedGym = allGyms.find(g => g.gym_id.toString() === selectedGymId);
+                    setGymName(selectedGym?.gym_name || "");
+                  }
+                }}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  backgroundColor: "#2a2a2a",
+                  border: "1px solid #3a3a3a",
+                  borderRadius: "6px",
+                  color: "#ffffff",
+                  fontSize: "14px",
+                }}
+              >
+                <option value="">All Gyms</option>
+                {getAllGyms().map((gym) => (
+                  <option key={gym.gym_id} value={gym.gym_id.toString()}>
+                    {gym.gym_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1134,7 +1166,7 @@ export default function RevenueAnalytics() {
                 : `${formatDate(purchaseData.filters.startDate)} - ${formatDate(purchaseData.filters.endDate)}`
               }
               {purchaseData.filters.source !== "all" && ` • ${sourceLabels[purchaseData.filters.source] || purchaseData.filters.source}`}
-              {purchaseData.filters.gymId !== "all" && ` • Gym ${purchaseData.filters.gymId}`}
+              {purchaseData.filters.gymId !== "all" && ` • ${gymName || purchaseData.filters.gymId}`}
             </p>
           </div>
 
