@@ -8,7 +8,9 @@ export default function RevenueAnalytics() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState(null);
+  const [purchaseData, setPurchaseData] = useState(null);
   const [hoveredSlice, setHoveredSlice] = useState(null);
+  const [activeTab, setActiveTab] = useState("revenue"); // 'revenue' or 'purchases'
 
   // Filter states
   const [dateFilter, setDateFilter] = useState("last_30"); // last_30, overall, custom
@@ -30,17 +32,21 @@ export default function RevenueAnalytics() {
   }, [dateFilter]);
 
   useEffect(() => {
+    // Fetch data when filters change or when switching tabs
     if (dateFilter === "overall") {
       // For overall, don't send date params
-      fetchRevenueAnalytics(true);
+      if (activeTab === "revenue") fetchRevenueAnalytics(true);
+      if (activeTab === "purchases") fetchPurchaseAnalytics(true);
     } else if (dateFilter === "custom" && startDate && endDate) {
       // For custom, only fetch if both dates are set
-      fetchRevenueAnalytics(false);
+      if (activeTab === "revenue") fetchRevenueAnalytics(false);
+      if (activeTab === "purchases") fetchPurchaseAnalytics(false);
     } else if (dateFilter === "last_30" && startDate && endDate) {
       // For last_30, fetch with the calculated dates
-      fetchRevenueAnalytics(false);
+      if (activeTab === "revenue") fetchRevenueAnalytics(false);
+      if (activeTab === "purchases") fetchPurchaseAnalytics(false);
     }
-  }, [startDate, endDate, source, gymId, dateFilter]);
+  }, [startDate, endDate, source, gymId, dateFilter, activeTab]);
 
   const fetchRevenueAnalytics = async (isOverall = false) => {
     try {
@@ -68,6 +74,39 @@ export default function RevenueAnalytics() {
         setAnalyticsData(response.data.data);
       } else {
         throw new Error(response.data.message || "Failed to fetch revenue analytics");
+      }
+    } catch (err) {
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPurchaseAnalytics = async (isOverall = false) => {
+    try {
+      setLoading(true);
+      const params = {};
+
+      // Only send dates if not overall
+      if (!isOverall && startDate && endDate) {
+        params.start_date = startDate;
+        params.end_date = endDate;
+      }
+
+      if (source !== "all") {
+        params.source = source;
+      }
+      if (gymId) {
+        params.gym_id = gymId;
+      }
+
+      const response = await axiosInstance.get("/api/admin/dashboard/purchase-analytics", {
+        params,
+      });
+
+      if (response.data.success) {
+        setPurchaseData(response.data.data);
+      } else {
+        throw new Error(response.data.message || "Failed to fetch purchase analytics");
       }
     } catch (err) {
     } finally {
@@ -105,8 +144,16 @@ export default function RevenueAnalytics() {
   };
 
   const handleExport = () => {
-    if (!analyticsData) return;
+    if (activeTab === "revenue") {
+      if (!analyticsData) return;
+      exportRevenueExcel();
+    } else {
+      if (!purchaseData) return;
+      exportPurchaseExcel();
+    }
+  };
 
+  const exportRevenueExcel = () => {
     // Create workbook
     const wb = XLSX.utils.book_new();
 
@@ -173,6 +220,74 @@ export default function RevenueAnalytics() {
     XLSX.writeFile(wb, fileName);
   };
 
+  const exportPurchaseExcel = () => {
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+
+    // Summary Sheet
+    const summaryData = [
+      ["PURCHASE ANALYTICS REPORT"],
+      [""],
+      ["Report Details"],
+      ["Generated On", new Date().toLocaleString('en-IN')],
+      [""],
+      ["Filters Applied"],
+      ["Start Date", formatDate(purchaseData.filters.startDate)],
+      ["End Date", formatDate(purchaseData.filters.endDate)],
+      ["Source", purchaseData.filters.source === "all" ? "All Sources" : (sourceLabels[purchaseData.filters.source] || purchaseData.filters.source)],
+      ["Gym", purchaseData.filters.gymId === "all" ? "All Gyms" : purchaseData.filters.gymId],
+      [""],
+      ["Total Purchases"],
+      ["Count", purchaseData.totalPurchases],
+    ];
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
+
+    // Purchases by Category Sheet
+    const categoryData = [
+      ["Category", "Purchases", "Unique Users"],
+      ...Object.entries(purchaseData.categoryBreakdown).map(([key, value]) => [
+        sourceLabels[key] || key,
+        value.purchases,
+        value.unique_users
+      ])
+    ];
+    const categoryWs = XLSX.utils.aoa_to_sheet(categoryData);
+    XLSX.utils.book_append_sheet(wb, categoryWs, "By Category");
+
+    // Purchases Over Time Sheet
+    if (purchaseData.purchasesOverTime && purchaseData.purchasesOverTime.length > 0) {
+      const timeData = [
+        ["Date", "Purchases"],
+        ...purchaseData.purchasesOverTime.map(item => [
+          formatDate(item.date),
+          item.purchases
+        ])
+      ];
+      const timeWs = XLSX.utils.aoa_to_sheet(timeData);
+      XLSX.utils.book_append_sheet(wb, timeWs, "Over Time");
+    }
+
+    // Category-wise Over Time Sheets
+    Object.entries(purchaseData.categoryBreakdown).forEach(([categoryKey, categoryValue]) => {
+      if (categoryValue.purchases_over_time && categoryValue.purchases_over_time.length > 0) {
+        const categoryTimeData = [
+          ["Date", "Purchases"],
+          ...categoryValue.purchases_over_time.map(item => [
+            formatDate(item.date),
+            item.purchases
+          ])
+        ];
+        const categoryTimeWs = XLSX.utils.aoa_to_sheet(categoryTimeData);
+        XLSX.utils.book_append_sheet(wb, categoryTimeWs, (sourceLabels[categoryKey] || categoryKey).slice(0, 31));
+      }
+    });
+
+    // Generate and download Excel file
+    const fileName = `purchase_analytics_${startDate}_to_${endDate}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
   const sourceLabels = {
     daily_pass: "Daily Pass",
     sessions: "Sessions",
@@ -209,9 +324,58 @@ export default function RevenueAnalytics() {
           >
             ←
           </button>
-          <h1 style={{ fontSize: "28px", fontWeight: "600", margin: 0 }}>Total Revenue Analytics</h1>
+          <div>
+            <h1 style={{ fontSize: "28px", fontWeight: "600", margin: 0 }}>Analytics</h1>
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+              <button
+                onClick={() => setActiveTab("revenue")}
+                style={{
+                  background: activeTab === "revenue" ? "#FF5757" : "transparent",
+                  border: activeTab === "revenue" ? "1px solid #FF5757" : "1px solid #3a3a3a",
+                  color: "#ffffff",
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== "revenue") e.target.style.borderColor = "#FF5757";
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== "revenue") e.target.style.borderColor = "#3a3a3a";
+                }}
+              >
+                Total Revenue Analytics
+              </button>
+              <button
+                onClick={() => setActiveTab("purchases")}
+                style={{
+                  background: activeTab === "purchases" ? "#FF5757" : "transparent",
+                  border: activeTab === "purchases" ? "1px solid #FF5757" : "1px solid #3a3a3a",
+                  color: "#ffffff",
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== "purchases") e.target.style.borderColor = "#FF5757";
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== "purchases") e.target.style.borderColor = "#3a3a3a";
+                }}
+              >
+                Purchase Analytics
+              </button>
+            </div>
+          </div>
         </div>
-        {!loading && analyticsData && (
+        {!loading && ((activeTab === "revenue" && analyticsData) || (activeTab === "purchases" && purchaseData)) && (
           <button
             onClick={handleExport}
             style={{
@@ -376,7 +540,8 @@ export default function RevenueAnalytics() {
             animation: "spin 1s linear infinite",
           }} />
         </div>
-      ) : analyticsData ? (
+      ) : activeTab === "revenue" && analyticsData ? (
+        /* REVENUE ANALYTICS TAB */
         <div>
           {/* Total Revenue Card */}
           <div style={{
@@ -888,6 +1053,561 @@ export default function RevenueAnalytics() {
               )}
             </div>
           )}
+        </div>
+      ) : activeTab === "purchases" && purchaseData ? (
+        /* PURCHASE ANALYTICS TAB */
+        <div>
+          {/* Total Purchases Card */}
+          <div style={{
+            backgroundColor: "#1a1a1a",
+            padding: "30px",
+            borderRadius: "12px",
+            marginBottom: "24px",
+            border: "1px solid #2a2a2a",
+            textAlign: "center",
+          }}>
+            <p style={{ fontSize: "14px", color: "#aaa", marginBottom: "10px", margin: 0 }}>
+              Total Purchases
+            </p>
+            <h2 style={{
+              fontSize: "48px",
+              fontWeight: "700",
+              margin: "10px 0",
+              color: "#ffffffff"
+            }}>
+              {purchaseData.totalPurchases.toLocaleString('en-IN')}
+            </h2>
+            <p style={{ fontSize: "13px", color: "#666", marginTop: "10px", margin: 0 }}>
+              {dateFilter === "overall"
+                ? "Overall"
+                : `${formatDate(purchaseData.filters.startDate)} - ${formatDate(purchaseData.filters.endDate)}`
+              }
+              {purchaseData.filters.source !== "all" && ` • ${sourceLabels[purchaseData.filters.source] || purchaseData.filters.source}`}
+              {purchaseData.filters.gymId !== "all" && ` • Gym ${purchaseData.filters.gymId}`}
+            </p>
+          </div>
+
+          {/* Category-wise Breakdown */}
+          <div style={{
+            backgroundColor: "#1a1a1a",
+            padding: "24px",
+            borderRadius: "12px",
+            marginBottom: "24px",
+            border: "1px solid #2a2a2a"
+          }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px" }}>
+              Purchases by Category
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+              {Object.entries(purchaseData.categoryBreakdown).map(([key, value]) => (
+                <div key={key} style={{
+                  backgroundColor: "#2a2a2a",
+                  padding: "16px 18px",
+                  borderRadius: "8px",
+                  border: `1px solid ${sourceColors[key] || "#888"}`
+                }}>
+                  <div style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px", fontWeight: "500" }}>
+                    {sourceLabels[key] || key}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <div>
+                      <div style={{ fontSize: "11px", color: "#888" }}>Purchases</div>
+                      <div style={{ fontSize: "22px", fontWeight: "700", color: sourceColors[key] || "#888" }}>
+                        {value.purchases.toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                    <div style={{ marginTop: "8px" }}>
+                      <div style={{ fontSize: "11px", color: "#888" }}>Unique Users</div>
+                      <div style={{ fontSize: "18px", fontWeight: "600", color: "#ffffff" }}>
+                        {value.unique_users.toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Charts Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(500px, 1fr))", gap: "24px", marginBottom: "24px" }}>
+            {/* Purchases Over Time Chart */}
+            <div style={{
+              backgroundColor: "#1a1a1a",
+              padding: "24px",
+              borderRadius: "12px",
+              border: "1px solid #2a2a2a"
+            }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px" }}>
+                Total Purchases Over Time
+              </h3>
+              {purchaseData.purchasesOverTime && purchaseData.purchasesOverTime.length > 0 ? (
+                <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {purchaseData.purchasesOverTime.map((item, index) => {
+                      const maxPurchases = Math.max(...purchaseData.purchasesOverTime.map(d => d.purchases));
+                      const barWidth = maxPurchases > 0 ? (item.purchases / maxPurchases) * 100 : 0;
+
+                      return (
+                        <div key={index} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <div style={{ minWidth: "100px", fontSize: "12px", color: "#888" }}>
+                            {formatDate(item.date)}
+                          </div>
+                          <div style={{ flex: 1, backgroundColor: "#2a2a2a", borderRadius: "4px", height: "24px", overflow: "hidden" }}>
+                            <div
+                              style={{
+                                width: `${barWidth}%`,
+                                height: "100%",
+                                backgroundColor: "#4CAF50",
+                                transition: "width 0.3s ease"
+                              }}
+                            />
+                          </div>
+                          <div style={{ minWidth: "80px", textAlign: "right", fontSize: "13px", fontWeight: "500" }}>
+                            {item.purchases.toLocaleString('en-IN')}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <p style={{ color: "#888", textAlign: "center", padding: "40px" }}>No data available</p>
+              )}
+            </div>
+
+            {/* Category Distribution - Pie Chart */}
+            <div style={{
+              backgroundColor: "#1a1a1a",
+              padding: "28px",
+              borderRadius: "12px",
+              border: "1px solid #2a2a2a"
+            }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "28px" }}>
+                Category Distribution
+              </h3>
+              <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+                {/* Pie Chart */}
+                <div style={{ position: "relative", width: "280px", height: "280px", flexShrink: 0 }}>
+                  <svg width="280" height="280" viewBox="0 0 280 280" style={{ transform: "rotate(-90deg)", filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" }}>
+                    {(() => {
+                      const entries = Object.entries(purchaseData.categoryBreakdown);
+                      let currentAngle = 0;
+                      const total = purchaseData.totalPurchases;
+
+                      return entries.map(([key, value]) => {
+                        const percentage = total > 0 ? (value.purchases / total) * 100 : 0;
+                        const angle = total > 0 ? (value.purchases / total) * 360 : 0;
+                        const startAngle = currentAngle;
+                        const endAngle = currentAngle + angle;
+
+                        const x1 = 140 + 115 * Math.cos((startAngle * Math.PI) / 180);
+                        const y1 = 140 + 115 * Math.sin((startAngle * Math.PI) / 180);
+                        const x2 = 140 + 115 * Math.cos((endAngle * Math.PI) / 180);
+                        const y2 = 140 + 115 * Math.sin((endAngle * Math.PI) / 180);
+
+                        const largeArcFlag = angle > 180 ? 1 : 0;
+
+                        const pathData = angle === 360
+                          ? `M 140 140 m -115 0 a 115 115 0 1 0 230 0 a 115 115 0 1 0 -230 0`
+                          : `M 140 140 L ${x1} ${y1} A 115 115 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+
+                        currentAngle += angle;
+
+                        return (
+                          <path
+                            key={key}
+                            d={pathData}
+                            fill={sourceColors[key] || "#888"}
+                            stroke="#1a1a1a"
+                            strokeWidth="3"
+                            style={{
+                              transition: "transform 0.2s, opacity 0.2s",
+                              cursor: "pointer",
+                              transformOrigin: "140px 140px"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.opacity = "0.85";
+                              e.target.style.transform = "scale(1.03)";
+                              setHoveredSlice({ key, value: value.purchases, percentage });
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.opacity = "1";
+                              e.target.style.transform = "scale(1)";
+                              setHoveredSlice(null);
+                            }}
+                          />
+                        );
+                      });
+                    })()}
+                  </svg>
+                  {/* Center donut hole */}
+                  <div style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "110px",
+                    height: "110px",
+                    borderRadius: "50%",
+                    backgroundColor: "#1a1a1a",
+                    pointerEvents: "none",
+                    boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "12px"
+                  }}>
+                    {hoveredSlice ? (
+                      <>
+                        <div style={{ fontSize: "10px", color: "#888", marginBottom: "4px", fontWeight: "500", textAlign: "center" }}>
+                          {sourceLabels[hoveredSlice.key] || hoveredSlice.key}
+                        </div>
+                        <div style={{ fontSize: "22px", fontWeight: "800", color: sourceColors[hoveredSlice.key] || "#888", lineHeight: "1.2" }}>
+                          {hoveredSlice.percentage.toFixed(1)}%
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#aaa", marginTop: "2px" }}>
+                          {hoveredSlice.value.toLocaleString('en-IN')}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: "22px", fontWeight: "900", color: "#fff", lineHeight: "1", letterSpacing: "1px" }}>
+                          FYMBLE
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Legend with Total */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: "180px" }}>
+                  {/* Total Display */}
+                  <div style={{
+                    padding: "16px 20px",
+                    backgroundColor: "#2a2a2a",
+                    borderRadius: "8px",
+                    border: "1px solid #3a3a3a",
+                    marginBottom: "16px"
+                  }}>
+                    <div style={{ fontSize: "12px", color: "#888", marginBottom: "6px", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Total Purchases
+                    </div>
+                    <div style={{ fontSize: "28px", fontWeight: "800", color: "#fff", lineHeight: "1" }}>
+                      {purchaseData.totalPurchases.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+
+                  {/* Legend Items */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {Object.entries(purchaseData.categoryBreakdown).map(([key, value]) => {
+                      const percentage = purchaseData.totalPurchases > 0 ? (value.purchases / purchaseData.totalPurchases) * 100 : 0;
+
+                      return (
+                        <div key={key} style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          padding: "8px 12px",
+                          backgroundColor: "#2a2a2a",
+                          borderRadius: "6px",
+                          border: "1px solid #3a3a3a",
+                          transition: "border-color 0.2s"
+                        }}>
+                          <div
+                            style={{
+                              width: "12px",
+                              height: "12px",
+                              borderRadius: "3px",
+                              backgroundColor: sourceColors[key] || "#888",
+                              flexShrink: 0,
+                              boxShadow: `0 2px 4px ${sourceColors[key]}40`
+                            }}
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: "12px", color: "#fff", fontWeight: "500", marginBottom: "1px" }}>
+                              {sourceLabels[key] || key}
+                            </div>
+                            <div style={{ fontSize: "10px", color: "#888" }}>
+                              {value.purchases.toLocaleString('en-IN')} purchases
+                            </div>
+                          </div>
+                          <div style={{
+                            fontSize: "15px",
+                            fontWeight: "700",
+                            color: sourceColors[key] || "#888",
+                            flexShrink: 0,
+                            minWidth: "50px",
+                            textAlign: "right"
+                          }}>
+                            {percentage.toFixed(1)}%
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Category-wise Over Time Trend */}
+          {purchaseData.purchasesOverTime && purchaseData.purchasesOverTime.length > 0 && (
+            <div style={{
+              backgroundColor: "#1a1a1a",
+              padding: "24px",
+              borderRadius: "12px",
+              marginBottom: "24px",
+              border: "1px solid #2a2a2a"
+            }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px" }}>
+                Purchases Trend
+              </h3>
+              <div style={{
+                position: "relative",
+                height: "350px",
+                width: "100%",
+                overflowX: "auto",
+                overflowY: "hidden"
+              }}>
+                <svg
+                  width="100%"
+                  height="100%"
+                  style={{
+                    overflow: "visible",
+                    minWidth: `${Math.max(800, purchaseData.purchasesOverTime.length * 80)}px`
+                  }}
+                >
+                  {(() => {
+                    const data = purchaseData.purchasesOverTime;
+                    const pointSpacing = 80;
+                    const padding = { top: 20, right: 30, bottom: 60, left: 100 };
+                    const chartWidth = Math.max(800, data.length * pointSpacing) - padding.left - padding.right;
+                    const chartHeight = 350 - padding.top - padding.bottom;
+                    const maxPurchases = Math.max(...data.map(d => d.purchases), 1);
+
+                    // Create scales
+                    const xScale = (index) => padding.left + index * pointSpacing;
+                    const yScale = (purchases) => padding.top + chartHeight - ((purchases - 0) / (maxPurchases - 0 || 1)) * chartHeight;
+
+                    // Create points for line
+                    const linePoints = data.map((d, i) => `${xScale(i)},${yScale(d.purchases)}`).join(" ");
+
+                    // Create area fill points
+                    const areaPoints = `${xScale(0)},${padding.top + chartHeight} ${linePoints} ${xScale(data.length - 1)},${padding.top + chartHeight}`;
+
+                    return (
+                      <>
+                        {/* Grid lines */}
+                        {[0, 25, 50, 75, 100].map((percent) => {
+                          const y = padding.top + chartHeight - (percent / 100) * chartHeight;
+                          const purchasesValue = (maxPurchases * percent) / 100;
+                          return (
+                            <g key={percent}>
+                              <line
+                                x1={padding.left}
+                                y1={y}
+                                x2={padding.left + Math.max(chartWidth, data.length * pointSpacing)}
+                                y2={y}
+                                stroke="#2a2a2a"
+                                strokeWidth="1"
+                                strokeDasharray="4,4"
+                              />
+                              <text
+                                x={padding.left - 10}
+                                y={y + 4}
+                                fill="#888"
+                                fontSize="12"
+                                textAnchor="end"
+                                fontWeight="500"
+                              >
+                                {Math.round(purchasesValue)}
+                              </text>
+                            </g>
+                          );
+                        })}
+
+                        {/* Area fill under line */}
+                        <polygon
+                          points={areaPoints}
+                          fill="url(#gradientPurchase)"
+                          opacity="0.3"
+                        />
+
+                        {/* Gradient definition */}
+                        <defs>
+                          <linearGradient id="gradientPurchase" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#4CAF50" stopOpacity="0.5" />
+                            <stop offset="100%" stopColor="#4CAF50" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Line */}
+                        <polyline
+                          points={linePoints}
+                          fill="none"
+                          stroke="#4CAF50"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ filter: "drop-shadow(0 4px 8px rgba(76, 175, 80, 0.3))" }}
+                        />
+
+                        {/* Data points and labels */}
+                        {data.map((d, i) => {
+                          const x = xScale(i);
+                          const y = yScale(d.purchases);
+
+                          return (
+                            <g key={i}>
+                              {/* Vertical line */}
+                              <line
+                                x1={x}
+                                y1={padding.top}
+                                x2={x}
+                                y2={padding.top + chartHeight}
+                                stroke="#4CAF50"
+                                strokeWidth="1"
+                                opacity="0.1"
+                              />
+
+                              {/* Data point circle */}
+                              <circle
+                                cx={x}
+                                cy={y}
+                                r="6"
+                                fill="#4CAF50"
+                                stroke="#1a1a1a"
+                                strokeWidth="2"
+                                style={{
+                                  cursor: "pointer",
+                                  transition: "r 0.2s"
+                                }}
+                                onMouseEnter={(e) => e.target.setAttribute("r", "9")}
+                                onMouseLeave={(e) => e.target.setAttribute("r", "6")}
+                              />
+
+                              {/* Date labels on x-axis */}
+                              <text
+                                x={x}
+                                y={padding.top + chartHeight + 20}
+                                fill="#aaa"
+                                fontSize="11"
+                                fontWeight="500"
+                                textAnchor="middle"
+                              >
+                                {formatDate(d.date)}
+                              </text>
+
+                              {/* Purchases value above point */}
+                              <text
+                                x={x}
+                                y={y - 12}
+                                fill="#ffffff"
+                                fontSize="12"
+                                fontWeight="700"
+                                textAnchor="middle"
+                              >
+                                {d.purchases}
+                              </text>
+                            </g>
+                          );
+                        })}
+
+                        {/* Y-axis line */}
+                        <line
+                          x1={padding.left}
+                          y1={padding.top}
+                          x2={padding.left}
+                          y2={padding.top + chartHeight}
+                          stroke="#3a3a3a"
+                          strokeWidth="2"
+                        />
+
+                        {/* X-axis line */}
+                        <line
+                          x1={padding.left}
+                          y1={padding.top + chartHeight}
+                          x2={padding.left + Math.max(chartWidth, data.length * pointSpacing)}
+                          y2={padding.top + chartHeight}
+                          stroke="#3a3a3a"
+                          strokeWidth="2"
+                        />
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+            </div>
+          )}
+
+          {/* Category Breakdown Table */}
+          <div style={{
+            backgroundColor: "#1a1a1a",
+            padding: "24px",
+            borderRadius: "12px",
+            border: "1px solid #2a2a2a"
+          }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px" }}>
+              Category-wise Details
+            </h3>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "600px" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #3a3a3a" }}>
+                    <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", color: "#888", fontWeight: "600" }}>Category</th>
+                    <th style={{ padding: "12px", textAlign: "right", fontSize: "13px", color: "#888", fontWeight: "600" }}>Purchases</th>
+                    <th style={{ padding: "12px", textAlign: "right", fontSize: "13px", color: "#888", fontWeight: "600" }}>Unique Users</th>
+                    <th style={{ padding: "12px", textAlign: "right", fontSize: "13px", color: "#888", fontWeight: "600" }}>Avg Purchases/User</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(purchaseData.categoryBreakdown).map(([key, value]) => (
+                    <tr key={key} style={{ borderBottom: "1px solid #2a2a2a" }}>
+                      <td style={{ padding: "12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <div
+                            style={{
+                              width: "10px",
+                              height: "10px",
+                              borderRadius: "3px",
+                              backgroundColor: sourceColors[key] || "#888",
+                            }}
+                          />
+                          <span style={{ fontSize: "14px", color: "#fff" }}>
+                            {sourceLabels[key] || key}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "12px", textAlign: "right", fontSize: "14px", color: sourceColors[key] || "#888", fontWeight: "600" }}>
+                        {value.purchases.toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: "12px", textAlign: "right", fontSize: "14px", color: "#fff" }}>
+                        {value.unique_users.toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: "12px", textAlign: "right", fontSize: "14px", color: "#aaa" }}>
+                        {value.unique_users > 0 ? (value.purchases / value.unique_users).toFixed(2) : "0.00"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ borderTop: "2px solid #3a3a3a", fontWeight: "600" }}>
+                    <td style={{ padding: "12px", fontSize: "14px", color: "#fff" }}>Total</td>
+                    <td style={{ padding: "12px", textAlign: "right", fontSize: "14px", color: "#FF5757" }}>
+                      {purchaseData.totalPurchases.toLocaleString('en-IN')}
+                    </td>
+                    <td style={{ padding: "12px", textAlign: "right", fontSize: "14px", color: "#fff" }}>
+                      {Object.values(purchaseData.categoryBreakdown).reduce((sum, cat) => sum + cat.unique_users, 0).toLocaleString('en-IN')}
+                    </td>
+                    <td style={{ padding: "12px", textAlign: "right", fontSize: "14px", color: "#aaa" }}>
+                      -
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
         </div>
       ) : (
         <p style={{ color: "#888", textAlign: "center", padding: "40px" }}>No data available</p>
