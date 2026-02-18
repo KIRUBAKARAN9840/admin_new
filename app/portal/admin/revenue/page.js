@@ -1636,30 +1636,31 @@ export default function RevenueAnalytics() {
               <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px" }}>
                 Purchases by Location
               </h3>
-              <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ overflowX: "auto", paddingBottom: "16px" }}>
+                <div style={{ display: "flex", gap: "16px", minWidth: "max-content" }}>
                   {purchaseData.locationBreakdown.map((item, index) => {
                     const maxPurchases = Math.max(...purchaseData.locationBreakdown.map(d => d.purchases));
-                    const barWidth = maxPurchases > 0 ? (item.purchases / maxPurchases) * 100 : 0;
+                    const barHeight = maxPurchases > 0 ? (item.purchases / maxPurchases) * 100 : 0;
 
                     return (
-                      <div key={index} style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                        <div style={{ minWidth: "150px", fontSize: "13px", color: "#ccc", fontWeight: "500" }}>
-                          {item.location || "Unknown"}
+                      <div key={index} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", minWidth: "80px" }}>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: "#ffffff" }}>
+                          {item.purchases.toLocaleString('en-IN')}
                         </div>
-                        <div style={{ flex: 1, backgroundColor: "#2a2a2a", borderRadius: "6px", height: "32px", overflow: "hidden", position: "relative" }}>
+                        <div style={{ width: "50px", height: "200px", backgroundColor: "#2a2a2a", borderRadius: "6px", overflow: "hidden", position: "relative", display: "flex", alignItems: "flex-end" }}>
                           <div
                             style={{
-                              width: `${barWidth}%`,
-                              height: "100%",
+                              width: "100%",
+                              height: `${barHeight}%`,
                               backgroundColor: "#FF5757",
-                              transition: "width 0.3s ease",
-                              background: "linear-gradient(90deg, #FF5757 0%, #ff7b7b 100%)"
+                              transition: "height 0.3s ease",
+                              background: "linear-gradient(180deg, #FF5757 0%, #ff7b7b 100%)",
+                              minHeight: barHeight > 0 ? "4px" : "0",
                             }}
                           />
                         </div>
-                        <div style={{ minWidth: "100px", textAlign: "right", fontSize: "16px", fontWeight: "700", color: "#ffffff" }}>
-                          {item.purchases.toLocaleString('en-IN')}
+                        <div style={{ fontSize: "12px", color: "#ccc", fontWeight: "500", textAlign: "center", maxWidth: "100px", wordWrap: "break-word" }}>
+                          {item.location || "Unknown"}
                         </div>
                       </div>
                     );
