@@ -20,6 +20,8 @@ export default function UnverifiedSplitup() {
   const [gyms, setGyms] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [availableCities, setAvailableCities] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
@@ -72,6 +74,10 @@ export default function UnverifiedSplitup() {
         params.search = debouncedSearchTerm;
       }
 
+      if (cityFilter) {
+        params.city = cityFilter;
+      }
+
       const response = await axiosInstance.get("/api/admin/unverified-gyms/splitup", {
         params,
       });
@@ -80,6 +86,10 @@ export default function UnverifiedSplitup() {
         setGyms(response.data.data.gyms || []);
         setTotalCount(response.data.data.total);
         setTotalPages(response.data.data.totalPages);
+        // Update available cities from response
+        if (response.data.data.cities) {
+          setAvailableCities(response.data.data.cities);
+        }
       } else {
         throw new Error(response.data.message || "Failed to fetch gyms");
       }
@@ -88,7 +98,7 @@ export default function UnverifiedSplitup() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, activeTab, debouncedSearchTerm]);
+  }, [currentPage, itemsPerPage, activeTab, debouncedSearchTerm, cityFilter]);
 
   useEffect(() => {
     fetchGyms();
@@ -109,6 +119,11 @@ export default function UnverifiedSplitup() {
       setCurrentPage(newPage);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const handleCityChange = (city) => {
+    setCityFilter(city);
+    setCurrentPage(1);
   };
 
   const handlePlansClick = async (gym) => {
@@ -392,6 +407,36 @@ export default function UnverifiedSplitup() {
               outline: "none",
             }}
           />
+        </div>
+
+        {/* City Filter */}
+        <div
+          style={{
+            minWidth: "200px",
+          }}
+        >
+          <select
+            value={cityFilter}
+            onChange={(e) => handleCityChange(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "12px 15px",
+              backgroundColor: "#2a2a2a",
+              border: "1px solid #444",
+              borderRadius: "8px",
+              color: "white",
+              fontSize: "14px",
+              outline: "none",
+              cursor: "pointer",
+            }}
+          >
+            <option value="">All Cities</option>
+            {availableCities.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
