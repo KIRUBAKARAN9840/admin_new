@@ -223,7 +223,7 @@ export default function RoleBasedLayout({ children }) {
   const hasAccess = (userRole, pathname) => {
     const roleRoutes = {
       admin: ["/portal/admin"],
-      support: ["/portal/support", "/portal/admin/gymplans", "/portal/admin/gymphotos", "/portal/admin/gymdetails"],
+      support: ["/portal/support", "/portal/admin/gymplans", "/portal/admin/gymphotos", "/portal/admin/gymdetails", "/portal/admin/verified-gyms", "/portal/admin/unverified-gyms", "/portal/admin/unverified-splitup"],
       telecaller: ["/portal/telecaller"],
       nutritionist: ["/portal/nutritionist"],
     };
