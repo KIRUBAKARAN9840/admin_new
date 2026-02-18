@@ -523,7 +523,7 @@ export default function Home() {
               onClick={() => router.push("/portal/admin/users")}
             >
               <div className="card-header-custom">
-                <h6 className="card-title">Total Users</h6>
+                <h6 className="card-title">Fymble Users</h6>
                 <select
                   className="filter-dropdown"
                   value={fittbotTotalUsersFilter}
@@ -899,7 +899,7 @@ export default function Home() {
                 <div className="metric-number">
                   {dashboardData.plans.complimentary}
                 </div>
-                <div className="metric-change positive">Total Users</div>
+                <div className="metric-change positive">Fymble Users</div>
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaArrowLeft,
+  FaDownload,
 } from "react-icons/fa";
 
 export default function InactiveClients() {
@@ -101,6 +102,30 @@ export default function InactiveClients() {
   };
 
   const totalPages = Math.ceil(totalClients / itemsPerPage);
+
+  const handleExport = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/admin/gym-stats/${gymId}/inactive-clients`, {
+        params: {
+          export: true,
+          search: debouncedSearchTerm,
+          sort_order: sortOrder,
+        },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `inactive-clients-${gymName || gymId}-${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
 
   const getPaginationNumbers = () => {
     const pages = [];
@@ -209,7 +234,30 @@ export default function InactiveClients() {
             {gymName && <span style={{ marginLeft: "10px", fontSize: "18px", color: "#ccc" }}>- {gymName}</span>}
           </h2>
         </div>
-        <div className="users-count">Total: {totalClients} clients</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div className="users-count">Total: {totalClients} clients</div>
+          <button
+            onClick={handleExport}
+            style={{
+              background: "#FF5757",
+              border: "none",
+              color: "#ffffff",
+              padding: "8px 16px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "500",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = "#e64c4c"}
+            onMouseLeave={(e) => e.target.style.backgroundColor = "#FF5757"}
+          >
+            <FaDownload />
+            Export Excel
+          </button>
+        </div>
       </div>
 
       {/* Filters Section */}
