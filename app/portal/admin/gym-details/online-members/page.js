@@ -230,7 +230,7 @@ export default function OnlineMembers() {
             />
           )}
           <h2 className="users-title" style={{ margin: 0 }}>
-            <span style={{ color: "#FF5757" }}>O</span>nline Members
+            <span style={{ color: "#FF5757" }}>F</span>ymble Members
             {gymName && <span style={{ marginLeft: "10px", fontSize: "18px", color: "#ccc" }}>- {gymName}</span>}
           </h2>
         </div>

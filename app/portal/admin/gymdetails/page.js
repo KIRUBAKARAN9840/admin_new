@@ -314,7 +314,7 @@ const GymDetails = () => {
                       color: "#999",
                     }}
                   >
-                    Online Members
+                    Fymble Members
                   </div>
                 </div>
                 <div

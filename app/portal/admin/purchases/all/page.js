@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axiosInstance from "@/lib/axios";
+import { FaDownload } from "react-icons/fa";
 
 export default function AllPurchases() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ export default function AllPurchases() {
   });
   const [search, setSearch] = useState("");
   const [expandedRows, setExpandedRows] = useState(new Set());
+  const [exporting, setExporting] = useState(false);
 
   const isFetchingRef = useRef(false);
 
@@ -61,6 +63,48 @@ export default function AllPurchases() {
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+
+      const params = {};
+      if (search) params.search = search;
+
+      const response = await axiosInstance.get("/api/admin/purchases/export-purchases", {
+        params,
+        responseType: "blob",
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      }));
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Extract filename from Content-Disposition header or generate default
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "purchases_export.xlsx";
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename=(.+)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/"/g, "");
+        }
+      }
+
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export purchases. Please try again.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const toggleRow = (id) => {
@@ -135,6 +179,26 @@ export default function AllPurchases() {
               </button>
             </div>
           </form>
+        </div>
+        <div className="col-md-8 text-end">
+          <button
+            className="btn"
+            onClick={handleExport}
+            disabled={exporting || loading}
+            style={{
+              backgroundColor: exporting || loading ? "#444" : "#28a745",
+              border: "none",
+              color: "#fff",
+              padding: "8px 16px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              cursor: exporting || loading ? "not-allowed" : "pointer",
+            }}
+          >
+            <FaDownload />
+            {exporting ? "Exporting..." : "Export Excel"}
+          </button>
         </div>
       </div>
 

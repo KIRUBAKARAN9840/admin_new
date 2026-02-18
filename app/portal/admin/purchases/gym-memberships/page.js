@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axiosInstance from "@/lib/axios";
+import { FaDownload } from "react-icons/fa";
 
 export default function GymMemberships() {
   const [loading, setLoading] = useState(true);
@@ -14,6 +15,7 @@ export default function GymMemberships() {
     hasNext: false,
     hasPrev: false,
   });
+  const [exporting, setExporting] = useState(false);
 
   const isFetchingRef = useRef(false);
 
@@ -52,6 +54,44 @@ export default function GymMemberships() {
     fetchGymMemberships(page);
   }, [page, fetchGymMemberships]);
 
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+
+      const response = await axiosInstance.get("/api/admin/purchases/export-gym-memberships", {
+        responseType: "blob",
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      }));
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Extract filename from Content-Disposition header or generate default
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "gym_memberships.xlsx";
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename=(.+)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/"/g, "");
+        }
+      }
+
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export gym memberships. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -74,6 +114,29 @@ export default function GymMemberships() {
 
   return (
     <div>
+      {/* Header and Export Button */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 style={{ color: "#fff", margin: 0 }}>Gym Memberships</h4>
+        <button
+          className="btn"
+          onClick={handleExport}
+          disabled={exporting || loading}
+          style={{
+            backgroundColor: exporting || loading ? "#444" : "#28a745",
+            border: "none",
+            color: "#fff",
+            padding: "8px 16px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: exporting || loading ? "not-allowed" : "pointer",
+          }}
+        >
+          <FaDownload />
+          {exporting ? "Exporting..." : "Export Excel"}
+        </button>
+      </div>
+
       {/* Memberships Table */}
       {loading ? (
         <div className="text-center py-5">

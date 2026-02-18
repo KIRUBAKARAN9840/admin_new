@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axiosInstance from "@/lib/axios";
+import { FaDownload } from "react-icons/fa";
 
 export default function TodaySchedule() {
   const [loading, setLoading] = useState(true);
@@ -15,6 +16,7 @@ export default function TodaySchedule() {
     hasNext: false,
     hasPrev: false,
   });
+  const [exporting, setExporting] = useState(false);
 
   const isFetchingRef = useRef(false);
 
@@ -53,6 +55,44 @@ export default function TodaySchedule() {
   useEffect(() => {
     fetchTodaySchedule(page);
   }, [page, fetchTodaySchedule]);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+
+      const response = await axiosInstance.get("/api/admin/purchases/export-today-schedule", {
+        responseType: "blob",
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      }));
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Extract filename from Content-Disposition header or generate default
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "today_schedule.xlsx";
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename=(.+)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/"/g, "");
+        }
+      }
+
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export today's schedule. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -93,14 +133,34 @@ export default function TodaySchedule() {
 
   return (
     <div>
-      {/* Date Header */}
-      <div className="mb-4">
-        <h5 style={{ color: "#888", fontSize: "14px", fontWeight: "400", marginBottom: "0" }}>
-          Schedule for:
-        </h5>
-        <p style={{ color: "#fff", fontSize: "18px", fontWeight: "600" }}>
-          {todayDate ? formatDate(todayDate) : "Today"}
-        </p>
+      {/* Date Header and Export Button */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h5 style={{ color: "#888", fontSize: "14px", fontWeight: "400", marginBottom: "0" }}>
+            Schedule for:
+          </h5>
+          <p style={{ color: "#fff", fontSize: "18px", fontWeight: "600", marginBottom: "0" }}>
+            {todayDate ? formatDate(todayDate) : "Today"}
+          </p>
+        </div>
+        <button
+          className="btn"
+          onClick={handleExport}
+          disabled={exporting || loading}
+          style={{
+            backgroundColor: exporting || loading ? "#444" : "#28a745",
+            border: "none",
+            color: "#fff",
+            padding: "8px 16px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: exporting || loading ? "not-allowed" : "pointer",
+          }}
+        >
+          <FaDownload />
+          {exporting ? "Exporting..." : "Export Excel"}
+        </button>
       </div>
 
       {/* Schedule */}
