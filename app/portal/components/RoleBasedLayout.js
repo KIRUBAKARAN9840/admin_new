@@ -21,6 +21,32 @@ import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
 import { useRole } from "../layout"; // Import the useRole hook
 import axiosInstance from "@/lib/axios";
 
+// Custom User Conversion Icon component
+function UserConversionIcon({ size = 20 }) {
+  return (
+    <img
+      src="/user_conversion.svg"
+      alt="User Conversion"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
+
+// Custom Business Icon component
+function BusinessIcon({ size = 20 }) {
+  return (
+    <img
+      src="/business.svg"
+      alt="Business"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
+
 export default function RoleBasedLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -46,7 +72,7 @@ export default function RoleBasedLayout({ children }) {
           },
           {
             name: "Fymble Business Users",
-            icon: HiOutlineChartBar,
+            icon: BusinessIcon,
             path: "/portal/admin/stats",
           },
           // {
@@ -61,7 +87,7 @@ export default function RoleBasedLayout({ children }) {
           },
           {
             name: "User Conversion",
-            icon: HiOutlineChartBar,
+            icon: UserConversionIcon,
             path: "/portal/admin/user-conversion",
           },
           {
