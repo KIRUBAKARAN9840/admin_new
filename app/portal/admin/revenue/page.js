@@ -1245,7 +1245,7 @@ export default function RevenueAnalytics() {
                               }}
                             />
                           </div>
-                          <div style={{ minWidth: "80px", textAlign: "right", fontSize: "13px", fontWeight: "500" }}>
+                          <div style={{ minWidth: "80px", textAlign: "left", fontSize: "13px", fontWeight: "500" }}>
                             {item.purchases.toLocaleString('en-IN')}
                           </div>
                         </div>
@@ -1620,6 +1620,51 @@ export default function RevenueAnalytics() {
                     );
                   })()}
                 </svg>
+              </div>
+            </div>
+          )}
+
+          {/* Location-wise Purchase Bar Chart */}
+          {purchaseData.locationBreakdown && purchaseData.locationBreakdown.length > 0 && (
+            <div style={{
+              backgroundColor: "#1a1a1a",
+              padding: "24px",
+              borderRadius: "12px",
+              marginBottom: "24px",
+              border: "1px solid #2a2a2a"
+            }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px" }}>
+                Purchases by Location
+              </h3>
+              <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {purchaseData.locationBreakdown.map((item, index) => {
+                    const maxPurchases = Math.max(...purchaseData.locationBreakdown.map(d => d.purchases));
+                    const barWidth = maxPurchases > 0 ? (item.purchases / maxPurchases) * 100 : 0;
+
+                    return (
+                      <div key={index} style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                        <div style={{ minWidth: "150px", fontSize: "13px", color: "#ccc", fontWeight: "500" }}>
+                          {item.location || "Unknown"}
+                        </div>
+                        <div style={{ flex: 1, backgroundColor: "#2a2a2a", borderRadius: "6px", height: "32px", overflow: "hidden", position: "relative" }}>
+                          <div
+                            style={{
+                              width: `${barWidth}%`,
+                              height: "100%",
+                              backgroundColor: "#FF5757",
+                              transition: "width 0.3s ease",
+                              background: "linear-gradient(90deg, #FF5757 0%, #ff7b7b 100%)"
+                            }}
+                          />
+                        </div>
+                        <div style={{ minWidth: "100px", textAlign: "right", fontSize: "16px", fontWeight: "700", color: "#ffffff" }}>
+                          {item.purchases.toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
