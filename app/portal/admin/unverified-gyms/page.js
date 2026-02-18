@@ -30,6 +30,8 @@ export default function UnverifiedGyms() {
     membershipPlans: searchParams.get("has_membership_plans") === "true",
     dailyPass: searchParams.get("has_daily_pass") === "true",
   });
+  const [cityFilter, setCityFilter] = useState(searchParams.get("city") || "");
+  const [availableCities, setAvailableCities] = useState([]);
 
   // Modal state for gym address
   const [selectedGym, setSelectedGym] = useState(null);
@@ -93,13 +95,19 @@ export default function UnverifiedGyms() {
       params.delete("has_daily_pass");
     }
 
+    if (cityFilter) {
+      params.set("city", cityFilter);
+    } else {
+      params.delete("city");
+    }
+
     params.set("page", currentPage.toString());
     params.set("limit", itemsPerPage.toString());
 
     // Replace URL with new params without triggering navigation
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState({}, "", newUrl);
-  }, [searchTerm, sortOrder, registeredUsersFilter, planTypeFilters, currentPage, itemsPerPage, searchParams]);
+  }, [searchTerm, sortOrder, registeredUsersFilter, planTypeFilters, cityFilter, currentPage, itemsPerPage, searchParams]);
 
   const fetchGyms = useCallback(async () => {
     try {
@@ -131,18 +139,27 @@ export default function UnverifiedGyms() {
         params.registered_users_filter = registeredUsersFilter;
       }
 
+      // Add city filter
+      if (cityFilter) {
+        params.city = cityFilter;
+      }
+
       const response = await axiosInstance.get("/api/admin/unverified-gyms", { params });
 
       if (response.data.success) {
         setGyms(response.data.data.gyms);
         setTotalGyms(response.data.data.total);
+        // Update available cities from response
+        if (response.data.data.cities) {
+          setAvailableCities(response.data.data.cities);
+        }
       }
     } catch (error) {
       setGyms([]);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, sortOrder, currentPage, itemsPerPage, planTypeFilters, registeredUsersFilter]);
+  }, [debouncedSearchTerm, sortOrder, currentPage, itemsPerPage, planTypeFilters, registeredUsersFilter, cityFilter]);
 
   // Fetch gyms when filters change
   useEffect(() => {
@@ -354,6 +371,24 @@ export default function UnverifiedGyms() {
               <option value="150">&gt; 150 Clients</option>
               <option value="200">&gt; 200 Clients</option>
               <option value="250">&gt; 250 Clients</option>
+            </select>
+          </div>
+
+          <div className="col-lg-2 col-md-6 col-sm-12">
+            <select
+              className="filter-select"
+              value={cityFilter}
+              onChange={(e) => {
+                setCityFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="">All Cities</option>
+              {availableCities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
             </select>
           </div>
         </div>
