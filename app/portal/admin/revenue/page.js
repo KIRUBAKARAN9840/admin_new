@@ -14,23 +14,48 @@ export default function RevenueAnalytics() {
 
   // Filter states
   const [dateFilter, setDateFilter] = useState("last_30"); // last_30, overall, custom
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [source, setSource] = useState("all");
   const [gymId, setGymId] = useState("");
   const [gymName, setGymName] = useState("");
   const [allGymsList, setAllGymsList] = useState([]); // Store all gyms separately from filtered data
 
+  // Initialize dates for last_30 filter on mount
+  const [startDate, setStartDate] = useState(() => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return thirtyDaysAgo.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+
   useEffect(() => {
-    // Set default date range (last 30 days to today) for last_30 filter
-    if (dateFilter === "last_30") {
-      const today = new Date();
+    // Set date range based on filter selection
+    const today = new Date();
+
+    if (dateFilter === "today") {
+      setEndDate(today.toISOString().split('T')[0]);
+      setStartDate(today.toISOString().split('T')[0]);
+    } else if (dateFilter === "last_7") {
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      setEndDate(today.toISOString().split('T')[0]);
+      setStartDate(sevenDaysAgo.toISOString().split('T')[0]);
+    } else if (dateFilter === "last_30") {
       const thirtyDaysAgo = new Date(today);
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
       setEndDate(today.toISOString().split('T')[0]);
       setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
+    } else if (dateFilter === "last_month") {
+      const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const firstDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1);
+      const lastDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 0);
+      setEndDate(lastDayOfLastMonth.toISOString().split('T')[0]);
+      setStartDate(firstDayOfLastMonth.toISOString().split('T')[0]);
     }
+    // For "custom" and "overall", dates are handled separately
   }, [dateFilter]);
 
   useEffect(() => {
@@ -43,8 +68,8 @@ export default function RevenueAnalytics() {
       // For custom, only fetch if both dates are set
       if (activeTab === "revenue") fetchRevenueAnalytics(false);
       if (activeTab === "purchases") fetchPurchaseAnalytics(false);
-    } else if (dateFilter === "last_30") {
-      // For last_30, always fetch (dates should be set by the time this runs)
+    } else if (["today", "last_7", "last_30", "last_month"].includes(dateFilter)) {
+      // For predefined filters, always fetch (dates should be set by the time this runs)
       if (activeTab === "revenue") fetchRevenueAnalytics(false);
       if (activeTab === "purchases") fetchPurchaseAnalytics(false);
     }
@@ -175,18 +200,12 @@ export default function RevenueAnalytics() {
 
   const handleDateFilterChange = (value) => {
     setDateFilter(value);
-    if (value === "last_30") {
-      const today = new Date();
-      const thirtyDaysAgo = new Date(today);
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      setEndDate(today.toISOString().split('T')[0]);
-      setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
-    } else if (value === "custom") {
+    if (value === "custom") {
       // Clear dates and let user select
       setStartDate("");
       setEndDate("");
     }
-    // For overall, we don't set dates
+    // For other filters, dates will be set by the useEffect
   };
 
   const handleExport = () => {
@@ -500,7 +519,10 @@ export default function RevenueAnalytics() {
                 fontSize: "14px",
               }}
             >
+              <option value="today">Today</option>
+              <option value="last_7">Last 7 Days</option>
               <option value="last_30">Last 30 Days</option>
+              <option value="last_month">Last Month</option>
               <option value="overall">Overall</option>
               <option value="custom">Custom</option>
             </select>
