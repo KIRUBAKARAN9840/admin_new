@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useRole } from "../../layout";
 import axiosInstance from "@/lib/axios";
-import { FaTag, FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { FaTag } from "react-icons/fa";
 
 export default function Home() {
   const router = useRouter();
@@ -875,6 +875,42 @@ export default function Home() {
         <h3 className="section-heading">
           <span style={{ color: "#FF5757" }}>Revenue</span> Metrics
         </h3>
+        <div style={{ marginBottom: "20px", textAlign: "center" }}>
+          {(() => {
+            // Parse revenue strings to numbers (remove ₹ and commas)
+            const parseRevenue = (revenueStr) => {
+              if (typeof revenueStr === 'number') return revenueStr;
+              if (!revenueStr || revenueStr === "₹0") return 0;
+              return parseFloat(revenueStr.replace(/[₹,]/g, '')) || 0;
+            };
+
+            const lastMonth = parseRevenue(lastMonthRevenue);
+            const currentMonth = parseRevenue(currentMonthRevenue);
+
+            // Calculate MoM percentage
+            let momText = "No data";
+            let momColor = "#888";
+
+            if (lastMonth > 0) {
+              const momPercentage = ((currentMonth - lastMonth) / lastMonth) * 100;
+              const sign = momPercentage >= 0 ? "+" : "";
+              momText = `${sign}${momPercentage.toFixed(1)}%`;
+              momColor = momPercentage >= 0 ? "#4ade80" : "#ef4444";
+            } else if (lastMonth === 0 && currentMonth > 0) {
+              momText = "+∞%";
+              momColor = "#4ade80";
+            } else if (lastMonth === 0 && currentMonth === 0) {
+              momText = "0%";
+              momColor = "#888";
+            }
+
+            return (
+              <span style={{ fontSize: "16px", color: "#888" }}>
+                MoM Growth: <span style={{ color: momColor, fontWeight: "600", marginLeft: "8px" }}>{momText}</span> compare to last month
+              </span>
+            );
+          })()}
+        </div>
         <div className="row g-4">
           {/* Total Revenue Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
@@ -997,79 +1033,6 @@ export default function Home() {
                                        "21st", "22nd", "23rd", "24th", "25th", "26th", "27th", "28th", "29th", "30th", "31st"];
                     const day = now.getDate();
                     return `${monthNames[now.getMonth()]} 1 - ${dayNames[day - 1] || day}${day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th'}`;
-                  })()}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* MoM (Month-over-Month) Card */}
-          <div className="col-xl-4 col-lg-6 col-md-6">
-            <div
-              className="dashboard-card"
-              style={{ cursor: "pointer" }}
-              onClick={() => router.push("/portal/admin/revenue")}
-            >
-              <div className="card-header-custom extra-space">
-                <h6 className="card-title">MoM</h6>
-              </div>
-              <div className="card-body-custom">
-                <div className="metric-number">
-                  {(() => {
-                    // Parse revenue strings to numbers (remove ₹ and commas)
-                    const parseRevenue = (revenueStr) => {
-                      if (typeof revenueStr === 'number') return revenueStr;
-                      if (!revenueStr || revenueStr === "₹0") return 0;
-                      return parseFloat(revenueStr.replace(/[₹,]/g, '')) || 0;
-                    };
-
-                    const lastMonth = parseRevenue(lastMonthRevenue);
-                    const currentMonth = parseRevenue(currentMonthRevenue);
-
-                    // Calculate MoM percentage
-                    if (lastMonth === 0) {
-                      return currentMonth > 0 ? "+∞%" : "0%";
-                    }
-
-                    const momPercentage = ((currentMonth - lastMonth) / lastMonth) * 100;
-                    const sign = momPercentage >= 0 ? "+" : "";
-                    const arrowColor = momPercentage >= 0 ? "#4ade80" : "#ef4444";
-                    const ArrowIcon = momPercentage >= 0 ? FaArrowUp : FaArrowDown;
-
-                    return (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                        <span>{`${sign}${momPercentage.toFixed(1)}%`}</span>
-                        <span style={{ color: arrowColor }}>
-                          <ArrowIcon size={24} />
-                        </span>
-                      </div>
-                    );
-                  })()}
-                </div>
-                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
-                  {(() => {
-                    const parseRevenue = (revenueStr) => {
-                      if (typeof revenueStr === 'number') return revenueStr;
-                      if (!revenueStr || revenueStr === "₹0") return 0;
-                      return parseFloat(revenueStr.replace(/[₹,]/g, '')) || 0;
-                    };
-
-                    const lastMonth = parseRevenue(lastMonthRevenue);
-                    const currentMonth = parseRevenue(currentMonthRevenue);
-
-                    if (lastMonth === 0) {
-                      return currentMonth > 0 ? "vs Last Month (₹0)" : "vs Last Month";
-                    }
-
-                    const momPercentage = ((currentMonth - lastMonth) / lastMonth) * 100;
-                    const color = momPercentage >= 0 ? "#4ade80" : "#ef4444";
-                    const label = momPercentage >= 0 ? "Growth" : "Decline";
-
-                    return (
-                      <span style={{ color }}>
-                        {label} vs Last Month
-                      </span>
-                    );
                   })()}
                 </div>
               </div>
