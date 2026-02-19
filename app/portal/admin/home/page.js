@@ -32,6 +32,8 @@ export default function Home() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [lastMonthRevenue, setLastMonthRevenue] = useState("₹0");
+  const [currentMonthRevenue, setCurrentMonthRevenue] = useState("₹0");
   const [dashboardData, setDashboardData] = useState({
     fittbot: {
       totalUsers: { today: 0, week: 0, month: 0, overall: 0 },
@@ -108,8 +110,63 @@ export default function Home() {
     const startDate = formatDate(firstDayOfLastMonth);
     const endDate = formatDate(lastDayOfLastMonth);
 
-    fetchCustomMetricData("revenue", startDate, endDate);
+    fetchLastMonthRevenue(startDate, endDate);
   }, []);
+
+  const fetchLastMonthRevenue = async (startDate, endDate) => {
+    try {
+      const params = {
+        fittbot_filter: "custom",
+        business_filter: "month",
+        custom_start_date: startDate,
+        custom_end_date: endDate,
+      };
+
+      const response = await axiosInstance.get("/api/admin/dashboard/overview", {
+        params,
+      });
+
+      if (response.data.success && response.data.data.fittbot.revenue.custom) {
+        setLastMonthRevenue(response.data.data.fittbot.revenue.custom);
+      }
+    } catch (err) {
+      console.error("Error fetching last month revenue:", err);
+    }
+  };
+
+  // Fetch current month revenue on mount
+  useEffect(() => {
+    const now = new Date();
+    const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const today = new Date();
+
+    const formatDate = (date) => date.toISOString().split('T')[0];
+    const startDate = formatDate(firstDayOfCurrentMonth);
+    const endDate = formatDate(today);
+
+    fetchCurrentMonthRevenue(startDate, endDate);
+  }, []);
+
+  const fetchCurrentMonthRevenue = async (startDate, endDate) => {
+    try {
+      const params = {
+        fittbot_filter: "custom",
+        business_filter: "month",
+        custom_start_date: startDate,
+        custom_end_date: endDate,
+      };
+
+      const response = await axiosInstance.get("/api/admin/dashboard/overview", {
+        params,
+      });
+
+      if (response.data.success && response.data.data.fittbot.revenue.custom) {
+        setCurrentMonthRevenue(response.data.data.fittbot.revenue.custom);
+      }
+    } catch (err) {
+      console.error("Error fetching current month revenue:", err);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -901,7 +958,7 @@ export default function Home() {
               </div>
               <div className="card-body-custom">
                 <div className="metric-number">
-                  {customRangeData.revenue.applied ? customRangeData.revenue.value : "₹0"}
+                  {lastMonthRevenue}
                 </div>
                 <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
                   {(() => {
@@ -910,6 +967,36 @@ export default function Home() {
                     const monthNames = ["January", "February", "March", "April", "May", "June",
                                        "July", "August", "September", "October", "November", "December"];
                     return `${monthNames[lastMonthDate.getMonth()]} ${lastMonthDate.getFullYear()}`;
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Current Month Revenue Card */}
+          <div className="col-xl-4 col-lg-6 col-md-6">
+            <div
+              className="dashboard-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/admin/revenue")}
+            >
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Current Month Revenue</h6>
+              </div>
+              <div className="card-body-custom">
+                <div className="metric-number">
+                  {currentMonthRevenue}
+                </div>
+                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                  {(() => {
+                    const now = new Date();
+                    const monthNames = ["January", "February", "March", "April", "May", "June",
+                                       "July", "August", "September", "October", "November", "December"];
+                    const dayNames = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th",
+                                       "11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th",
+                                       "21st", "22nd", "23rd", "24th", "25th", "26th", "27th", "28th", "29th", "30th", "31st"];
+                    const day = now.getDate();
+                    return `${monthNames[now.getMonth()]} 1 - ${dayNames[day - 1] || day}${day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th'}`;
                   })()}
                 </div>
               </div>
