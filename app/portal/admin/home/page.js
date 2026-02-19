@@ -97,6 +97,20 @@ export default function Home() {
     fetchDashboardData();
   }, [fittbotTotalUsersFilter, fittbotRevenueFilter, businessGymOwnersFilter, businessGymsFilter, customRangeData.gymOwners.applied, customRangeData.gyms.applied]);
 
+  // Fetch last month revenue on mount
+  useEffect(() => {
+    const now = new Date();
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const firstDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1);
+    const lastDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 0);
+
+    const formatDate = (date) => date.toISOString().split('T')[0];
+    const startDate = formatDate(firstDayOfLastMonth);
+    const endDate = formatDate(lastDayOfLastMonth);
+
+    fetchCustomMetricData("revenue", startDate, endDate);
+  }, []);
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -828,6 +842,21 @@ export default function Home() {
                     if (value === "custom") {
                       setFittbotRevenueFilter("custom");
                       openCustomDateModal("revenue");
+                    } else if (value === "lastMonth") {
+                      // Calculate previous calendar month date range
+                      const now = new Date();
+                      const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                      const firstDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1);
+                      const lastDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 0);
+
+                      // Format dates as YYYY-MM-DD
+                      const formatDate = (date) => date.toISOString().split('T')[0];
+                      const startDate = formatDate(firstDayOfLastMonth);
+                      const endDate = formatDate(lastDayOfLastMonth);
+
+                      // Fetch data for last month
+                      fetchCustomMetricData("revenue", startDate, endDate);
+                      setFittbotRevenueFilter("lastMonth");
                     } else {
                       setFittbotRevenueFilter(value);
                       setCustomRangeData(prev => ({
@@ -843,15 +872,45 @@ export default function Home() {
                   <option value="today">Today</option>
                   <option value="week">Last 7 days</option>
                   <option value="month">Last 30 days</option>
+                  <option value="lastMonth">Last Month</option>
                   <option value="overall">Overall</option>
                   <option value="custom">Custom Range</option>
                 </select>
               </div>
               <div className="card-body-custom">
                 <div className="metric-number">
-                  {fittbotRevenueFilter === "custom" && customRangeData.revenue.applied
+                  {fittbotRevenueFilter === "lastMonth" && customRangeData.revenue.applied
+                    ? customRangeData.revenue.value
+                    : fittbotRevenueFilter === "custom" && customRangeData.revenue.applied
                     ? customRangeData.revenue.value
                     : dashboardData.fittbot.revenue[fittbotRevenueFilter]}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Last Month Revenue Card */}
+          <div className="col-xl-4 col-lg-6 col-md-6">
+            <div
+              className="dashboard-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/admin/revenue")}
+            >
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Last Month Revenue</h6>
+              </div>
+              <div className="card-body-custom">
+                <div className="metric-number">
+                  {customRangeData.revenue.applied ? customRangeData.revenue.value : "₹0"}
+                </div>
+                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                  {(() => {
+                    const now = new Date();
+                    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const monthNames = ["January", "February", "March", "April", "May", "June",
+                                       "July", "August", "September", "October", "November", "December"];
+                    return `${monthNames[lastMonthDate.getMonth()]} ${lastMonthDate.getFullYear()}`;
+                  })()}
                 </div>
               </div>
             </div>

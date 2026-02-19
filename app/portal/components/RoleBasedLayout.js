@@ -46,7 +46,17 @@ function BusinessIcon({ size = 20 }) {
     />
   );
 }
-
+function BookingsIcon({ size = 20 }) {
+  return (
+    <img
+      src="/bookings.svg"
+      alt="Bookings"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
 export default function RoleBasedLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -91,8 +101,8 @@ export default function RoleBasedLayout({ children }) {
             path: "/portal/admin/user-conversion",
           },
           {
-            name: "Purchases",
-            icon: HiOutlineCurrencyDollar,
+            name: "Bookings",
+            icon: BookingsIcon,
             path: "/portal/admin/purchases",
           },
           // {
