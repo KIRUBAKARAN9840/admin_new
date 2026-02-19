@@ -514,7 +514,7 @@ export default function Home() {
       {/* Fittbot Section */}
       <div className="section-container">
         <h5 className="section-heading">
-          <span style={{ color: "#FF5757" }}>Us</span><span style={{ color: "#fff" }}>ers</span>
+          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble Users</span>
         </h5>
         <div className="row g-4">
           {/* Total Users Card */}
@@ -569,58 +569,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Total Revenue Card */}
-          <div className="col-xl-4 col-lg-6 col-md-6">
-            <div
-              className="dashboard-card"
-              style={{ cursor: "pointer" }}
-              onClick={() => router.push("/portal/admin/revenue")}
-            >
-              <div className="card-header-custom">
-                <h6 className="card-title">Total Revenue</h6>
-                <select
-                  className="filter-dropdown"
-                  value={fittbotRevenueFilter}
-                  onChange={(e) => {
-                    // Clear any pending blur timeout
-                    if (selectBlurTimeoutRef.current) {
-                      clearTimeout(selectBlurTimeoutRef.current);
-                      selectBlurTimeoutRef.current = null;
-                    }
-
-                    const value = e.target.value;
-                    if (value === "custom") {
-                      setFittbotRevenueFilter("custom");
-                      openCustomDateModal("revenue");
-                    } else {
-                      setFittbotRevenueFilter(value);
-                      setCustomRangeData(prev => ({
-                        ...prev,
-                        revenue: { value: "₹0", applied: false, startDate: "", endDate: "" }
-                      }));
-                    }
-                  }}
-                  onFocus={handleSelectFocus}
-                  onBlur={(e) => handleSelectBlur(e, "revenue")}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <option value="today">Today</option>
-                  <option value="week">Last 7 days</option>
-                  <option value="month">Last 30 days</option>
-                  <option value="overall">Overall</option>
-                  <option value="custom">Custom Range</option>
-                </select>
-              </div>
-              <div className="card-body-custom">
-                <div className="metric-number">
-                  {fittbotRevenueFilter === "custom" && customRangeData.revenue.applied
-                    ? customRangeData.revenue.value
-                    : dashboardData.fittbot.revenue[fittbotRevenueFilter]}
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Monthly Active Users Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div className="dashboard-card">
@@ -662,7 +610,7 @@ export default function Home() {
       <div className="section-container">
         <h3 className="section-heading">
           {" "}
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span> Business
+          <span style={{ color: "#FF5757" }}>G</span><span style={{ color: "#fff" }}>yms</span>
         </h3>
         <div className="row g-4">
           {/* Gym Owners Card - Commented out */}
@@ -844,6 +792,66 @@ export default function Home() {
                       Hold
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Revenue Metrics Section */}
+      <div className="section-container">
+        <h3 className="section-heading">
+          <span style={{ color: "#FF5757" }}>Revenue</span> Metrics
+        </h3>
+        <div className="row g-4">
+          {/* Total Revenue Card */}
+          <div className="col-xl-4 col-lg-6 col-md-6">
+            <div
+              className="dashboard-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/admin/revenue")}
+            >
+              <div className="card-header-custom">
+                <h6 className="card-title">Total Revenue</h6>
+                <select
+                  className="filter-dropdown"
+                  value={fittbotRevenueFilter}
+                  onChange={(e) => {
+                    // Clear any pending blur timeout
+                    if (selectBlurTimeoutRef.current) {
+                      clearTimeout(selectBlurTimeoutRef.current);
+                      selectBlurTimeoutRef.current = null;
+                    }
+
+                    const value = e.target.value;
+                    if (value === "custom") {
+                      setFittbotRevenueFilter("custom");
+                      openCustomDateModal("revenue");
+                    } else {
+                      setFittbotRevenueFilter(value);
+                      setCustomRangeData(prev => ({
+                        ...prev,
+                        revenue: { value: "₹0", applied: false, startDate: "", endDate: "" }
+                      }));
+                    }
+                  }}
+                  onFocus={handleSelectFocus}
+                  onBlur={(e) => handleSelectBlur(e, "revenue")}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="today">Today</option>
+                  <option value="week">Last 7 days</option>
+                  <option value="month">Last 30 days</option>
+                  <option value="overall">Overall</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+              <div className="card-body-custom">
+                <div className="metric-number">
+                  {fittbotRevenueFilter === "custom" && customRangeData.revenue.applied
+                    ? customRangeData.revenue.value
+                    : dashboardData.fittbot.revenue[fittbotRevenueFilter]}
                 </div>
               </div>
             </div>
