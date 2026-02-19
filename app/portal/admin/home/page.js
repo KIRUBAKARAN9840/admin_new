@@ -37,6 +37,8 @@ export default function Home() {
       totalUsers: { today: 0, week: 0, month: 0, overall: 0 },
       revenue: { today: "₹0", week: "₹0", month: "₹0", overall: "₹0" },
       subscribedUsers: { today: 0, week: 0, month: 0, overall: 0 },
+      monthlyActiveUsers: 0,
+      totalPayingUsers: 0,
       monthlyRevenueTrends: [],
     },
     business: {
@@ -512,7 +514,7 @@ export default function Home() {
       {/* Fittbot Section */}
       <div className="section-container">
         <h5 className="section-heading">
-          <span style={{ color: "#FF5757" }}>Fy</span><span style={{ color: "#fff" }}>mble</span>
+          <span style={{ color: "#FF5757" }}>Us</span><span style={{ color: "#fff" }}>ers</span>
         </h5>
         <div className="row g-4">
           {/* Total Users Card */}
@@ -523,7 +525,7 @@ export default function Home() {
               onClick={() => router.push("/portal/admin/users")}
             >
               <div className="card-header-custom">
-                <h6 className="card-title">Fymble Users</h6>
+                <h6 className="card-title">Total Fymble Users</h6>
                 <select
                   className="filter-dropdown"
                   value={fittbotTotalUsersFilter}
@@ -615,6 +617,40 @@ export default function Home() {
                     ? customRangeData.revenue.value
                     : dashboardData.fittbot.revenue[fittbotRevenueFilter]}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Monthly Active Users Card */}
+          <div className="col-xl-4 col-lg-6 col-md-6">
+            <div className="dashboard-card">
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Monthly Active Users</h6>
+              </div>
+              <div className="card-body-custom">
+                <div className="metric-number">
+                  {dashboardData.fittbot.monthlyActiveUsers || 0}
+                </div>
+                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                  Last 30 days
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Paying Users Card */}
+          <div className="col-xl-4 col-lg-6 col-md-6">
+            <div className="dashboard-card">
+              <div className="card-header-custom extra-space">
+                <h6 className="card-title">Total Paying Users</h6>
+              </div>
+              <div className="card-body-custom">
+                <div className="metric-number">
+                  {dashboardData.fittbot.totalPayingUsers || 0}
+                </div>
+                {/* <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                  Unique users who made payments
+                </div> */}
               </div>
             </div>
           </div>

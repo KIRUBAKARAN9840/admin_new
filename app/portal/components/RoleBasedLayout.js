@@ -61,7 +61,7 @@ export default function RoleBasedLayout({ children }) {
       case "admin":
         return [
           {
-            name: "Dashboard",
+            name: "Summary",
             icon: HiOutlineHome,
             path: "/portal/admin/home",
           },
@@ -129,7 +129,7 @@ export default function RoleBasedLayout({ children }) {
       case "support":
         return [
           {
-            name: "Dashboard",
+            name: "Summary",
             icon: HiOutlineHome,
             path: "/portal/support/home",
           },
@@ -142,7 +142,7 @@ export default function RoleBasedLayout({ children }) {
       case "telecaller":
         return [
           {
-            name: "Dashboard",
+            name: "Summary",
             icon: HiOutlineHome,
             path: "/portal/telecaller/home",
           },
