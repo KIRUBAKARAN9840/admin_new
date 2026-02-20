@@ -1,35 +1,85 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import * as XLSX from "xlsx";
 
 export default function RevenueAnalytics() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [purchaseData, setPurchaseData] = useState(null);
   const [hoveredSlice, setHoveredSlice] = useState(null);
   const [activeTab, setActiveTab] = useState("revenue"); // 'revenue' or 'purchases'
 
+  // Get filter from URL or default to last_30
+  const getInitialFilter = () => {
+    const filterParam = searchParams.get("filter");
+    if (filterParam && ["today", "last_7", "last_30", "last_month", "current_month", "overall", "custom"].includes(filterParam)) {
+      return filterParam;
+    }
+    return "last_30";
+  };
+
   // Filter states
-  const [dateFilter, setDateFilter] = useState("last_30"); // last_30, overall, custom
+  const [dateFilter, setDateFilter] = useState(getInitialFilter());
   const [source, setSource] = useState("all");
   const [gymId, setGymId] = useState("");
   const [gymName, setGymName] = useState("");
   const [allGymsList, setAllGymsList] = useState([]); // Store all gyms separately from filtered data
 
-  // Initialize dates for last_30 filter on mount
-  const [startDate, setStartDate] = useState(() => {
+  // Initialize dates based on the initial filter
+  const getInitialDates = () => {
     const today = new Date();
+    const filter = getInitialFilter();
+
+    if (filter === "today") {
+      return {
+        start: today.toISOString().split('T')[0],
+        end: today.toISOString().split('T')[0]
+      };
+    } else if (filter === "last_7") {
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return {
+        start: sevenDaysAgo.toISOString().split('T')[0],
+        end: today.toISOString().split('T')[0]
+      };
+    } else if (filter === "last_30") {
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return {
+        start: thirtyDaysAgo.toISOString().split('T')[0],
+        end: today.toISOString().split('T')[0]
+      };
+    } else if (filter === "last_month") {
+      const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const firstDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1);
+      const lastDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 0);
+      return {
+        start: firstDayOfLastMonth.toISOString().split('T')[0],
+        end: lastDayOfLastMonth.toISOString().split('T')[0]
+      };
+    } else if (filter === "current_month") {
+      const firstDayOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      return {
+        start: firstDayOfCurrentMonth.toISOString().split('T')[0],
+        end: today.toISOString().split('T')[0]
+      };
+    }
+    // Default to last_30
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    return thirtyDaysAgo.toISOString().split('T')[0];
-  });
-  const [endDate, setEndDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  });
+    return {
+      start: thirtyDaysAgo.toISOString().split('T')[0],
+      end: today.toISOString().split('T')[0]
+    };
+  };
+
+  const initialDates = getInitialDates();
+  const [startDate, setStartDate] = useState(initialDates.start);
+  const [endDate, setEndDate] = useState(initialDates.end);
 
   useEffect(() => {
     // Set date range based on filter selection
@@ -54,6 +104,10 @@ export default function RevenueAnalytics() {
       const lastDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 0);
       setEndDate(lastDayOfLastMonth.toISOString().split('T')[0]);
       setStartDate(firstDayOfLastMonth.toISOString().split('T')[0]);
+    } else if (dateFilter === "current_month") {
+      const firstDayOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      setEndDate(today.toISOString().split('T')[0]);
+      setStartDate(firstDayOfCurrentMonth.toISOString().split('T')[0]);
     }
     // For "custom" and "overall", dates are handled separately
   }, [dateFilter]);
@@ -68,7 +122,7 @@ export default function RevenueAnalytics() {
       // For custom, only fetch if both dates are set
       if (activeTab === "revenue") fetchRevenueAnalytics(false);
       if (activeTab === "purchases") fetchPurchaseAnalytics(false);
-    } else if (["today", "last_7", "last_30", "last_month"].includes(dateFilter)) {
+    } else if (["today", "last_7", "last_30", "last_month", "current_month"].includes(dateFilter)) {
       // For predefined filters, always fetch (dates should be set by the time this runs)
       if (activeTab === "revenue") fetchRevenueAnalytics(false);
       if (activeTab === "purchases") fetchPurchaseAnalytics(false);
@@ -523,6 +577,7 @@ export default function RevenueAnalytics() {
               <option value="last_7">Last 7 Days</option>
               <option value="last_30">Last 30 Days</option>
               <option value="last_month">Last Month</option>
+              <option value="current_month">Current Month</option>
               <option value="overall">Overall</option>
               <option value="custom">Custom</option>
             </select>

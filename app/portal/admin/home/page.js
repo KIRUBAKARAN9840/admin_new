@@ -582,6 +582,13 @@ export default function Home() {
         </div>
       )}
 
+      {/* Growth Metrics Section */}
+      <div className="section-container">
+        <h3 className="section-heading" style={{ textAlign: "center", marginBottom: "30px" }}>
+          <span style={{ color: "#FF5757" }}>Gr</span><span style={{ color: "#fff" }}>owth Metrics</span>
+        </h3>
+      </div>
+
       {/* Fittbot Section */}
       <div className="section-container">
         <h5 className="section-heading">
@@ -917,7 +924,7 @@ export default function Home() {
             <div
               className="dashboard-card"
               style={{ cursor: "pointer" }}
-              onClick={() => router.push("/portal/admin/revenue")}
+              onClick={() => router.push("/portal/admin/revenue?filter=overall")}
             >
               <div className="card-header-custom">
                 <h6 className="card-title">Total Revenue</h6>
@@ -987,7 +994,7 @@ export default function Home() {
             <div
               className="dashboard-card"
               style={{ cursor: "pointer" }}
-              onClick={() => router.push("/portal/admin/revenue")}
+              onClick={() => router.push("/portal/admin/revenue?filter=last_month")}
             >
               <div className="card-header-custom extra-space">
                 <h6 className="card-title">Last Month Revenue</h6>
@@ -1014,7 +1021,7 @@ export default function Home() {
             <div
               className="dashboard-card"
               style={{ cursor: "pointer" }}
-              onClick={() => router.push("/portal/admin/revenue")}
+              onClick={() => router.push("/portal/admin/revenue?filter=current_month")}
             >
               <div className="card-header-custom extra-space">
                 <h6 className="card-title">Current Month Revenue</h6>
