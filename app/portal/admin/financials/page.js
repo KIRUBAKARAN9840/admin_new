@@ -119,7 +119,12 @@ export default function FinancialsDashboard() {
 
   const formatCurrency = (amount) => {
     if (typeof amount === 'number') {
-      return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+      // Show max 2 decimal places, remove trailing zeros for whole numbers
+      const formatted = amount.toLocaleString('en-IN', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      });
+      return `₹${formatted}`;
     }
     return amount;
   };
