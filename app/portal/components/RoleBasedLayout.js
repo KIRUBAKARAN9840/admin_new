@@ -57,6 +57,32 @@ function BookingsIcon({ size = 20 }) {
     />
   );
 }
+
+function FinanceIcon({ size = 20 }) {
+  return (
+    <img
+      src="/finance.svg"
+      alt="Finance"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
+function FinancialsIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 10h16v10H4V10z" fill="currentColor" opacity="0.3"/>
+      <path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" fill="currentColor"/>
+      <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="#111827"/>
+      <path d="M12 11c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/>
+      <path d="M6 14h2v2H6v-2z" fill="currentColor"/>
+      <path d="M10 14h2v2h-2v-2z" fill="currentColor"/>
+      <path d="M14 14h2v2h-2v-2z" fill="currentColor"/>
+      <path d="M18 14h2v2h-2v-2z" fill="currentColor"/>
+    </svg>
+  );
+}
 export default function RoleBasedLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -99,6 +125,11 @@ export default function RoleBasedLayout({ children }) {
             name: "User Conversion",
             icon: UserConversionIcon,
             path: "/portal/admin/user-conversion",
+          },
+          {
+            name: "Financials Dashboard",
+            icon: FinanceIcon,
+            path: "/portal/admin/financials",
           },
           {
             name: "Bookings",
