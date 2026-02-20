@@ -797,7 +797,7 @@ export default function Home() {
           </div>
           */}
 
-          {/* Verified Gyms Card */}
+          {/* Active Gyms Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div
               className="dashboard-card"
@@ -805,7 +805,7 @@ export default function Home() {
               onClick={() => router.push("/portal/admin/verified-gyms")}
             >
               <div className="card-header-custom extra-space">
-                <h6 className="card-title">Verified Gyms</h6>
+                <h6 className="card-title">Active Gyms</h6>
               </div>
               <div className="card-body-custom">
                 <div className="metric-number">
@@ -879,7 +879,7 @@ export default function Home() {
 
       {/* Revenue Metrics Section */}
       <div className="section-container">
-        <h3 className="section-heading">
+        <h3 className="section-heading" style={{ textAlign: "center", marginBottom: "30px" }}>
           <span style={{ color: "#FF5757" }}>Revenue</span> Metrics
         </h3>
         <div style={{ marginBottom: "20px", textAlign: "center" }}>
