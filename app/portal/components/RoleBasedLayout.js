@@ -15,6 +15,7 @@ import {
   HiCurrencyRupee,
   HiOutlineSpeakerphone,
   HiOutlinePhone,
+  HiOutlineCreditCard,
 } from "react-icons/hi";
 import { MdWorkOutline, MdOutlineTabletMac } from "react-icons/md";
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
@@ -63,6 +64,19 @@ function FinanceIcon({ size = 20 }) {
     <img
       src="/finance.svg"
       alt="Finance"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+  
+}
+
+function ExpensesIcon({ size = 24 }) {
+  return (
+    <img
+      src="/expenses.svg"
+      alt="Expenses"
       width={size}
       height={size}
       style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
@@ -130,6 +144,11 @@ export default function RoleBasedLayout({ children }) {
             name: "Financials Dashboard",
             icon: FinanceIcon,
             path: "/portal/admin/financials",
+          },
+          {
+            name: "Expenses",
+            icon: ExpensesIcon,
+            path: "/portal/admin/expenses",
           },
           {
             name: "Bookings",
