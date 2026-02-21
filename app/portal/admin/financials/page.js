@@ -419,35 +419,146 @@ export default function FinancialsDashboard() {
         </div>
       )}
 
+      {/* Net Revenue Section */}
+      {financialsData && financialsData.netRevenue && (
+        <div className="section-container">
+          <h5 className="section-heading" style={{ marginBottom: "20px", textAlign: "center" }}>
+            <span style={{ color: "#FF5757" }}>Net</span> Revenue
+          </h5>
+          <div className="row g-4">
+            {/* Total Net Revenue Card */}
+            <div className="col-xl-12">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title" style={{ textAlign: "center" }}>Total Net Revenue</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ textAlign: "center" }}>
+                    {formatCurrency(financialsData.netRevenue)}
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#888", marginTop: "8px", textAlign: "center" }}>
+                    Revenue after GST deductions
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Net Revenue Breakdown by Category */}
+      {financialsData && financialsData.netRevenueBreakdown && (
+        <div className="section-container">
+          <h5 className="section-heading" style={{ marginBottom: "20px" }}>
+            <span style={{ color: "#FF5757" }}>Net</span> Revenue Breakdown
+          </h5>
+          <div className="row g-4">
+            {/* Fymble Subscription Net Revenue */}
+            <div className="col-xl-6 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Fymble Subscription</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.netRevenueBreakdown.fittbot_subscription.net_revenue)}
+                  </div>
+                  <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "5px" }}>
+                      <span style={{ color: "#888" }}>Total Revenue:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.fittbot_subscription.revenue)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#ef4444" }}>GST (18%):</span>
+                      <span style={{ color: "#ef4444" }}>-{formatCurrency(financialsData.netRevenueBreakdown.fittbot_subscription.gst)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Gym Membership Net Revenue */}
+            <div className="col-xl-6 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Gym Membership</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.netRevenueBreakdown.gym_membership.net_revenue)}
+                  </div>
+                  <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "5px" }}>
+                      <span style={{ color: "#888" }}>Total Revenue:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.gym_membership.revenue)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#ef4444" }}>GST on Commission (18%):</span>
+                      <span style={{ color: "#ef4444" }}>-{formatCurrency(financialsData.netRevenueBreakdown.gym_membership.gst_on_comm)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Daily Pass Net Revenue */}
+            <div className="col-xl-6 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Daily Pass</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.netRevenueBreakdown.daily_pass.net_revenue)}
+                  </div>
+                  <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "5px" }}>
+                      <span style={{ color: "#888" }}>Total Revenue:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.daily_pass.revenue)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#ef4444" }}>GST on Commission (18%):</span>
+                      <span style={{ color: "#ef4444" }}>-{formatCurrency(financialsData.netRevenueBreakdown.daily_pass.gst_on_comm)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sessions Net Revenue */}
+            <div className="col-xl-6 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Sessions</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.netRevenueBreakdown.sessions.net_revenue)}
+                  </div>
+                  <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "5px" }}>
+                      <span style={{ color: "#888" }}>Total Revenue:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.sessions.revenue)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#ef4444" }}>GST on Commission (18%):</span>
+                      <span style={{ color: "#ef4444" }}>-{formatCurrency(financialsData.netRevenueBreakdown.sessions.gst_on_comm)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Coming Soon Metrics */}
       <div className="section-container">
         <h5 className="section-heading" style={{ marginBottom: "20px" }}>
           Other Metrics
         </h5>
         <div className="row g-4">
-          <div className="col-xl-4 col-lg-6">
-            <div
-              className="dashboard-card"
-              style={{
-                opacity: 0.5,
-                cursor: "not-allowed"
-              }}
-            >
-              <div className="card-header-custom extra-space">
-                <h6 className="card-title">Net Revenue</h6>
-              </div>
-              <div className="card-body-custom">
-                <div className="metric-number" style={{ color: "#888" }}>
-                  Coming Soon
-                </div>
-                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
-                  Total Revenue minus deductions
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-xl-4 col-lg-6">
+          <div className="col-xl-6 col-lg-6">
             <div
               className="dashboard-card"
               style={{
@@ -469,7 +580,7 @@ export default function FinancialsDashboard() {
             </div>
           </div>
 
-          <div className="col-xl-4 col-lg-6">
+          <div className="col-xl-6 col-lg-6">
             <div
               className="dashboard-card"
               style={{
