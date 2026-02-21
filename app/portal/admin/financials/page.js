@@ -796,7 +796,7 @@ export default function FinancialsDashboard() {
                         backgroundColor: tooltip.data.color,
                         animation: "pulse 1.5s ease-in-out infinite"
                       }} />
-                      {tooltip.data.percent.toFixed(1)}% of total revenue
+                      {tooltip.data.percent.toFixed(1)}% of total Net revenue
                     </div>
                   </div>
                 )}
