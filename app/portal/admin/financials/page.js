@@ -330,15 +330,15 @@ export default function FinancialsDashboard() {
                     <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
                         <span style={{ color: "#888" }}>Membership:</span>
-                        <span style={{ color: "#4ade80" }}>{formatCurrency(financialsData.payoutBreakdown.membership.revenue)}</span>
+                        <span style={{ color: "#4ade80" }}>{formatCurrency(financialsData.payoutBreakdown.membership.payout)}</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
                         <span style={{ color: "#888" }}>Daily Pass:</span>
-                        <span style={{ color: "#4ade80" }}>{formatCurrency(financialsData.payoutBreakdown.daily_pass.revenue)}</span>
+                        <span style={{ color: "#4ade80" }}>{formatCurrency(financialsData.payoutBreakdown.daily_pass.payout)}</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
                         <span style={{ color: "#888" }}>Sessions:</span>
-                        <span style={{ color: "#4ade80" }}>{formatCurrency(financialsData.payoutBreakdown.sessions.revenue)}</span>
+                        <span style={{ color: "#4ade80" }}>{formatCurrency(financialsData.payoutBreakdown.sessions.payout)}</span>
                       </div>
                     </div>
                   </div>
@@ -426,9 +426,9 @@ export default function FinancialsDashboard() {
       {/* Net Revenue Section */}
       {financialsData && financialsData.netRevenue && (
         <div className="section-container">
-          <h5 className="section-heading" style={{ marginBottom: "20px", textAlign: "center" }}>
+          <h2 className="section-heading" style={{ marginBottom: "20px", textAlign: "center", fontSize: "28px", fontWeight: "700" }}>
             <span style={{ color: "#FF5757" }}>Net</span> Revenue
-          </h5>
+          </h2>
           <div className="row g-4">
             {/* Total Net Revenue Card */}
             <div className="col-xl-12">
@@ -809,9 +809,9 @@ export default function FinancialsDashboard() {
       {/* Net Revenue Breakdown by Category */}
       {financialsData && financialsData.netRevenueBreakdown && (
         <div className="section-container">
-          <h5 className="section-heading" style={{ marginBottom: "20px" }}>
+          <h3 className="section-heading" style={{ marginBottom: "20px", fontSize: "24px" }}>
             <span style={{ color: "#FF5757" }}>Net</span> Revenue Breakdown
-          </h5>
+          </h3>
           <div className="row g-4">
             {/* Fymble Subscription Net Revenue */}
             <div className="col-xl-6 col-lg-6">
@@ -912,35 +912,146 @@ export default function FinancialsDashboard() {
         </div>
       )}
 
+      {/* Gross Profit Section */}
+      {financialsData && financialsData.grossProfit && (
+        <div className="section-container">
+          <h2 className="section-heading" style={{ marginBottom: "20px", textAlign: "center", fontSize: "28px", fontWeight: "700" }}>
+            <span style={{ color: "#FF5757" }}>Gross</span> Profit
+          </h2>
+          <div className="row g-4">
+            {/* Total Gross Profit Card */}
+            <div className="col-xl-12">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title" style={{ textAlign: "center" }}>Total Gross Profit</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ textAlign: "center" }}>
+                    {formatCurrency(financialsData.grossProfit)}
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#888", marginTop: "8px", textAlign: "center" }}>
+                    Profit after GST deductions on commissions
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Gross Profit Breakdown by Category */}
+      {financialsData && financialsData.grossProfitBreakdown && (
+        <div className="section-container">
+          <h3 className="section-heading" style={{ marginBottom: "20px", fontSize: "24px" }}>
+            <span style={{ color: "#FF5757" }}>Gross</span> Profit Breakdown
+          </h3>
+          <div className="row g-4">
+            {/* Fymble Subscription Gross Profit */}
+            <div className="col-xl-6 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Fymble Subscription</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.grossProfitBreakdown.fittbot_subscription.gross_profit)}
+                  </div>
+                  <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "5px" }}>
+                      <span style={{ color: "#888" }}>Total Revenue:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.fittbot_subscription.revenue)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#ef4444" }}>GST (18%):</span>
+                      <span style={{ color: "#ef4444" }}>-{formatCurrency(financialsData.grossProfitBreakdown.fittbot_subscription.gst)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Gym Membership Gross Profit */}
+            <div className="col-xl-6 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Gym Membership</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.grossProfitBreakdown.gym_membership.gross_profit)}
+                  </div>
+                  <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "5px" }}>
+                      <span style={{ color: "#888" }}>Platform Commission:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.gym_membership.commission)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#ef4444" }}>GST on Commission (18%):</span>
+                      <span style={{ color: "#ef4444" }}>-{formatCurrency(financialsData.grossProfitBreakdown.gym_membership.gst_on_comm)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Daily Pass Gross Profit */}
+            <div className="col-xl-6 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Daily Pass</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.grossProfitBreakdown.daily_pass.gross_profit)}
+                  </div>
+                  <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "5px" }}>
+                      <span style={{ color: "#888" }}>Platform Commission:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.daily_pass.commission)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#ef4444" }}>GST on Commission (18%):</span>
+                      <span style={{ color: "#ef4444" }}>-{formatCurrency(financialsData.grossProfitBreakdown.daily_pass.gst_on_comm)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sessions Gross Profit */}
+            <div className="col-xl-6 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Sessions</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.grossProfitBreakdown.sessions.gross_profit)}
+                  </div>
+                  <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "5px" }}>
+                      <span style={{ color: "#888" }}>Platform Commission:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.sessions.commission)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#ef4444" }}>GST on Commission (18%):</span>
+                      <span style={{ color: "#ef4444" }}>-{formatCurrency(financialsData.grossProfitBreakdown.sessions.gst_on_comm)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Coming Soon Metrics */}
       <div className="section-container">
         <h5 className="section-heading" style={{ marginBottom: "20px" }}>
           Other Metrics
         </h5>
         <div className="row g-4">
-          <div className="col-xl-6 col-lg-6">
-            <div
-              className="dashboard-card"
-              style={{
-                opacity: 0.5,
-                cursor: "not-allowed"
-              }}
-            >
-              <div className="card-header-custom extra-space">
-                <h6 className="card-title">Gross Profit</h6>
-              </div>
-              <div className="card-body-custom">
-                <div className="metric-number" style={{ color: "#888" }}>
-                  Coming Soon
-                </div>
-                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
-                  Revenue minus operational costs
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-xl-6 col-lg-6">
+          <div className="col-xl-12 col-lg-12">
             <div
               className="dashboard-card"
               style={{
