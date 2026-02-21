@@ -13,6 +13,10 @@ export default function FinancialsDashboard() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // Pie chart interaction states
+  const [hoveredSegment, setHoveredSegment] = useState(null);
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, data: null });
+
   // Fetch financials data - using useCallback to prevent recreation
   const fetchFinancialsData = useCallback(async (start, end) => {
     try {
@@ -443,6 +447,362 @@ export default function FinancialsDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Net Revenue Pie Chart - Interactive & Animated */}
+          {financialsData.netRevenueBreakdown && (() => {
+            const breakdown = financialsData.netRevenueBreakdown;
+            const fymbleNet = breakdown.fittbot_subscription.net_revenue;
+            const gymNet = breakdown.gym_membership.net_revenue;
+            const dailyPassNet = breakdown.daily_pass.net_revenue;
+            const sessionsNet = breakdown.sessions.net_revenue;
+            const totalNet = fymbleNet + gymNet + dailyPassNet + sessionsNet;
+
+            // Calculate percentages
+            const fymblePercent = totalNet > 0 ? (fymbleNet / totalNet) * 100 : 0;
+            const gymPercent = totalNet > 0 ? (gymNet / totalNet) * 100 : 0;
+            const dailyPassPercent = totalNet > 0 ? (dailyPassNet / totalNet) * 100 : 0;
+            const sessionsPercent = totalNet > 0 ? (sessionsNet / totalNet) * 100 : 0;
+
+            // Segment data with enhanced colors and gradients
+            const segments = [
+              {
+                id: 'fymble',
+                name: 'Fymble Subscription',
+                shortName: 'Fymble Sub',
+                value: fymbleNet,
+                percent: fymblePercent,
+                color: '#FF5757',
+                gradient: 'linear-gradient(135deg, #FF5757 0%, #FF3366 100%)',
+                startAngle: 0,
+                endAngle: fymblePercent * 3.6
+              },
+              {
+                id: 'gym',
+                name: 'Gym Membership',
+                shortName: 'Gym Membership',
+                value: gymNet,
+                percent: gymPercent,
+                color: '#4ade80',
+                gradient: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
+                startAngle: fymblePercent * 3.6,
+                endAngle: (fymblePercent + gymPercent) * 3.6
+              },
+              {
+                id: 'dailyPass',
+                name: 'Daily Pass',
+                shortName: 'Daily Pass',
+                value: dailyPassNet,
+                percent: dailyPassPercent,
+                color: '#3b82f6',
+                gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                startAngle: (fymblePercent + gymPercent) * 3.6,
+                endAngle: (fymblePercent + gymPercent + dailyPassPercent) * 3.6
+              },
+              {
+                id: 'sessions',
+                name: 'Sessions',
+                shortName: 'Sessions',
+                value: sessionsNet,
+                percent: sessionsPercent,
+                color: '#f59e0b',
+                gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                startAngle: (fymblePercent + gymPercent + dailyPassPercent) * 3.6,
+                endAngle: 360
+              }
+            ];
+
+            // Convert polar to cartesian coordinates
+            const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
+              const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+              return {
+                x: centerX + (radius * Math.cos(angleInRadians)),
+                y: centerY + (radius * Math.sin(angleInRadians))
+              };
+            };
+
+            // Create SVG arc path
+            const createArcPath = (startAngle, endAngle, innerRadius, outerRadius, isHovered) => {
+              const radius = isHovered ? outerRadius + 8 : outerRadius;
+              const start = polarToCartesian(100, 100, radius, endAngle);
+              const end = polarToCartesian(100, 100, radius, startAngle);
+              const startInner = polarToCartesian(100, 100, innerRadius, endAngle);
+              const endInner = polarToCartesian(100, 100, innerRadius, startAngle);
+
+              const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+
+              return [
+                "M", start.x, start.y,
+                "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+                "L", endInner.x, endInner.y,
+                "A", innerRadius, innerRadius, 0, largeArcFlag, 1, startInner.x, startInner.y,
+                "Z"
+              ].join(" ");
+            };
+
+            const handleMouseEnter = (segment, event) => {
+              setHoveredSegment(segment.id);
+              const rect = event.currentTarget.getBoundingClientRect();
+              setTooltip({
+                visible: true,
+                x: rect.left + rect.width / 2,
+                y: rect.top,
+                data: segment
+              });
+            };
+
+            const handleMouseLeave = () => {
+              setHoveredSegment(null);
+              setTooltip({ visible: false, x: 0, y: 0, data: null });
+            };
+
+            return (
+              <div style={{ marginTop: "30px" }}>
+                <div className="dashboard-card">
+                  <div className="card-header-custom extra-space">
+                    <h6 className="card-title" style={{ textAlign: "center" }}>Net Revenue Distribution</h6>
+                  </div>
+                  <div className="card-body-custom">
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "50px", flexWrap: "wrap", padding: "20px 0" }}>
+                      {/* Animated SVG Pie Chart */}
+                      <div style={{ position: "relative", width: "260px", height: "260px" }}>
+                        <svg
+                          width="260"
+                          height="260"
+                          viewBox="0 0 200 200"
+                          style={{
+                            filter: "drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3))",
+                            transform: "rotate(-90deg)"
+                          }}
+                        >
+                          {segments.map((segment, index) => {
+                            const isHovered = hoveredSegment === segment.id;
+                            const shouldDim = hoveredSegment && hoveredSegment !== segment.id;
+
+                            return (
+                              <g key={segment.id}>
+                                {/* Main arc with gradient effect */}
+                                <defs>
+                                  <linearGradient id={`gradient-${segment.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style={{ stopColor: segment.color, stopOpacity: 1 }} />
+                                    <stop offset="100%" style={{ stopColor: segment.color, stopOpacity: 0.8 }} />
+                                  </linearGradient>
+                                  <filter id={`glow-${segment.id}`}>
+                                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                    <feMerge>
+                                      <feMergeNode in="coloredBlur"/>
+                                      <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                  </filter>
+                                </defs>
+
+                                <path
+                                  d={createArcPath(segment.startAngle, segment.endAngle, 60, 95, isHovered)}
+                                  fill={`url(#gradient-${segment.id})`}
+                                  stroke={shouldDim ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.3)"}
+                                  strokeWidth="2"
+                                  style={{
+                                    cursor: "pointer",
+                                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                    opacity: shouldDim ? 0.4 : 1,
+                                    filter: isHovered ? `url(#glow-${segment.id})` : "none"
+                                  }}
+                                  onMouseEnter={(e) => handleMouseEnter(segment, e)}
+                                  onMouseLeave={handleMouseLeave}
+                                  onMouseMove={(e) => handleMouseEnter(segment, e)}
+                                />
+
+                                {/* Animated entry effect */}
+                                <animate
+                                  attributeName="opacity"
+                                  from="0"
+                                  to={shouldDim ? "0.4" : "1"}
+                                  dur="0.5s"
+                                  begin={`${index * 0.1}s`}
+                                  fill="freeze"
+                                />
+                              </g>
+                            );
+                          })}
+
+                          {/* Center circle with gradient */}
+                          <circle
+                            cx="100"
+                            cy="100"
+                            r="55"
+                            fill="url(#centerGradient)"
+                            style={{
+                              filter: "drop-shadow(0 0 20px rgba(0, 0, 0, 0.5)) inset"
+                            }}
+                          />
+
+                          {/* Center gradient definition */}
+                          <defs>
+                            <radialGradient id="centerGradient">
+                              <stop offset="0%" style={{ stopColor: "#2a2a2a" }} />
+                              <stop offset="100%" style={{ stopColor: "#1a1a1a" }} />
+                            </radialGradient>
+                          </defs>
+                        </svg>
+
+                        {/* Center content */}
+                        <div style={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-50%, -50%)",
+                          textAlign: "center",
+                          pointerEvents: "none"
+                        }}>
+                          <div style={{
+                            fontSize: "10px",
+                            color: "#888",
+                            textTransform: "uppercase",
+                            letterSpacing: "1px",
+                            marginBottom: "4px"
+                          }}>
+                            Total
+                          </div>
+                          <div style={{
+                            fontSize: "18px",
+                            fontWeight: "700",
+                            color: "#fff",
+                            textShadow: "0 2px 10px rgba(0, 0, 0, 0.5)"
+                          }}>
+                            {formatCurrency(totalNet)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Enhanced Legend with animations */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "14px", minWidth: "280px" }}>
+                        {segments.map((segment) => {
+                          const isHovered = hoveredSegment === segment.id;
+                          const shouldDim = hoveredSegment && hoveredSegment !== segment.id;
+
+                          return (
+                            <div
+                              key={segment.id}
+                              onMouseEnter={() => setHoveredSegment(segment.id)}
+                              onMouseLeave={() => setHoveredSegment(null)}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "12px",
+                                padding: "10px 14px",
+                                borderRadius: "10px",
+                                backgroundColor: isHovered ? "rgba(255, 255, 255, 0.08)" : "transparent",
+                                cursor: "pointer",
+                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                transform: isHovered ? "translateX(8px)" : "translateX(0)",
+                                opacity: shouldDim ? 0.4 : 1,
+                                borderLeft: isHovered ? `3px solid ${segment.color}` : "3px solid transparent"
+                              }}
+                            >
+                              {/* Animated color indicator */}
+                              <div style={{
+                                position: "relative",
+                                width: "20px",
+                                height: "20px",
+                                borderRadius: "6px",
+                                background: segment.gradient,
+                                boxShadow: `0 0 ${isHovered ? "15px" : "0px"} ${segment.color}40`,
+                                transition: "all 0.3s ease"
+                              }}>
+                                {isHovered && (
+                                  <div style={{
+                                    position: "absolute",
+                                    inset: "-4px",
+                                    borderRadius: "8px",
+                                    border: `2px solid ${segment.color}`,
+                                    animation: "pulse 1.5s ease-in-out infinite"
+                                  }} />
+                                )}
+                              </div>
+
+                              <div style={{ flex: 1 }}>
+                                <div style={{
+                                  fontSize: "13px",
+                                  color: "#fff",
+                                  fontWeight: isHovered ? "600" : "400",
+                                  transition: "all 0.2s ease"
+                                }}>
+                                  {segment.name}
+                                </div>
+                              </div>
+
+                              <div style={{
+                                fontSize: "15px",
+                                fontWeight: "700",
+                                color: segment.color,
+                                minWidth: "70px",
+                                textAlign: "right",
+                                textShadow: isHovered ? `0 0 10px ${segment.color}60` : "none"
+                              }}>
+                                {segment.percent.toFixed(1)}%
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Tooltip */}
+                {tooltip.visible && tooltip.data && (
+                  <div style={{
+                    position: "fixed",
+                    left: tooltip.x - 100,
+                    top: tooltip.y - 100,
+                    backgroundColor: "rgba(26, 26, 26, 0.98)",
+                    border: `1px solid ${tooltip.data.color}`,
+                    borderRadius: "12px",
+                    padding: "14px 18px",
+                    boxShadow: `0 10px 40px ${tooltip.data.color}40, 0 0 60px rgba(0, 0, 0, 0.5)`,
+                    zIndex: 1000,
+                    minWidth: "200px",
+                    animation: "tooltipFadeIn 0.2s ease-out",
+                    backdropFilter: "blur(10px)"
+                  }}>
+                    <div style={{
+                      fontSize: "13px",
+                      color: "#888",
+                      marginBottom: "4px",
+                      textTransform: "uppercase",
+                      letterSpacing: "1px"
+                    }}>
+                      {tooltip.data.name}
+                    </div>
+                    <div style={{
+                      fontSize: "22px",
+                      fontWeight: "700",
+                      color: tooltip.data.color,
+                      marginBottom: "8px",
+                      textShadow: `0 0 20px ${tooltip.data.color}60`
+                    }}>
+                      {formatCurrency(tooltip.data.value)}
+                    </div>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "14px",
+                      color: "#fff"
+                    }}>
+                      <div style={{
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        backgroundColor: tooltip.data.color,
+                        animation: "pulse 1.5s ease-in-out infinite"
+                      }} />
+                      {tooltip.data.percent.toFixed(1)}% of total revenue
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -608,6 +968,14 @@ export default function FinancialsDashboard() {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        @keyframes tooltipFadeIn {
+          0% { opacity: 0; transform: translateY(10px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
     </div>
