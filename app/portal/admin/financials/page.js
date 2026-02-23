@@ -436,7 +436,7 @@ export default function FinancialsDashboard() {
                   <h6 className="card-title" style={{ textAlign: "center" }}>Total Net Revenue</h6>
                 </div>
                 <div className="card-body-custom">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "40px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "60px" }}>
                     {/* Left Side - Total Revenue */}
                     <div style={{ flex: "1", textAlign: "center" }}>
                       <div className="metric-number" style={{ fontSize: "42px", fontWeight: "700" }}>
@@ -447,36 +447,36 @@ export default function FinancialsDashboard() {
                       </div>
                     </div>
 
-                    {/* Right Side - Breakdown */}
+                    {/* Right Side - Breakdown - List Style */}
                     {financialsData.netRevenueBreakdown && (
-                      <div style={{ flex: "1", padding: "20px", backgroundColor: "#1a1a1a", borderRadius: "10px", border: "1px solid #333" }}>
-                        <div style={{ fontSize: "13px", color: "#aaa", marginBottom: "15px", textAlign: "center", fontWeight: "600" }}>
-                          Net Revenue Breakdown
+                      <div style={{ flex: "1" }}>
+                        <div style={{ fontSize: "13px", color: "#fff", marginBottom: "15px", fontWeight: "600", textAlign: "center" }}>
+                          Breakdown
                         </div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-                          <div style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Daily Pass</div>
-                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 15px", backgroundColor: "#1e1e1e", borderRadius: "6px" }}>
+                            <span style={{ fontSize: "13px", color: "#aaa" }}>Daily Pass</span>
+                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
                               {formatCurrency(financialsData.netRevenueBreakdown.daily_pass.net_revenue)}
-                            </div>
+                            </span>
                           </div>
-                          <div style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Sessions</div>
-                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 15px", backgroundColor: "#1e1e1e", borderRadius: "6px" }}>
+                            <span style={{ fontSize: "13px", color: "#aaa" }}>Sessions</span>
+                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
                               {formatCurrency(financialsData.netRevenueBreakdown.sessions.net_revenue)}
-                            </div>
+                            </span>
                           </div>
-                          <div style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Gym Membership</div>
-                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 15px", backgroundColor: "#1e1e1e", borderRadius: "6px" }}>
+                            <span style={{ fontSize: "13px", color: "#aaa" }}>Gym Membership</span>
+                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
                               {formatCurrency(financialsData.netRevenueBreakdown.gym_membership.net_revenue)}
-                            </div>
+                            </span>
                           </div>
-                          <div style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Fymble Subscription</div>
-                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#FF5757" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 15px", backgroundColor: "#1e1e1e", borderRadius: "6px" }}>
+                            <span style={{ fontSize: "13px", color: "#aaa" }}>Fymble Subscription</span>
+                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
                               {formatCurrency(financialsData.netRevenueBreakdown.fittbot_subscription.net_revenue)}
-                            </div>
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -965,7 +965,7 @@ export default function FinancialsDashboard() {
                   <h6 className="card-title" style={{ textAlign: "center" }}>Total Gross Profit</h6>
                 </div>
                 <div className="card-body-custom">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "40px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "60px" }}>
                     {/* Left Side - Total Gross Profit */}
                     <div style={{ flex: "1", textAlign: "center" }}>
                       <div className="metric-number" style={{ fontSize: "42px", fontWeight: "700" }}>
@@ -976,36 +976,36 @@ export default function FinancialsDashboard() {
                       </div>
                     </div>
 
-                    {/* Right Side - Breakdown */}
+                    {/* Right Side - Breakdown - List Style */}
                     {financialsData.grossProfitBreakdown && (
-                      <div style={{ flex: "1", padding: "20px", backgroundColor: "#1a1a1a", borderRadius: "10px", border: "1px solid #333" }}>
-                        <div style={{ fontSize: "13px", color: "#aaa", marginBottom: "15px", textAlign: "center", fontWeight: "600" }}>
-                          Gross Profit Breakdown
+                      <div style={{ flex: "1" }}>
+                        <div style={{ fontSize: "13px", color: "#fff", marginBottom: "15px", fontWeight: "600", textAlign: "center" }}>
+                          Breakdown
                         </div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-                          <div style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Daily Pass</div>
-                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 15px", backgroundColor: "#1e1e1e", borderRadius: "6px" }}>
+                            <span style={{ fontSize: "13px", color: "#aaa" }}>Daily Pass</span>
+                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
                               {formatCurrency(financialsData.grossProfitBreakdown.daily_pass.gross_profit)}
-                            </div>
+                            </span>
                           </div>
-                          <div style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Sessions</div>
-                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 15px", backgroundColor: "#1e1e1e", borderRadius: "6px" }}>
+                            <span style={{ fontSize: "13px", color: "#aaa" }}>Sessions</span>
+                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
                               {formatCurrency(financialsData.grossProfitBreakdown.sessions.gross_profit)}
-                            </div>
+                            </span>
                           </div>
-                          <div style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Gym Membership</div>
-                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 15px", backgroundColor: "#1e1e1e", borderRadius: "6px" }}>
+                            <span style={{ fontSize: "13px", color: "#aaa" }}>Gym Membership</span>
+                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
                               {formatCurrency(financialsData.grossProfitBreakdown.gym_membership.gross_profit)}
-                            </div>
+                            </span>
                           </div>
-                          <div style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Fymble Subscription</div>
-                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#FF5757" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 15px", backgroundColor: "#1e1e1e", borderRadius: "6px" }}>
+                            <span style={{ fontSize: "13px", color: "#aaa" }}>Fymble Subscription</span>
+                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
                               {formatCurrency(financialsData.grossProfitBreakdown.fittbot_subscription.gross_profit)}
-                            </div>
+                            </span>
                           </div>
                         </div>
                       </div>
