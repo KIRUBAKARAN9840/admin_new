@@ -1045,29 +1045,23 @@ export default function FinancialsDashboard() {
         </div>
       )}
 
-      {/* Coming Soon Metrics */}
+      {/* EBITA Section */}
       <div className="section-container">
-        <h5 className="section-heading" style={{ marginBottom: "20px" }}>
-          Other Metrics
+        <h5 className="section-heading" style={{ marginBottom: "20px", fontSize: "28px", fontWeight: "700", textAlign: "center" }}>
+          <span style={{ color: "#FF5757" }}>EB</span>ITA
         </h5>
         <div className="row g-4">
           <div className="col-xl-12 col-lg-12">
-            <div
-              className="dashboard-card"
-              style={{
-                opacity: 0.5,
-                cursor: "not-allowed"
-              }}
-            >
+            <div className="dashboard-card">
               <div className="card-header-custom extra-space">
                 <h6 className="card-title">EBITA</h6>
               </div>
               <div className="card-body-custom">
-                <div className="metric-number" style={{ color: "#888" }}>
-                  Coming Soon
+                <div className="metric-number">
+                  {formatCurrency(financialsData?.ebita?.ebita || 0)}
                 </div>
-                <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
-                  Earnings before interest, taxes, and amortization
+                <div style={{ fontSize: "12px", color: "#aaa", marginTop: "8px" }}>
+                  Gross Profit: {formatCurrency(financialsData?.ebita?.gross_profit || 0)} - Expenses: {formatCurrency(financialsData?.ebita?.total_expenses || 0)}
                 </div>
               </div>
             </div>
