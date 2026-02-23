@@ -151,6 +151,11 @@ export default function RoleBasedLayout({ children }) {
             path: "/portal/admin/expenses",
           },
           {
+            name: "MRR",
+            icon: HiOutlineCurrencyDollar,
+            path: "/portal/admin/mrr",
+          },
+          {
             name: "Bookings",
             icon: BookingsIcon,
             path: "/portal/admin/purchases",
