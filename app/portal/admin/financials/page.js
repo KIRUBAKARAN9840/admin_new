@@ -428,9 +428,6 @@ export default function FinancialsDashboard() {
       {/* Net Revenue Section */}
       {financialsData && financialsData.netRevenue && (
         <div className="section-container">
-          <h2 className="section-heading" style={{ marginBottom: "20px", textAlign: "center", fontSize: "28px", fontWeight: "700" }}>
-            <span style={{ color: "#FF5757" }}>Net</span> Revenue
-          </h2>
           <div className="row g-4">
             {/* Total Net Revenue Card */}
             <div className="col-xl-12">
@@ -439,37 +436,52 @@ export default function FinancialsDashboard() {
                   <h6 className="card-title" style={{ textAlign: "center" }}>Total Net Revenue</h6>
                 </div>
                 <div className="card-body-custom">
-                  <div className="metric-number" style={{ textAlign: "center" }}>
-                    {formatCurrency(financialsData.netRevenue)}
-                  </div>
-                  <div style={{ fontSize: "13px", color: "#888", marginTop: "8px", textAlign: "center" }}>
-                    Revenue after GST deductions
-                  </div>
-                  {financialsData.netRevenueBreakdown && (
-                    <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
-                      <div style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
-                        Net Revenue Breakdown:
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "40px" }}>
+                    {/* Left Side - Total Revenue */}
+                    <div style={{ flex: "1", textAlign: "center" }}>
+                      <div className="metric-number" style={{ fontSize: "42px", fontWeight: "700" }}>
+                        {formatCurrency(financialsData.netRevenue)}
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                          <span style={{ color: "#888" }}>Daily Pass:</span>
-                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.daily_pass.net_revenue)}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                          <span style={{ color: "#888" }}>Sessions:</span>
-                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.sessions.net_revenue)}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                          <span style={{ color: "#888" }}>Gym Membership:</span>
-                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.gym_membership.net_revenue)}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                          <span style={{ color: "#888" }}>Fymble Subscription:</span>
-                          <span style={{ color: "#FF5757" }}>{formatCurrency(financialsData.netRevenueBreakdown.fittbot_subscription.net_revenue)}</span>
-                        </div>
+                      <div style={{ fontSize: "14px", color: "#888", marginTop: "8px" }}>
+                        Revenue after GST deductions
                       </div>
                     </div>
-                  )}
+
+                    {/* Right Side - Breakdown */}
+                    {financialsData.netRevenueBreakdown && (
+                      <div style={{ flex: "1", padding: "20px", backgroundColor: "#1a1a1a", borderRadius: "10px", border: "1px solid #333" }}>
+                        <div style={{ fontSize: "13px", color: "#aaa", marginBottom: "15px", textAlign: "center", fontWeight: "600" }}>
+                          Net Revenue Breakdown
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Daily Pass</div>
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                              {formatCurrency(financialsData.netRevenueBreakdown.daily_pass.net_revenue)}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Sessions</div>
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                              {formatCurrency(financialsData.netRevenueBreakdown.sessions.net_revenue)}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Gym Membership</div>
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                              {formatCurrency(financialsData.netRevenueBreakdown.gym_membership.net_revenue)}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Fymble Subscription</div>
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#FF5757" }}>
+                              {formatCurrency(financialsData.netRevenueBreakdown.fittbot_subscription.net_revenue)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -953,37 +965,52 @@ export default function FinancialsDashboard() {
                   <h6 className="card-title" style={{ textAlign: "center" }}>Total Gross Profit</h6>
                 </div>
                 <div className="card-body-custom">
-                  <div className="metric-number" style={{ textAlign: "center" }}>
-                    {formatCurrency(financialsData.grossProfit)}
-                  </div>
-                  <div style={{ fontSize: "13px", color: "#888", marginTop: "8px", textAlign: "center" }}>
-                    Profit after GST deductions on commissions
-                  </div>
-                  {financialsData.grossProfitBreakdown && (
-                    <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
-                      <div style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
-                        Gross Profit Breakdown:
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "40px" }}>
+                    {/* Left Side - Total Gross Profit */}
+                    <div style={{ flex: "1", textAlign: "center" }}>
+                      <div className="metric-number" style={{ fontSize: "42px", fontWeight: "700" }}>
+                        {formatCurrency(financialsData.grossProfit)}
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                          <span style={{ color: "#888" }}>Daily Pass:</span>
-                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.daily_pass.gross_profit)}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                          <span style={{ color: "#888" }}>Sessions:</span>
-                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.sessions.gross_profit)}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                          <span style={{ color: "#888" }}>Gym Membership:</span>
-                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.gym_membership.gross_profit)}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                          <span style={{ color: "#888" }}>Fymble Subscription:</span>
-                          <span style={{ color: "#FF5757" }}>{formatCurrency(financialsData.grossProfitBreakdown.fittbot_subscription.gross_profit)}</span>
-                        </div>
+                      <div style={{ fontSize: "14px", color: "#888", marginTop: "8px" }}>
+                        Profit after GST deductions on commissions
                       </div>
                     </div>
-                  )}
+
+                    {/* Right Side - Breakdown */}
+                    {financialsData.grossProfitBreakdown && (
+                      <div style={{ flex: "1", padding: "20px", backgroundColor: "#1a1a1a", borderRadius: "10px", border: "1px solid #333" }}>
+                        <div style={{ fontSize: "13px", color: "#aaa", marginBottom: "15px", textAlign: "center", fontWeight: "600" }}>
+                          Gross Profit Breakdown
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Daily Pass</div>
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                              {formatCurrency(financialsData.grossProfitBreakdown.daily_pass.gross_profit)}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Sessions</div>
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                              {formatCurrency(financialsData.grossProfitBreakdown.sessions.gross_profit)}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Gym Membership</div>
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+                              {formatCurrency(financialsData.grossProfitBreakdown.gym_membership.gross_profit)}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Fymble Subscription</div>
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#FF5757" }}>
+                              {formatCurrency(financialsData.grossProfitBreakdown.fittbot_subscription.gross_profit)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
