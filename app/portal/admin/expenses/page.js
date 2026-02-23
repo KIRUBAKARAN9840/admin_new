@@ -4,35 +4,6 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineSearch, HiOutlineFilter } from "react-icons/hi";
 
-// Predefined expense types
-const OPERATIONAL_EXPENSE_TYPES = [
-  "Rent / Lease",
-  "Electricity",
-  "Water",
-  "Staff Salaries",
-  "Maintenance & Repairs",
-  "Cleaning & Housekeeping",
-  "Internet & Utilities",
-  "Software Subscriptions",
-  "Equipment Servicing (AMC)",
-  "Security Services",
-  "Other"
-];
-
-const MARKETING_EXPENSE_TYPES = [
-  "Meta Platforms Ads",
-  "Google Ads",
-  "Influencer Marketing",
-  "Offline Printing (Banners/Flyers)",
-  "Event Sponsorship",
-  "SEO Services",
-  "Website Maintenance",
-  "Video & Content Production",
-  "Brand Photoshoot",
-  "SMS & Email Marketing Campaigns",
-  "Other"
-];
-
 export default function ExpensesPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -75,19 +46,41 @@ export default function ExpensesPage() {
     description: ""
   });
 
-  // Fetch expense types
-  const fetchExpenseTypes = useCallback(async () => {
+  // Fetch overview data (summary + types + default operational list)
+  const fetchOverview = useCallback(async (isInitialLoad = false) => {
     try {
-      const response = await axiosInstance.get("/api/admin/expenses/types");
+      if (isInitialLoad) setLoading(true);
+      const params = {
+        page: pagination.page,
+        page_size: pagination.page_size
+      };
+
+      if (filters.start_date) params.start_date = filters.start_date;
+      if (filters.end_date) params.end_date = filters.end_date;
+
+      const response = await axiosInstance.get("/api/admin/expenses/summary/overview", { params });
+
       if (response.data.success) {
-        setExpenseTypes(response.data.data);
+        const data = response.data.data;
+        setSummary(data);
+
+        // Set expense types from overview response
+        setExpenseTypes(data.expense_types);
+
+        // Set expenses list from overview response (only on initial load for operational tab)
+        if (isInitialLoad || activeTab === "operational") {
+          setExpenses(data.expenses);
+          setPagination(data.pagination);
+        }
       }
     } catch (err) {
-      console.error("Error fetching expense types:", err);
+      console.error("Error fetching overview:", err);
+    } finally {
+      if (isInitialLoad) setLoading(false);
     }
-  }, []);
+  }, [filters.start_date, filters.end_date, pagination.page, pagination.page_size, activeTab]);
 
-  // Fetch expenses
+  // Fetch expenses list for specific category (when switching tabs or applying filters)
   const fetchExpenses = useCallback(async () => {
     try {
       setLoading(true);
@@ -115,32 +108,17 @@ export default function ExpensesPage() {
     }
   }, [activeTab, pagination.page, pagination.page_size, filters]);
 
-  // Fetch summary
-  const fetchSummary = useCallback(async () => {
-    try {
-      const params = {};
-      if (filters.start_date) params.start_date = filters.start_date;
-      if (filters.end_date) params.end_date = filters.end_date;
+  // Initial data fetch - only overview API
+  useEffect(() => {
+    fetchOverview(true);
+  }, [filters.start_date, filters.end_date]);
 
-      const response = await axiosInstance.get("/api/admin/expenses/summary/overview", { params });
-
-      if (response.data.success) {
-        setSummary(response.data.data);
-      }
-    } catch (err) {
-      console.error("Error fetching summary:", err);
+  // Fetch expenses list when tab changes or filters change (not initial load)
+  useEffect(() => {
+    if (!loading) {
+      fetchExpenses();
     }
-  }, [filters]);
-
-  // Initial data fetch
-  useEffect(() => {
-    fetchExpenseTypes();
-    fetchSummary();
-  }, [fetchExpenseTypes, fetchSummary]);
-
-  useEffect(() => {
-    fetchExpenses();
-  }, [fetchExpenses]);
+  }, [activeTab, filters.expense_type, filters.search, pagination.page]);
 
   // Handle form submit
   const handleSubmit = async (e) => {
@@ -166,7 +144,7 @@ export default function ExpensesPage() {
       setShowAddForm(false);
       setEditingExpense(null);
       fetchExpenses();
-      fetchSummary();
+      fetchOverview();
     } catch (err) {
       console.error("Error saving expense:", err);
       alert(err.response?.data?.detail || "Failed to save expense");
@@ -178,7 +156,7 @@ export default function ExpensesPage() {
   // Handle edit
   const handleEdit = (expense) => {
     setEditingExpense(expense);
-    const predefinedTypes = expense.category === "operational" ? OPERATIONAL_EXPENSE_TYPES : MARKETING_EXPENSE_TYPES;
+    const predefinedTypes = expenseTypes[expense.category] || [];
     const isCustom = !predefinedTypes.includes(expense.expense_type);
     setIsCustomType(isCustom);
     setFormData({
@@ -198,7 +176,7 @@ export default function ExpensesPage() {
     try {
       await axiosInstance.delete(`/api/admin/expenses/${id}`);
       fetchExpenses();
-      fetchSummary();
+      fetchOverview();
     } catch (err) {
       console.error("Error deleting expense:", err);
       alert("Failed to delete expense");
@@ -218,7 +196,7 @@ export default function ExpensesPage() {
 
   // Get current expense types based on active tab
   const getCurrentExpenseTypes = () => {
-    return activeTab === "operational" ? OPERATIONAL_EXPENSE_TYPES : MARKETING_EXPENSE_TYPES;
+    return expenseTypes[activeTab] || [];
   };
 
   const cardStyle = {
@@ -435,9 +413,10 @@ export default function ExpensesPage() {
                 required
               >
                 <option value="">Select type...</option>
-                {(formData.category === "operational" ? OPERATIONAL_EXPENSE_TYPES : MARKETING_EXPENSE_TYPES).map(type => (
+                {(expenseTypes[formData.category] || []).map(type => (
                   <option key={type} value={type}>{type}</option>
                 ))}
+                <option value="Other">Other (Custom)</option>
               </select>
             </div>
             {isCustomType && (
