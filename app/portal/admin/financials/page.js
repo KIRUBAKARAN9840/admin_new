@@ -265,8 +265,9 @@ export default function FinancialsDashboard() {
       </div>
 
       {/* Financial Metrics */}
-      <div className="section-container">
-        <div className="row g-4">
+      {false && (
+        <div className="section-container">
+          <div className="row g-4">
           {/* Total Revenue Card */}
           <div className="col-xl-6 col-lg-6">
             <div className="dashboard-card">
@@ -348,9 +349,10 @@ export default function FinancialsDashboard() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Deductions Breakdown */}
-      {financialsData && financialsData.totalDeductions && (
+      {false && (
         <div className="section-container">
           <h5 className="section-heading" style={{ marginBottom: "20px" }}>
             Total Deductions
@@ -443,6 +445,31 @@ export default function FinancialsDashboard() {
                   <div style={{ fontSize: "13px", color: "#888", marginTop: "8px", textAlign: "center" }}>
                     Revenue after GST deductions
                   </div>
+                  {financialsData.netRevenueBreakdown && (
+                    <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                      <div style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
+                        Net Revenue Breakdown:
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#888" }}>Daily Pass:</span>
+                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.daily_pass.net_revenue)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#888" }}>Sessions:</span>
+                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.sessions.net_revenue)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#888" }}>Gym Membership:</span>
+                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.netRevenueBreakdown.gym_membership.net_revenue)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#888" }}>Fymble Subscription:</span>
+                          <span style={{ color: "#FF5757" }}>{formatCurrency(financialsData.netRevenueBreakdown.fittbot_subscription.net_revenue)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -807,7 +834,7 @@ export default function FinancialsDashboard() {
       )}
 
       {/* Net Revenue Breakdown by Category */}
-      {financialsData && financialsData.netRevenueBreakdown && (
+      {false && (
         <div className="section-container">
           <h3 className="section-heading" style={{ marginBottom: "20px", fontSize: "24px" }}>
             <span style={{ color: "#FF5757" }}>Net</span> Revenue Breakdown
@@ -932,6 +959,31 @@ export default function FinancialsDashboard() {
                   <div style={{ fontSize: "13px", color: "#888", marginTop: "8px", textAlign: "center" }}>
                     Profit after GST deductions on commissions
                   </div>
+                  {financialsData.grossProfitBreakdown && (
+                    <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #333" }}>
+                      <div style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
+                        Gross Profit Breakdown:
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#888" }}>Daily Pass:</span>
+                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.daily_pass.gross_profit)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#888" }}>Sessions:</span>
+                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.sessions.gross_profit)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#888" }}>Gym Membership:</span>
+                          <span style={{ color: "#fff" }}>{formatCurrency(financialsData.grossProfitBreakdown.gym_membership.gross_profit)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#888" }}>Fymble Subscription:</span>
+                          <span style={{ color: "#FF5757" }}>{formatCurrency(financialsData.grossProfitBreakdown.fittbot_subscription.gross_profit)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -940,7 +992,7 @@ export default function FinancialsDashboard() {
       )}
 
       {/* Gross Profit Breakdown by Category */}
-      {financialsData && financialsData.grossProfitBreakdown && (
+      {false && (
         <div className="section-container">
           <h3 className="section-heading" style={{ marginBottom: "20px", fontSize: "24px" }}>
             <span style={{ color: "#FF5757" }}>Gross</span> Profit Breakdown
@@ -1145,3 +1197,4 @@ export default function FinancialsDashboard() {
     </div>
   );
 }
+
