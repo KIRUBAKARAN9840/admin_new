@@ -1045,27 +1045,86 @@ export default function FinancialsDashboard() {
         </div>
       )}
 
-      {/* EBITA Section */}
+      {/* Other Metrics Section - EBITA, ARPU, ARPPU */}
       <div className="section-container">
-        <h5 className="section-heading" style={{ marginBottom: "20px", fontSize: "28px", fontWeight: "700", textAlign: "center" }}>
-          <span style={{ color: "#FF5757" }}>EB</span>ITA
+        <h5 className="section-heading" style={{ marginBottom: "20px", fontSize: "24px" }}>
+          <span style={{ color: "#FF5757" }}>Other</span> Metrics
         </h5>
         <div className="row g-4">
-          <div className="col-xl-12 col-lg-12">
+          {/* EBITA Card */}
+          <div className="col-xl-4 col-lg-6">
             <div className="dashboard-card">
               <div className="card-header-custom extra-space">
                 <h6 className="card-title">EBITA</h6>
               </div>
               <div className="card-body-custom">
-                <div className="metric-number">
+                <div className="metric-number" style={{ fontSize: "24px" }}>
                   {formatCurrency(financialsData?.ebita?.ebita || 0)}
                 </div>
-                <div style={{ fontSize: "12px", color: "#aaa", marginTop: "8px" }}>
+                <div style={{ fontSize: "11px", color: "#aaa", marginTop: "8px" }}>
                   Gross Profit: {formatCurrency(financialsData?.ebita?.gross_profit || 0)} - Expenses: {formatCurrency(financialsData?.ebita?.total_expenses || 0)}
                 </div>
               </div>
             </div>
           </div>
+
+          {/* ARPU Card */}
+          {financialsData?.arpu && (
+            <div className="col-xl-4 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">ARPU</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.arpu.arpu || 0)}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#888", marginTop: "8px" }}>
+                    Per active user
+                  </div>
+                  <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
+                      <span style={{ color: "#888" }}>Net Revenue:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.arpu.net_revenue || 0)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+                      <span style={{ color: "#888" }}>Active Users:</span>
+                      <span style={{ color: "#FF5757" }}>{financialsData.arpu.active_users || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ARPPU Card */}
+          {financialsData?.arppu && (
+            <div className="col-xl-4 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">ARPPU</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "24px" }}>
+                    {formatCurrency(financialsData.arppu.arppu || 0)}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#888", marginTop: "8px" }}>
+                    Per paying user
+                  </div>
+                  <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #333" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
+                      <span style={{ color: "#888" }}>Net Revenue:</span>
+                      <span style={{ color: "#fff" }}>{formatCurrency(financialsData.arppu.net_revenue || 0)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+                      <span style={{ color: "#888" }}>Paying Users:</span>
+                      <span style={{ color: "#4ade80" }}>{financialsData.arppu.paying_users || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
