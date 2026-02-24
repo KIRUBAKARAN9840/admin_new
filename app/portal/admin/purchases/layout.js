@@ -5,19 +5,24 @@ import { useRouter, usePathname } from "next/navigation";
 export default function PurchasesLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("purchase-count");
 
   useEffect(() => {
-    if (pathname.includes("/today")) {
+    if (pathname.includes("/purchase-count")) {
+      setActiveTab("purchase-count");
+    } else if (pathname.includes("/all")) {
+      setActiveTab("all");
+    } else if (pathname.includes("/today")) {
       setActiveTab("today");
     } else if (pathname.includes("/gym-memberships")) {
       setActiveTab("gym-memberships");
     } else {
-      setActiveTab("all");
+      setActiveTab("purchase-count");
     }
   }, [pathname]);
 
   const tabs = [
+    { id: "purchase-count", name: "Purchase Count", path: "/portal/admin/purchases/purchase-count" },
     { id: "all", name: "Session/Daily pass", path: "/portal/admin/purchases/all" },
     { id: "today", name: "Today's Schedule", path: "/portal/admin/purchases/today" },
     { id: "gym-memberships", name: "Gym Memberships", path: "/portal/admin/purchases/gym-memberships" },
