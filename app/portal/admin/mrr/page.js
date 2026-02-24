@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-import { HiArrowLeft } from "react-icons/hi";
 
 export default function MRR() {
   const router = useRouter();
@@ -27,17 +26,17 @@ export default function MRR() {
   const fetchMRRData = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API endpoint
-      // const response = await axiosInstance.get("/api/admin/mrr/data");
+      const response = await axiosInstance.get("/api/admin/mrr/data");
 
-      // Mock data for now
-      const mockData = {
-        currentMonthRevenue: 0,
-        previousMonthRevenue: 0,
-        arr: 0,
-      };
-
-      setMrrData(mockData);
+      if (response.data.success) {
+        setMrrData({
+          currentMonthRevenue: response.data.data.currentMonthRevenue,
+          previousMonthRevenue: response.data.data.previousMonthRevenue,
+          arr: response.data.data.arr,
+        });
+      } else {
+        throw new Error(response.data.message || "Failed to load MRR data");
+      }
     } catch (err) {
       console.error("Error fetching MRR data:", err);
       setError("Failed to load MRR data");
