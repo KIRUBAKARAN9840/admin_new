@@ -22,13 +22,13 @@ export default function MRR() {
   // Pie chart interaction states
   const [hoveredSegment, setHoveredSegment] = useState(null);
 
-  // Format currency
+  // Format currency - show exactly 2 decimal places
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
