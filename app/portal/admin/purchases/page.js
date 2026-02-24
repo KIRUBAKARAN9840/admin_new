@@ -6,8 +6,8 @@ export default function Purchases() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to All Purchases by default
-    router.replace("/portal/admin/purchases/all");
+    // Redirect to Purchase Count by default
+    router.replace("/portal/admin/purchases/purchase-count");
   }, [router]);
 
   return (

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axiosInstance from "@/lib/axios";
 import * as XLSX from "xlsx";
 
@@ -17,31 +17,30 @@ export default function PurchaseCountPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Initialize dates based on filter
-  const getInitialDates = () => {
+  // Compute dates based on filter (memoized to avoid recalculations)
+  const dates = useMemo(() => {
     const today = new Date();
-    const filter = dateFilter;
 
-    if (filter === "today") {
+    if (dateFilter === "today") {
       return {
         start: today.toISOString().split('T')[0],
         end: today.toISOString().split('T')[0]
       };
-    } else if (filter === "last_7") {
+    } else if (dateFilter === "last_7") {
       const sevenDaysAgo = new Date(today);
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       return {
         start: sevenDaysAgo.toISOString().split('T')[0],
         end: today.toISOString().split('T')[0]
       };
-    } else if (filter === "last_30") {
+    } else if (dateFilter === "last_30") {
       const thirtyDaysAgo = new Date(today);
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       return {
         start: thirtyDaysAgo.toISOString().split('T')[0],
         end: today.toISOString().split('T')[0]
       };
-    } else if (filter === "last_month") {
+    } else if (dateFilter === "last_month") {
       const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       const firstDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1);
       const lastDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 0);
@@ -49,7 +48,7 @@ export default function PurchaseCountPage() {
         start: firstDayOfLastMonth.toISOString().split('T')[0],
         end: lastDayOfLastMonth.toISOString().split('T')[0]
       };
-    } else if (filter === "current_month") {
+    } else if (dateFilter === "current_month") {
       const firstDayOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       return {
         start: firstDayOfCurrentMonth.toISOString().split('T')[0],
@@ -63,52 +62,9 @@ export default function PurchaseCountPage() {
       start: thirtyDaysAgo.toISOString().split('T')[0],
       end: today.toISOString().split('T')[0]
     };
-  };
-
-  const initialDates = getInitialDates();
-  const [dates, setDates] = useState(initialDates);
-
-  // Update dates when filter changes
-  useEffect(() => {
-    const today = new Date();
-
-    if (dateFilter === "today") {
-      setDates({
-        start: today.toISOString().split('T')[0],
-        end: today.toISOString().split('T')[0]
-      });
-    } else if (dateFilter === "last_7") {
-      const sevenDaysAgo = new Date(today);
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      setDates({
-        start: sevenDaysAgo.toISOString().split('T')[0],
-        end: today.toISOString().split('T')[0]
-      });
-    } else if (dateFilter === "last_30") {
-      const thirtyDaysAgo = new Date(today);
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      setDates({
-        start: thirtyDaysAgo.toISOString().split('T')[0],
-        end: today.toISOString().split('T')[0]
-      });
-    } else if (dateFilter === "last_month") {
-      const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const firstDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1);
-      const lastDayOfLastMonth = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 0);
-      setDates({
-        start: firstDayOfLastMonth.toISOString().split('T')[0],
-        end: lastDayOfLastMonth.toISOString().split('T')[0]
-      });
-    } else if (dateFilter === "current_month") {
-      const firstDayOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      setDates({
-        start: firstDayOfCurrentMonth.toISOString().split('T')[0],
-        end: today.toISOString().split('T')[0]
-      });
-    }
   }, [dateFilter]);
 
-  // Fetch purchase analytics when filters change
+  // Fetch purchase analytics when filters change (single useEffect)
   useEffect(() => {
     if (dateFilter === "overall") {
       fetchPurchaseAnalytics(true);
@@ -117,7 +73,7 @@ export default function PurchaseCountPage() {
     } else if (["today", "last_7", "last_30", "last_month", "current_month"].includes(dateFilter)) {
       fetchPurchaseAnalytics(false);
     }
-  }, [dates, source, gymId, dateFilter]);
+  }, [dates, source, gymId, dateFilter, startDate, endDate]);
 
   const fetchPurchaseAnalytics = async (isOverall = false) => {
     try {
