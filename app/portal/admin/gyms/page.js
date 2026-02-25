@@ -17,7 +17,7 @@ export default function GymsPage() {
 
       if (response.data.success) {
         setTotalGyms(response.data.data.total_gyms);
-        setActiveGyms(response.data.data.breakdown.green);
+        setActiveGyms(response.data.data.active_gyms);
       }
     } catch (err) {
       console.error("Error fetching gyms data:", err);
@@ -99,7 +99,7 @@ export default function GymsPage() {
                     {activeGyms.toLocaleString()}
                   </div>
                   <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
-                    Active (green) gyms
+                    Gyms with orders
                   </div>
                 </div>
               </div>
