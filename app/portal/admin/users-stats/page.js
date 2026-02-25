@@ -6,6 +6,8 @@ export default function UsersStatsPage() {
   const [loading, setLoading] = useState(true);
   const [totalUsers, setTotalUsers] = useState(0);
   const [activeUsers, setActiveUsers] = useState(0);
+  const [payingUsers, setPayingUsers] = useState(0);
+  const [repeatUsers, setRepeatUsers] = useState(0);
 
   // Fetch users stats data
   const fetchUsersData = async () => {
@@ -16,6 +18,8 @@ export default function UsersStatsPage() {
       if (response.data.success) {
         setTotalUsers(response.data.data.total_users);
         setActiveUsers(response.data.data.active_users);
+        setPayingUsers(response.data.data.paying_users);
+        setRepeatUsers(response.data.data.repeat_users);
       }
     } catch (err) {
       console.error("Error fetching users data:", err);
@@ -73,6 +77,40 @@ export default function UsersStatsPage() {
                   </div>
                   <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
                     Active users (last 30 days)
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Paying Users Card */}
+            <div className="col-xl-3 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Total Paying Users</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700", color: "#f59e0b" }}>
+                    {payingUsers.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                    Unique users with payments
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Repeat Users Card */}
+            <div className="col-xl-3 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Repeat Users</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700", color: "#a855f7" }}>
+                    {repeatUsers.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                    Customers with 1+ payments
                   </div>
                 </div>
               </div>
