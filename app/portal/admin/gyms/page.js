@@ -8,6 +8,8 @@ export default function GymsPage() {
   const [totalGyms, setTotalGyms] = useState(0);
   const [activeGyms, setActiveGyms] = useState(0);
   const [citiesData, setCitiesData] = useState([]);
+  const [statesData, setStatesData] = useState([]);
+  const [viewMode, setViewMode] = useState("city"); // "city" or "state"
   const router = useRouter();
 
   // Fetch all gyms data in a single API call
@@ -22,6 +24,7 @@ export default function GymsPage() {
         setTotalGyms(response.data.data.total_gyms);
         setActiveGyms(response.data.data.active_gyms);
         setCitiesData(response.data.data.cities);
+        setStatesData(response.data.data.states || []);
       }
     } catch (err) {
       console.error("Error fetching gyms data:", err);
@@ -34,11 +37,15 @@ export default function GymsPage() {
     fetchGymsData();
   }, []);
 
-  // Calculate active gym ratio
-  const activeRatio = totalGyms > 0 ? ((activeGyms / totalGyms) * 100).toFixed(1) : "0.0";
+  // Calculate active gym ratio - 2 decimal places
+  const activeRatio = totalGyms > 0 ? ((activeGyms / totalGyms) * 100).toFixed(2) : "0.00";
+
+  // Get current data based on view mode
+  const currentData = viewMode === "city" ? citiesData : statesData;
+  const currentLabel = viewMode === "city" ? "city" : "state";
 
   // Calculate max count for bar chart scaling
-  const maxCount = citiesData.length > 0 ? Math.max(...citiesData.map(c => c.count)) : 0;
+  const maxCount = currentData.length > 0 ? Math.max(...currentData.map(c => c.count)) : 0;
 
   return (
     <div className="dashboard-container">
@@ -145,15 +152,50 @@ export default function GymsPage() {
             </div>
           </div>
 
-          {/* Gyms per City Bar Chart */}
+          {/* Gyms per City/State Bar Chart */}
           <div className="row g-4" style={{ marginTop: "25px" }}>
             <div className="col-12">
               <div className="dashboard-card">
-                <div className="card-header-custom">
-                  <h6 className="card-title">Gyms per City</h6>
+                <div className="card-header-custom" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <h6 className="card-title">Gyms per {viewMode === "city" ? "City" : "State"}</h6>
+                  {/* Toggle Buttons */}
+                  <div style={{ display: "flex", gap: "8px", backgroundColor: "#1f2937", borderRadius: "6px", padding: "4px" }}>
+                    <button
+                      onClick={() => setViewMode("city")}
+                      style={{
+                        padding: "6px 16px",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        backgroundColor: viewMode === "city" ? "#FF5757" : "transparent",
+                        color: viewMode === "city" ? "#fff" : "#ccc",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      City
+                    </button>
+                    <button
+                      onClick={() => setViewMode("state")}
+                      style={{
+                        padding: "6px 16px",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        backgroundColor: viewMode === "state" ? "#FF5757" : "transparent",
+                        color: viewMode === "state" ? "#fff" : "#ccc",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      State
+                    </button>
+                  </div>
                 </div>
                 <div className="card-body-custom">
-                  {citiesData.length === 0 ? (
+                  {currentData.length === 0 ? (
                     <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
                       No data available
                     </div>
@@ -190,8 +232,9 @@ export default function GymsPage() {
                           height: "300px",
                           minWidth: "min-content"
                         }}>
-                          {citiesData.map((city, index) => {
-                            const barHeight = maxCount > 0 ? (city.count / maxCount) * 100 : 0;
+                          {currentData.map((item, index) => {
+                            const barHeight = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+                            const label = viewMode === "city" ? item.city : item.state;
                             return (
                               <div key={index} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
                                 {/* Count */}
@@ -200,7 +243,7 @@ export default function GymsPage() {
                                   fontWeight: "600",
                                   color: "#FF5757"
                                 }}>
-                                  {city.count}
+                                  {item.count}
                                 </div>
 
                                 {/* Bar Container */}
@@ -223,7 +266,7 @@ export default function GymsPage() {
                                   }} />
                                 </div>
 
-                                {/* City Name */}
+                                {/* City/State Name */}
                                 <div style={{
                                   width: "80px",
                                   fontSize: "12px",
@@ -233,7 +276,7 @@ export default function GymsPage() {
                                   textOverflow: "ellipsis",
                                   whiteSpace: "nowrap"
                                 }}>
-                                  {city.city}
+                                  {label}
                                 </div>
                               </div>
                             );
@@ -249,7 +292,7 @@ export default function GymsPage() {
                         fontSize: "12px",
                         color: "#888"
                       }}>
-                        Showing {citiesData.length} cities by gym count
+                        Showing {currentData.length} {viewMode === "city" ? "cities" : "states"} by gym count
                       </div>
                     </div>
                   )}
