@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
+import { useRouter } from "next/navigation";
 
 export default function GymsPage() {
   const [loading, setLoading] = useState(true);
   const [totalGyms, setTotalGyms] = useState(0);
   const [activeGyms, setActiveGyms] = useState(0);
   const [citiesData, setCitiesData] = useState([]);
+  const router = useRouter();
 
   // Fetch all gyms data in a single API call
   const fetchGymsData = async () => {
@@ -100,6 +102,43 @@ export default function GymsPage() {
                   </div>
                   <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
                     Active gyms percentage
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Revenue per Gym Card - Clickable */}
+            <div
+              className="col-xl-3 col-lg-6"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push("/portal/admin/gyms/revenue")}
+            >
+              <div
+                className="dashboard-card"
+                style={{
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  border: "1px solid transparent",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow = "0 10px 25px rgba(255, 87, 87, 0.2)";
+                  e.currentTarget.style.borderColor = "#FF5757";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.borderColor = "transparent";
+                }}
+              >
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Revenue per Gym</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                    View revenue details by gym
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#FF5757", marginTop: "6px", fontWeight: "500" }}>
+                    Click to view details →
                   </div>
                 </div>
               </div>

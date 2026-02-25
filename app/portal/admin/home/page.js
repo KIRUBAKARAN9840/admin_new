@@ -797,7 +797,7 @@ export default function Home() {
           </div>
           */}
 
-          {/* Active Gyms Card */}
+          {/* Live Gyms Card */}
           <div className="col-xl-4 col-lg-6 col-md-6">
             <div
               className="dashboard-card"
@@ -805,7 +805,7 @@ export default function Home() {
               onClick={() => router.push("/portal/admin/verified-gyms")}
             >
               <div className="card-header-custom extra-space">
-                <h6 className="card-title">Active Gyms</h6>
+                <h6 className="card-title">Live Gyms</h6>
               </div>
               <div className="card-body-custom">
                 <div className="metric-number">
