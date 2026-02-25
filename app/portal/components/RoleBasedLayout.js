@@ -164,6 +164,11 @@ export default function RoleBasedLayout({ children }) {
             icon: GymsIcon,
             path: "/portal/admin/gyms",
           },
+          {
+            name: "Users Stats",
+            icon: HiOutlineUsers,
+            path: "/portal/admin/users-stats",
+          },
           // {
           //   name: "Marketing",
           //   icon: HiOutlineSpeakerphone,
