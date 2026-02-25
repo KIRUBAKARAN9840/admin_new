@@ -112,6 +112,11 @@ export default function UsersStatsPage() {
                   <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
                     Customers with 1+ payments
                   </div>
+                  {payingUsers > 0 && (
+                    <div style={{ fontSize: "12px", color: "#a855f7", marginTop: "4px", fontWeight: "600" }}>
+                      {((repeatUsers / payingUsers) * 100).toFixed(1)}% of Total paying users
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
