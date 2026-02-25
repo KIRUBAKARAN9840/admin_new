@@ -7,17 +7,19 @@ export default function GymsPage() {
   const [totalGyms, setTotalGyms] = useState(0);
   const [activeGyms, setActiveGyms] = useState(0);
   const [citiesData, setCitiesData] = useState([]);
-  const [citiesLoading, setCitiesLoading] = useState(true);
 
-  // Fetch gyms count data
+  // Fetch all gyms data in a single API call
   const fetchGymsData = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/api/admin/gyms/total-count");
+      const response = await axiosInstance.get("/api/admin/gyms/data", {
+        params: { limit: 100 }
+      });
 
       if (response.data.success) {
         setTotalGyms(response.data.data.total_gyms);
         setActiveGyms(response.data.data.active_gyms);
+        setCitiesData(response.data.data.cities);
       }
     } catch (err) {
       console.error("Error fetching gyms data:", err);
@@ -26,27 +28,8 @@ export default function GymsPage() {
     }
   };
 
-  // Fetch gyms per city data
-  const fetchCitiesData = async () => {
-    try {
-      setCitiesLoading(true);
-      const response = await axiosInstance.get("/api/admin/gyms/per-city", {
-        params: { limit: 100 }
-      });
-
-      if (response.data.success) {
-        setCitiesData(response.data.data.cities);
-      }
-    } catch (err) {
-      console.error("Error fetching cities data:", err);
-    } finally {
-      setCitiesLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchGymsData();
-    fetchCitiesData();
   }, []);
 
   // Calculate active gym ratio
@@ -131,11 +114,7 @@ export default function GymsPage() {
                   <h6 className="card-title">Gyms per City</h6>
                 </div>
                 <div className="card-body-custom">
-                  {citiesLoading ? (
-                    <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
-                      Loading chart data...
-                    </div>
-                  ) : citiesData.length === 0 ? (
+                  {citiesData.length === 0 ? (
                     <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
                       No data available
                     </div>
