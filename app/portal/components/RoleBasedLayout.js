@@ -19,6 +19,22 @@ import {
 } from "react-icons/hi";
 import { MdWorkOutline, MdOutlineTabletMac } from "react-icons/md";
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
+
+// Custom Gyms Icon component
+function GymsIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 4h6v6H4z" fill="currentColor" opacity="0.6"/>
+      <path d="M14 4h6v6h-6z" fill="currentColor" opacity="0.6"/>
+      <path d="M4 14h6v6H4z" fill="currentColor" opacity="0.8"/>
+      <path d="M14 14h6v6h-6z" fill="currentColor"/>
+      <rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <rect x="13" y="3" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <rect x="3" y="13" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <rect x="13" y="13" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
 import { useRole } from "../layout"; // Import the useRole hook
 import axiosInstance from "@/lib/axios";
 
@@ -159,6 +175,11 @@ export default function RoleBasedLayout({ children }) {
             name: "Bookings",
             icon: BookingsIcon,
             path: "/portal/admin/purchases",
+          },
+          {
+            name: "Gyms",
+            icon: GymsIcon,
+            path: "/portal/admin/gyms",
           },
           // {
           //   name: "Marketing",

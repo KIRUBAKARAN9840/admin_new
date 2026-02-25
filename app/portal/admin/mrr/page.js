@@ -101,7 +101,7 @@ export default function MRR() {
             <div className="col-xl-4 col-lg-6">
               <div className="dashboard-card">
                 <div className="card-header-custom extra-space">
-                  <h6 className="card-title">Current Month Revenue</h6>
+                  <h6 className="card-title">MRR</h6>
                 </div>
                 <div className="card-body-custom">
                   <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700" }}>
