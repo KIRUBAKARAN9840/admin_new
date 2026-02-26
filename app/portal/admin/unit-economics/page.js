@@ -141,8 +141,8 @@ export default function UnitEconomicsPage() {
   const cardStyle = {
     backgroundColor: "#1f2937",
     border: "1px solid #374151",
-    borderRadius: "12px",
-    padding: "1.5rem",
+    borderRadius: "8px",
+    padding: "1rem",
   };
 
   const inputStyle = {
@@ -156,7 +156,7 @@ export default function UnitEconomicsPage() {
   };
 
   return (
-    <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 1rem" }}>
+    <div className="dashboard-container">
       {/* Header */}
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ fontSize: "1.5rem", fontWeight: "600", color: "white", margin: "0 0 0.25rem 0" }}>Unit Economics</h1>
@@ -164,7 +164,7 @@ export default function UnitEconomicsPage() {
       </div>
 
       {/* Filters */}
-      <div style={cardStyle}>
+      <div style={{ ...cardStyle, maxWidth: "300px", paddingBottom: "1.25rem" }}>
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
           <div style={{ flex: 1, minWidth: "200px" }}>
             <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.875rem", color: "#9ca3af" }}>
@@ -217,6 +217,8 @@ export default function UnitEconomicsPage() {
         </div>
       </div>
 
+      <div style={{ marginBottom: "1.5rem" }}></div>
+
       {/* CAC Card and Supporting Metrics */}
       {loading ? (
         <div style={{
@@ -228,48 +230,33 @@ export default function UnitEconomicsPage() {
           <div style={{ color: "#888" }}>Loading...</div>
         </div>
       ) : unitEconomicsData ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
-          {/* Main CAC Card */}
-          <div style={{
-            background: "linear-gradient(135deg, #FF5757 0%, #ff8585 100%)",
-            padding: "1.5rem",
-            borderRadius: "12px",
-            boxShadow: "0 4px 15px rgba(255, 87, 87, 0.3)",
-          }}>
-            <div style={{ color: "rgba(255, 255, 255, 0.9)", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
-              Customer Acquisition Cost
-            </div>
-            <div style={{ color: "#ffffff", fontSize: "2rem", fontWeight: "700", marginBottom: "0.5rem" }}>
-              {formatCurrency(unitEconomicsData.cac)}
-            </div>
-            <div style={{ color: "rgba(255, 255, 255, 0.8)", fontSize: "0.75rem" }}>
-              Cost to acquire one customer
-            </div>
-          </div>
-
-          {/* Total Expenses Card */}
-          <div style={cardStyle}>
-            <div style={{ color: "#9ca3af", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
-              Total Expenses
-            </div>
-            <div style={{ color: "#ffffff", fontSize: "1.75rem", fontWeight: "600", marginBottom: "0.5rem" }}>
-              {formatCurrency(unitEconomicsData.totalExpenses)}
-            </div>
-            <div style={{ color: "#6b7280", fontSize: "0.75rem" }}>
-              Marketing and operational expenses
-            </div>
-          </div>
-
-          {/* Total New Users Card */}
-          <div style={cardStyle}>
-            <div style={{ color: "#9ca3af", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
-              Total New Users
-            </div>
-            <div style={{ color: "#ffffff", fontSize: "1.75rem", fontWeight: "600", marginBottom: "0.5rem" }}>
-              {unitEconomicsData.totalNewUsers.toLocaleString()}
-            </div>
-            <div style={{ color: "#6b7280", fontSize: "0.75rem" }}>
-              New customers acquired
+        <div className="section-container">
+          <div className="row g-4">
+            {/* Main CAC Card */}
+            <div className="col-xl-4 col-lg-6">
+              <div className="dashboard-card">
+                <div className="card-header-custom extra-space">
+                  <h6 className="card-title">Customer Acquisition Cost</h6>
+                </div>
+                <div className="card-body-custom">
+                  <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700" }}>
+                    {formatCurrency(unitEconomicsData.cac)}
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                    Cost to acquire one customer
+                  </div>
+                  <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #374151" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#9ca3af", marginBottom: "0.5rem" }}>
+                      <span>Total Expenses</span>
+                      <span style={{ color: "white", fontWeight: "600" }}>{formatCurrency(unitEconomicsData.totalExpenses)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#9ca3af" }}>
+                      <span>Total New Users</span>
+                      <span style={{ color: "white", fontWeight: "600" }}>{unitEconomicsData.totalNewUsers.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
