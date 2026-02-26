@@ -155,6 +155,11 @@ export default function RoleBasedLayout({ children }) {
             path: "/portal/admin/mrr",
           },
           {
+            name: "Unit Economics",
+            icon: HiOutlineChartBar,
+            path: "/portal/admin/unit-economics",
+          },
+          {
             name: "Bookings",
             icon: BookingsIcon,
             path: "/portal/admin/purchases",
@@ -475,7 +480,14 @@ export default function RoleBasedLayout({ children }) {
         </div>
 
         {/* Navigation Items */}
-        <nav style={{ marginTop: "1.5rem", padding: "0 0.5rem" }}>
+        <nav style={{
+          marginTop: "1.5rem",
+          padding: "0 0.5rem",
+          overflowY: "auto",
+          maxHeight: "calc(100vh - 100px)",
+          scrollbarWidth: "thin",
+          WebkitOverflowScrolling: "touch"
+        }}>
           {navigationItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.path);
