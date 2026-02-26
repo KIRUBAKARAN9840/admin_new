@@ -11,6 +11,7 @@ export default function RevenueAnalytics() {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [purchaseData, setPurchaseData] = useState(null);
   const [hoveredSlice, setHoveredSlice] = useState(null);
+  const [revenueByCity, setRevenueByCity] = useState([]);
 
   // Check if tab parameter exists in URL to set initial active tab
   const getInitialTab = () => {
@@ -224,6 +225,10 @@ export default function RevenueAnalytics() {
 
       if (response.data.success) {
         setPurchaseData(response.data.data);
+        // Set revenue by city
+        if (response.data.data.revenueByCity) {
+          setRevenueByCity(response.data.data.revenueByCity);
+        }
         // Update all gyms list from response (only when not filtered by gym)
         if (response.data.data?.gymBreakdown) {
           setAllGymsList(prev => {
@@ -1754,6 +1759,52 @@ export default function RevenueAnalytics() {
                         </div>
                         <div style={{ fontSize: "12px", color: "#ccc", fontWeight: "500", textAlign: "center", maxWidth: "100px", wordWrap: "break-word" }}>
                           {item.location || "Unknown"}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Revenue per City Bar Chart */}
+          {revenueByCity && revenueByCity.length > 0 && (
+            <div style={{
+              backgroundColor: "#1a1a1a",
+              padding: "24px",
+              borderRadius: "12px",
+              marginBottom: "24px",
+              border: "1px solid #2a2a2a"
+            }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px" }}>
+                Revenue per City
+              </h3>
+              <div style={{ overflowX: "auto", paddingBottom: "16px" }}>
+                <div style={{ display: "flex", gap: "16px", minWidth: "max-content" }}>
+                  {revenueByCity.map((item, index) => {
+                    const maxRevenue = Math.max(...revenueByCity.map(d => d.amount));
+                    const barHeight = maxRevenue > 0 ? (item.amount / maxRevenue) * 100 : 0;
+
+                    return (
+                      <div key={index} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", minWidth: "100px" }}>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: "#22c55e" }}>
+                          {formatCurrency(item.amount)}
+                        </div>
+                        <div style={{ width: "60px", height: "200px", backgroundColor: "#2a2a2a", borderRadius: "6px", overflow: "hidden", position: "relative", display: "flex", alignItems: "flex-end" }}>
+                          <div
+                            style={{
+                              width: "100%",
+                              height: `${barHeight}%`,
+                              backgroundColor: "#22c55e",
+                              transition: "height 0.3s ease",
+                              background: "linear-gradient(180deg, #22c55e 0%, #4ade80 100%)",
+                              minHeight: barHeight > 0 ? "4px" : "0",
+                            }}
+                          />
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#ccc", fontWeight: "500", textAlign: "center", maxWidth: "100px", wordWrap: "break-word" }}>
+                          {item.city || "Unknown"}
                         </div>
                       </div>
                     );
