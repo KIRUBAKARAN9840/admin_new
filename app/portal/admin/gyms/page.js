@@ -10,6 +10,8 @@ export default function GymsPage() {
   const [citiesData, setCitiesData] = useState([]);
   const [statesData, setStatesData] = useState([]);
   const [viewMode, setViewMode] = useState("city"); // "city" or "state"
+  const [hoveredBar, setHoveredBar] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const router = useRouter();
 
   // Fetch all gyms data in a single API call
@@ -157,7 +159,12 @@ export default function GymsPage() {
             <div className="col-12">
               <div className="dashboard-card">
                 <div className="card-header-custom" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h6 className="card-title">Gyms per {viewMode === "city" ? "City" : "State"}</h6>
+                  <div>
+                    <h6 className="card-title">Gyms per {viewMode === "city" ? "City" : "State"}</h6>
+                    <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>
+                      {citiesData.length} cities • {statesData.length} states
+                    </div>
+                  </div>
                   {/* Toggle Buttons */}
                   <div style={{ display: "flex", gap: "8px", backgroundColor: "#1f2937", borderRadius: "6px", padding: "4px" }}>
                     <button
@@ -200,99 +207,77 @@ export default function GymsPage() {
                       No data available
                     </div>
                   ) : (
-                    <div style={{ padding: "20px" }}>
-                      {/* Horizontal Scroll Container */}
-                      <div style={{
-                        overflowX: "auto",
-                        overflowY: "hidden",
-                        paddingBottom: "15px"
-                      }}>
-                        {/* Scrollbar styling */}
-                        <style jsx>{`
-                          div::-webkit-scrollbar {
-                            height: 8px;
-                          }
-                          div::-webkit-scrollbar-track {
-                            background: #1f2937;
-                            border-radius: 4px;
-                          }
-                          div::-webkit-scrollbar-thumb {
-                            background: #FF5757;
-                            border-radius: 4px;
-                          }
-                          div::-webkit-scrollbar-thumb:hover {
-                            background: #ff7b7b;
-                          }
-                        `}</style>
+                    <div style={{ overflowX: "auto", overflowY: "hidden" }}>
+                      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-around", gap: "1rem", height: "250px", paddingTop: "2rem", minWidth: "max-content" }}>
+                        {currentData.map((item, index) => {
+                          const barHeight = maxCount > 0 ? (item.count / maxCount) * 180 : 0;
+                          const label = viewMode === "city" ? item.city : item.state;
 
-                        {/* Bars Container */}
-                        <div style={{
-                          display: "flex",
-                          gap: "20px",
-                          height: "300px",
-                          minWidth: "min-content"
-                        }}>
-                          {currentData.map((item, index) => {
-                            const barHeight = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-                            const label = viewMode === "city" ? item.city : item.state;
-                            return (
-                              <div key={index} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-                                {/* Count */}
-                                <div style={{
-                                  fontSize: "13px",
-                                  fontWeight: "600",
-                                  color: "#FF5757"
-                                }}>
-                                  {item.count}
-                                </div>
-
-                                {/* Bar Container */}
-                                <div style={{
-                                  width: "50px",
-                                  height: "250px",
-                                  backgroundColor: "#1f2937",
-                                  borderRadius: "6px",
-                                  position: "relative",
-                                  display: "flex",
-                                  alignItems: "flex-end"
-                                }}>
-                                  {/* Vertical Bar */}
-                                  <div style={{
-                                    width: "100%",
-                                    height: `${barHeight}%`,
-                                    background: "linear-gradient(180deg, #FF5757 0%, #ff7b7b 100%)",
-                                    borderRadius: "6px",
-                                    transition: "height 0.6s ease-out"
-                                  }} />
-                                </div>
-
-                                {/* City/State Name */}
-                                <div style={{
-                                  width: "80px",
-                                  fontSize: "12px",
-                                  color: "#ccc",
-                                  textAlign: "center",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap"
-                                }}>
-                                  {label}
-                                </div>
+                          return (
+                            <div
+                              key={index}
+                              style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "70px", flexShrink: 0 }}
+                            >
+                              <div style={{
+                                fontSize: "11px",
+                                fontWeight: "600",
+                                color: "#fff",
+                                marginBottom: "6px",
+                                height: "16px"
+                              }}>
+                                {item.count.toLocaleString()}
                               </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Legend */}
-                      <div style={{
-                        marginTop: "10px",
-                        paddingTop: "15px",
-                        borderTop: "1px solid #374151",
-                        fontSize: "12px",
-                        color: "#888"
-                      }}>
-                        Showing {currentData.length} {viewMode === "city" ? "cities" : "states"} by gym count
+                              <div
+                                style={{
+                                  width: "100%",
+                                  height: `${barHeight}px`,
+                                  backgroundColor: "#FF5757",
+                                  borderRadius: "4px 4px 0 0",
+                                  transition: "height 0.3s ease, backgroundColor 0.2s ease",
+                                  minHeight: "4px",
+                                  cursor: "pointer"
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.backgroundColor = "#ff6b6b";
+                                  setHoveredBar({ label, count: item.count });
+                                  setTooltipPos({
+                                    x: e.clientX,
+                                    y: e.clientY
+                                  });
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = "#FF5757";
+                                  setHoveredBar(null);
+                                }}
+                              />
+                              <div
+                                style={{
+                                  fontSize: "10px",
+                                  color: "#888",
+                                  marginTop: "8px",
+                                  textAlign: "center",
+                                  wordBreak: "break-word",
+                                  textTransform: "capitalize",
+                                  height: "32px",
+                                  overflow: "hidden",
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: "vertical"
+                                }}
+                                onMouseEnter={(e) => {
+                                  setHoveredBar({ label, count: item.count });
+                                  setTooltipPos({
+                                    x: e.clientX,
+                                    y: e.clientY
+                                  });
+                                }}
+                                onMouseLeave={() => setHoveredBar(null)}
+                              >
+                                {label}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -300,6 +285,35 @@ export default function GymsPage() {
               </div>
             </div>
           </div>
+
+          {/* Custom Tooltip - Outside overflow container */}
+          {hoveredBar && (
+            <div
+              style={{
+                position: "fixed",
+                left: `${tooltipPos.x + 15}px`,
+                top: `${tooltipPos.y - 50}px`,
+                backgroundColor: "#1e1e1e",
+                color: "#fff",
+                padding: "10px 14px",
+                borderRadius: "8px",
+                fontSize: "13px",
+                fontWeight: "500",
+                whiteSpace: "nowrap",
+                zIndex: 10000,
+                boxShadow: "0 4px 15px rgba(0,0,0,0.4)",
+                border: "1px solid #FF5757",
+                pointerEvents: "none"
+              }}
+            >
+              <div style={{ marginBottom: "3px", color: "#FF5757", fontWeight: "700", fontSize: "14px" }}>
+                {hoveredBar.label}
+              </div>
+              <div style={{ fontSize: "12px", color: "#ccc" }}>
+                {hoveredBar.count.toLocaleString()} gyms
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

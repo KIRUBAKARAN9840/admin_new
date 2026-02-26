@@ -16,6 +16,7 @@ export default function UsersStatsPage() {
   const [offset, setOffset] = useState(30);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [totalCities, setTotalCities] = useState(0);
   const scrollContainerRef = useRef(null);
 
   // Fetch users stats data
@@ -31,6 +32,7 @@ export default function UsersStatsPage() {
         setRepeatUsers(response.data.data.repeat_users);
         const cityData = response.data.data.users_by_city || [];
         setUsersByCity(cityData);
+        setTotalCities(response.data.data.total_cities || 0);
 
         // Set initial offset for pagination
         setOffset(cityData.length);
@@ -176,7 +178,7 @@ export default function UsersStatsPage() {
               <div className="col-12">
                 <div className="dashboard-card">
                   <div className="card-header-custom extra-space">
-                    <h6 className="card-title">Users per City ({usersByCity.length} cities)</h6>
+                    <h6 className="card-title">Users per City ({totalCities} cities)</h6>
                   </div>
                   <div className="card-body-custom">
                     <div
