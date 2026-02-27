@@ -5,7 +5,7 @@ import axiosInstance from "@/lib/axios";
 export default function UnitEconomicsPage() {
   const [loading, setLoading] = useState(true);
   const [unitEconomicsData, setUnitEconomicsData] = useState(null);
-  const [dateFilter, setDateFilter] = useState("last_30");
+  const [dateFilter, setDateFilter] = useState("overall");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -138,23 +138,6 @@ export default function UnitEconomicsPage() {
     }).format(amount);
   };
 
-  const cardStyle = {
-    backgroundColor: "#1f2937",
-    border: "1px solid #374151",
-    borderRadius: "8px",
-    padding: "1rem",
-  };
-
-  const inputStyle = {
-    backgroundColor: "#374151",
-    border: "1px solid #4b5563",
-    borderRadius: "6px",
-    color: "white",
-    padding: "0.5rem 0.75rem",
-    fontSize: "0.875rem",
-    width: "100%",
-  };
-
   return (
     <div className="dashboard-container">
       {/* Header */}
@@ -162,62 +145,6 @@ export default function UnitEconomicsPage() {
         <h1 style={{ fontSize: "1.5rem", fontWeight: "600", color: "white", margin: "0 0 0.25rem 0" }}>Unit Economics</h1>
         <p style={{ color: "#9ca3af", margin: "0", fontSize: "0.875rem" }}>Track your Customer Acquisition Cost and other unit economics metrics</p>
       </div>
-
-      {/* Filters */}
-      <div style={{ ...cardStyle, maxWidth: "300px", paddingBottom: "1.25rem" }}>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
-          <div style={{ flex: 1, minWidth: "200px" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.875rem", color: "#9ca3af" }}>
-              Date Filter
-            </label>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="today">Today</option>
-              <option value="last_7">Last 7 Days</option>
-              <option value="last_30">Last 30 Days</option>
-              <option value="last_month">Last Month</option>
-              <option value="current_month">Current Month</option>
-              <option value="overall">Overall</option>
-              <option value="custom">Custom Range</option>
-            </select>
-          </div>
-
-          {dateFilter === "custom" && (
-            <>
-              <div style={{ flex: 1, minWidth: "200px" }}>
-                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.875rem", color: "#9ca3af" }}>
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  max={endDate || new Date().toISOString().split('T')[0]}
-                  style={inputStyle}
-                />
-              </div>
-              <div style={{ flex: 1, minWidth: "200px" }}>
-                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.875rem", color: "#9ca3af" }}>
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  min={startDate}
-                  max={new Date().toISOString().split('T')[0]}
-                  style={inputStyle}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div style={{ marginBottom: "1.5rem" }}></div>
 
       {/* CAC Card and Supporting Metrics */}
       {loading ? (
@@ -239,6 +166,69 @@ export default function UnitEconomicsPage() {
                   <h6 className="card-title">Customer Acquisition Cost</h6>
                 </div>
                 <div className="card-body-custom">
+                  {/* Date Filter Inside Card */}
+                  <div style={{ marginBottom: "1rem" }}>
+                    <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.75rem", color: "#9ca3af" }}>
+                      Date Filter
+                    </label>
+                    <select
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      style={{
+                        backgroundColor: "#374151",
+                        border: "1px solid #4b5563",
+                        borderRadius: "6px",
+                        color: "white",
+                        padding: "0.5rem 0.75rem",
+                        fontSize: "0.875rem",
+                        width: "100%",
+                      }}
+                    >
+                      <option value="today">Today</option>
+                      <option value="last_7">Last 7 Days</option>
+                      <option value="last_30">Last 30 Days</option>
+                      <option value="last_month">Last Month</option>
+                      <option value="current_month">Current Month</option>
+                      <option value="overall">Overall</option>
+                      <option value="custom">Custom Range</option>
+                    </select>
+                    {dateFilter === "custom" && (
+                      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          max={endDate || new Date().toISOString().split('T')[0]}
+                          style={{
+                            backgroundColor: "#374151",
+                            border: "1px solid #4b5563",
+                            borderRadius: "6px",
+                            color: "white",
+                            padding: "0.5rem 0.75rem",
+                            fontSize: "0.875rem",
+                            flex: 1,
+                          }}
+                        />
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          min={startDate}
+                          max={new Date().toISOString().split('T')[0]}
+                          style={{
+                            backgroundColor: "#374151",
+                            border: "1px solid #4b5563",
+                            borderRadius: "6px",
+                            color: "white",
+                            padding: "0.5rem 0.75rem",
+                            fontSize: "0.875rem",
+                            flex: 1,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
                   <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700" }}>
                     {formatCurrency(unitEconomicsData.cac)}
                   </div>
