@@ -93,7 +93,7 @@ export default function UnitEconomicsPage() {
   const fetchUnitEconomicsAnalytics = async (isOverall = false) => {
     setLoading(true);
     try {
-      let url = "/api/admin/unit-economics/cac";
+      let url = "/api/admin/unit-economics/data";
       const params = [];
 
       if (!isOverall) {
@@ -248,6 +248,37 @@ export default function UnitEconomicsPage() {
                 </div>
               </div>
             </div>
+
+            {/* LTV Card */}
+            {unitEconomicsData && unitEconomicsData.ltv !== undefined && (
+              <div className="col-xl-4 col-lg-6">
+                <div className="dashboard-card">
+                  <div className="card-header-custom extra-space">
+                    <h6 className="card-title">Lifetime Value (LTV)</h6>
+                  </div>
+                  <div className="card-body-custom">
+                    <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700", color: "#22c55e" }}>
+                      {unitEconomicsData.ltv > 0 ? unitEconomicsData.ltv.toFixed(2) : "N/A"}
+                    </div>
+                    <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                      Customer lifetime value
+                    </div>
+                    {unitEconomicsData.ltv > 0 && (
+                      <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #374151" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#9ca3af", marginBottom: "0.5rem" }}>
+                          <span>Churn Rate</span>
+                          <span style={{ color: "white", fontWeight: "600" }}>{(unitEconomicsData.churnRate * 100).toFixed(2)}%</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#9ca3af" }}>
+                          <span>Retained Users</span>
+                          <span style={{ color: "white", fontWeight: "600" }}>{unitEconomicsData.retainedUsers.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ) : (
