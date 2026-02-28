@@ -5,17 +5,21 @@ import axiosInstance from "@/lib/axios";
 export default function TaxCompliancePage() {
   const [loading, setLoading] = useState(true);
   const [taxData, setTaxData] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [editingMonth, setEditingMonth] = useState(null);
   const [gstPaidInput, setGstPaidInput] = useState("");
   const [tdsPaidInput, setTdsPaidInput] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const fetchTaxData = async () => {
+  const fetchTaxData = async (page = 1) => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get("/api/admin/tax-compliance/monthly-data?months=12");
+      const response = await axiosInstance.get(`/api/admin/tax-compliance/monthly-data?page=${page}&page_size=12`);
       if (response.data && response.data.success) {
         setTaxData(response.data.data);
+        setPagination(response.data.pagination);
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error("Error fetching tax compliance data:", error);
@@ -25,7 +29,7 @@ export default function TaxCompliancePage() {
   };
 
   useEffect(() => {
-    fetchTaxData();
+    fetchTaxData(1);
   }, []);
 
   const handleEdit = (monthData) => {
@@ -74,8 +78,8 @@ export default function TaxCompliancePage() {
       const response = await axiosInstance.post("/api/admin/tax-compliance/update-paid-amounts", payload);
 
       if (response.data && response.data.success) {
-        // Refresh the data
-        await fetchTaxData();
+        // Refresh the data on current page
+        await fetchTaxData(currentPage);
         handleCancel();
       }
     } catch (error) {
@@ -415,6 +419,69 @@ export default function TaxCompliancePage() {
                   <span style={{ color: "#9ca3af", fontSize: "0.75rem" }}>Payable (Calculated)</span>
                 </div>
               </div>
+
+              {/* Pagination Controls */}
+              {pagination && pagination.total_pages > 1 && (
+                <div style={{
+                  marginTop: "1.5rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "1rem 0",
+                  borderTop: "1px solid #374151"
+                }}>
+                  <div style={{ color: "#9ca3af", fontSize: "0.875rem" }}>
+                    Showing {((pagination.page - 1) * pagination.page_size) + 1} to {Math.min(pagination.page * pagination.page_size, pagination.total_records)} of {pagination.total_records} records
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      onClick={() => fetchTaxData(currentPage - 1)}
+                      disabled={!pagination.has_prev_page}
+                      style={{
+                        backgroundColor: pagination.has_prev_page ? "#374151" : "transparent",
+                        color: pagination.has_prev_page ? "white" : "#4b5563",
+                        border: "1px solid #4b5563",
+                        padding: "8px 16px",
+                        borderRadius: "6px",
+                        cursor: pagination.has_prev_page ? "pointer" : "not-allowed",
+                        fontSize: "0.875rem",
+                        fontWeight: "500"
+                      }}
+                    >
+                      Previous
+                    </button>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      backgroundColor: "#374151",
+                      padding: "8px 16px",
+                      borderRadius: "6px",
+                      border: "1px solid #4b5563"
+                    }}>
+                      <span style={{ color: "white", fontSize: "0.875rem" }}>
+                        Page {pagination.page} of {pagination.total_pages}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => fetchTaxData(currentPage + 1)}
+                      disabled={!pagination.has_next_page}
+                      style={{
+                        backgroundColor: pagination.has_next_page ? "#374151" : "transparent",
+                        color: pagination.has_next_page ? "white" : "#4b5563",
+                        border: "1px solid #4b5563",
+                        padding: "8px 16px",
+                        borderRadius: "6px",
+                        cursor: pagination.has_next_page ? "pointer" : "not-allowed",
+                        fontSize: "0.875rem",
+                        fontWeight: "500"
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
