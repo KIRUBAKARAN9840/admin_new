@@ -140,12 +140,6 @@ export default function UnitEconomicsPage() {
 
   return (
     <div className="dashboard-container">
-      {/* Header */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: "600", color: "white", margin: "0 0 0.25rem 0" }}>Unit Economics</h1>
-        <p style={{ color: "#9ca3af", margin: "0", fontSize: "0.875rem" }}>Track your Customer Acquisition Cost and other unit economics metrics</p>
-      </div>
-
       {/* CAC Card and Supporting Metrics */}
       {loading ? (
         <div style={{
@@ -266,8 +260,8 @@ export default function UnitEconomicsPage() {
                     {unitEconomicsData.ltv > 0 && (
                       <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #374151" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#9ca3af", marginBottom: "0.5rem" }}>
-                          <span>Churn Rate</span>
-                          <span style={{ color: "white", fontWeight: "600" }}>{(unitEconomicsData.churnRate * 100).toFixed(2)}%</span>
+                          <span>Cohort Retention Rate</span>
+                          <span style={{ color: "white", fontWeight: "600" }}>{(unitEconomicsData.cohortRetentionRate * 100).toFixed(2)}%</span>
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#9ca3af" }}>
                           <span>Retained Users</span>
@@ -303,6 +297,63 @@ export default function UnitEconomicsPage() {
                         <span>CAC</span>
                         <span style={{ color: "white", fontWeight: "600" }}>{formatCurrency(unitEconomicsData.cac)}</span>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* D30 Retention Card */}
+            {unitEconomicsData && unitEconomicsData.retainedUsers !== undefined && (
+              <div className="col-xl-4 col-lg-6">
+                <div className="dashboard-card">
+                  <div className="card-header-custom extra-space">
+                    <h6 className="card-title">D30 Retention</h6>
+                  </div>
+                  <div className="card-body-custom">
+                    <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700", color: "#8b5cf6" }}>
+                      {unitEconomicsData.retainedUsers.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                      Retained Users from previous month
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Cohort Retention (Month N) Card */}
+            {unitEconomicsData && unitEconomicsData.cohortRetentionRate !== undefined && (
+              <div className="col-xl-4 col-lg-6">
+                <div className="dashboard-card">
+                  <div className="card-header-custom extra-space">
+                    <h6 className="card-title">Cohort Retention</h6>
+                  </div>
+                  <div className="card-body-custom">
+                    <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700", color: "#22c55e" }}>
+                      {(unitEconomicsData.cohortRetentionRate * 100).toFixed(2)}%
+                    </div>
+                    <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                      Retention rate from previous month
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* User Churn Rate Card */}
+            {unitEconomicsData && unitEconomicsData.cohortRetentionRate !== undefined && (
+              <div className="col-xl-4 col-lg-6">
+                <div className="dashboard-card">
+                  <div className="card-header-custom extra-space">
+                    <h6 className="card-title">User Churn Rate</h6>
+                  </div>
+                  <div className="card-body-custom">
+                    <div className="metric-number" style={{ fontSize: "32px", fontWeight: "700", color: "#f59e0b" }}>
+                      {((1 - unitEconomicsData.cohortRetentionRate) * 100).toFixed(2)}%
+                    </div>
+                    <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
+                      Percentage of users who churned
                     </div>
                   </div>
                 </div>
