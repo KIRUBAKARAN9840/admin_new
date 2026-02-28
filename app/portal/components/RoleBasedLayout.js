@@ -16,6 +16,7 @@ import {
   HiOutlineSpeakerphone,
   HiOutlinePhone,
   HiOutlineCreditCard,
+  HiOutlineReceiptTax,
 } from "react-icons/hi";
 import { MdWorkOutline, MdOutlineTabletMac } from "react-icons/md";
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
@@ -148,6 +149,11 @@ export default function RoleBasedLayout({ children }) {
             name: "Expenses",
             icon: ExpensesIcon,
             path: "/portal/admin/expenses",
+          },
+          {
+            name: "Tax & Compliance",
+            icon: HiOutlineReceiptTax,
+            path: "/portal/admin/tax-compliance",
           },
           {
             name: "MRR",
