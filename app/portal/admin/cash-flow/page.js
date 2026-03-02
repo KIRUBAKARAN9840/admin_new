@@ -21,6 +21,8 @@ export default function CashFlowPage() {
   const [savingOpeningBalance, setSavingOpeningBalance] = useState(false);
   const [editingOpeningBalance, setEditingOpeningBalance] = useState(null);
   const [openingBalances, setOpeningBalances] = useState([]);
+  const [showEditDeleteModal, setShowEditDeleteModal] = useState(false);
+  const [selectedBalanceForEdit, setSelectedBalanceForEdit] = useState(null);
 
   // Generate financial years
   const currentYear = new Date().getFullYear();
@@ -194,61 +196,41 @@ export default function CashFlowPage() {
             <h6 className="card-title">Opening Balances</h6>
           </div>
           <div className="card-body-custom">
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <select
+              value=""
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "add_new") {
+                  setShowOpeningBalanceModal(true);
+                } else if (value) {
+                  const ob = openingBalances.find(o => o.financial_year === value);
+                  if (ob) {
+                    // Show Edit/Delete modal for this opening balance
+                    setSelectedBalanceForEdit(ob);
+                    setShowEditDeleteModal(true);
+                  }
+                }
+                e.target.value = "";
+              }}
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                backgroundColor: "#111827",
+                border: "1px solid #374151",
+                borderRadius: "6px",
+                color: "white",
+                fontSize: "14px",
+                cursor: "pointer"
+              }}
+            >
+              <option value="">Select Opening Balance to Edit/Delete</option>
               {openingBalances.map((ob) => (
-                <div
-                  key={ob.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "12px 16px",
-                    backgroundColor: "#1e1e1e",
-                    borderRadius: "6px",
-                    border: "1px solid #374151"
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: "14px", color: "#fff", fontWeight: "500" }}>
-                      {ob.financial_year}
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ fontSize: "16px", fontWeight: "600", color: "#10b981" }}>
-                      {formatCurrency(ob.amount)}
-                    </div>
-                    <button
-                      onClick={() => handleEditOpeningBalance(ob)}
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor: "#3b82f6",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        cursor: "pointer"
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteOpeningBalance(ob.financial_year)}
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor: "#ef4444",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        cursor: "pointer"
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
+                <option key={ob.id} value={ob.financial_year}>
+                  {ob.financial_year} - {formatCurrency(ob.amount)}
+                </option>
               ))}
-            </div>
+              <option value="add_new">+ Add New Opening Balance</option>
+            </select>
           </div>
         </div>
       )}
@@ -562,6 +544,158 @@ export default function CashFlowPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit/Delete Opening Balance Modal */}
+      {showEditDeleteModal && selectedBalanceForEdit && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1050,
+          }}
+          onClick={() => setShowEditDeleteModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: "#1f2937",
+              borderRadius: "12px",
+              padding: "24px",
+              width: "100%",
+              maxWidth: "400px",
+              border: "1px solid #374151",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3
+              style={{
+                fontSize: "18px",
+                fontWeight: "600",
+                color: "white",
+                marginBottom: "16px",
+              }}
+            >
+              Opening Balance
+            </h3>
+
+            {/* Display financial year and amount */}
+            <div
+              style={{
+                padding: "16px",
+                backgroundColor: "#111827",
+                borderRadius: "8px",
+                marginBottom: "20px",
+                border: "1px solid #374151",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: "#9ca3af",
+                  marginBottom: "4px",
+                }}
+              >
+                Financial Year
+              </div>
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "white",
+                  marginBottom: "12px",
+                }}
+              >
+                {selectedBalanceForEdit.financial_year}
+              </div>
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: "#9ca3af",
+                  marginBottom: "4px",
+                }}
+              >
+                Amount
+              </div>
+              <div
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "700",
+                  color: "#4ade80",
+                }}
+              >
+                {formatCurrency(selectedBalanceForEdit.amount)}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={() => {
+                  setShowEditDeleteModal(false);
+                  handleEditOpeningBalance(selectedBalanceForEdit);
+                }}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: "#3b82f6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                }}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => {
+                  setShowEditDeleteModal(false);
+                  handleDeleteOpeningBalance(selectedBalanceForEdit.financial_year);
+                }}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                }}
+              >
+                Delete
+              </button>
+            </div>
+
+            {/* Cancel Button */}
+            <button
+              onClick={() => setShowEditDeleteModal(false)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                backgroundColor: "transparent",
+                color: "#9ca3af",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: "pointer",
+                marginTop: "10px",
+              }}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

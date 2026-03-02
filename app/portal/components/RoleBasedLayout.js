@@ -98,6 +98,30 @@ function  GymsIcon({ size = 20 }) {
   );
 }
 
+function UnitEconomicsIcon({ size = 20 }) {
+  return (
+    <img
+      src="/unit_economics.svg"
+      alt="Unit Economics"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+  
+}
+function UserStatsIcon({ size = 20 }) {
+  return (
+    <img
+      src="/user_stats.svg"
+      alt="User Stats"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+  
+}
 function CashFlowIcon({ size = 20 }) {
   return (
     <img
@@ -179,7 +203,7 @@ export default function RoleBasedLayout({ children }) {
           },
           {
             name: "Unit Economics",
-            icon: HiOutlineChartBar,
+            icon: UnitEconomicsIcon,
             path: "/portal/admin/unit-economics",
           },
           {
@@ -194,7 +218,7 @@ export default function RoleBasedLayout({ children }) {
           },
           {
             name: "Users Stats",
-            icon: HiOutlineUsers,
+            icon: UserStatsIcon,
             path: "/portal/admin/users-stats",
           },
           // {
