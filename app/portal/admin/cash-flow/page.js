@@ -7,6 +7,22 @@ export default function CashFlowPage() {
   const [cashFlowData, setCashFlowData] = useState(null);
   const [error, setError] = useState(null);
 
+  // Opening Balance States
+  const [showOpeningBalanceModal, setShowOpeningBalanceModal] = useState(false);
+  const [financialYear, setFinancialYear] = useState("");
+  const [openingBalanceAmount, setOpeningBalanceAmount] = useState("");
+  const [savingOpeningBalance, setSavingOpeningBalance] = useState(false);
+  const [editingOpeningBalance, setEditingOpeningBalance] = useState(null); // Track if editing an existing balance
+
+  // Generate financial years (current year - 5 to current year + 1)
+  const currentYear = new Date().getFullYear();
+  const financialYears = [];
+  for (let i = 5; i >= 0; i--) {
+    const startYear = currentYear - i;
+    const endYear = startYear + 1;
+    financialYears.push(`${startYear}-${endYear}`);
+  }
+
   const fetchCashFlowData = async () => {
     setLoading(true);
     setError(null);
@@ -28,6 +44,61 @@ export default function CashFlowPage() {
   useEffect(() => {
     fetchCashFlowData();
   }, []);
+
+  const handleSaveOpeningBalance = async () => {
+    if (!financialYear || !openingBalanceAmount) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    setSavingOpeningBalance(true);
+    try {
+      const response = await axiosInstance.post("/api/admin/cash-flow/opening-balance", {
+        financial_year: financialYear,
+        amount: parseFloat(openingBalanceAmount)
+      });
+
+      if (response.data && response.data.success) {
+        alert(response.data.message);
+        handleCloseModal();
+        fetchCashFlowData(); // Refresh overview data to get updated opening balances
+      }
+    } catch (err) {
+      alert(err.response?.data?.detail || "Failed to save opening balance");
+    } finally {
+      setSavingOpeningBalance(false);
+    }
+  };
+
+  const handleEditOpeningBalance = (ob) => {
+    setEditingOpeningBalance(ob);
+    setFinancialYear(ob.financial_year);
+    setOpeningBalanceAmount(ob.amount.toString());
+    setShowOpeningBalanceModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowOpeningBalanceModal(false);
+    setEditingOpeningBalance(null);
+    setFinancialYear("");
+    setOpeningBalanceAmount("");
+  };
+
+  const handleDeleteOpeningBalance = async (fy) => {
+    if (!confirm(`Are you sure you want to delete opening balance for ${fy}?`)) {
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.delete(`/api/admin/cash-flow/opening-balance/${fy}`);
+      if (response.data && response.data.success) {
+        alert(response.data.message);
+        fetchCashFlowData(); // Refresh overview data to get updated opening balances
+      }
+    } catch (err) {
+      alert(err.response?.data?.detail || "Failed to delete opening balance");
+    }
+  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
@@ -78,14 +149,100 @@ export default function CashFlowPage() {
       ) : (
         <div className="section-container">
           {/* Page Header */}
-          <div style={{ marginBottom: "20px" }}>
-            <h2 style={{ fontSize: "24px", fontWeight: "600", color: "white", margin: "0" }}>
-              Cash Flow
-            </h2>
-            <p style={{ fontSize: "14px", color: "#9ca3af", margin: "4px 0 0 0" }}>
-              Track cash outflows and payments
-            </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <div>
+              <h2 style={{ fontSize: "24px", fontWeight: "600", color: "white", margin: "0" }}>
+                Cash Flow
+              </h2>
+              <p style={{ fontSize: "14px", color: "#9ca3af", margin: "4px 0 0 0" }}>
+                Track cash outflows and payments
+              </p>
+            </div>
+            <button
+              onClick={() => setShowOpeningBalanceModal(true)}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#FF5757",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: "pointer",
+                transition: "background-color 0.2s"
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "#e04848"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "#FF5757"}
+            >
+              + Opening Balance
+            </button>
           </div>
+
+          {/* Opening Balance List */}
+          {cashFlowData?.opening_balances && cashFlowData.opening_balances.length > 0 && (
+            <div className="dashboard-card" style={{ marginBottom: "20px" }}>
+              <div className="card-header-custom">
+                <h6 className="card-title">Opening Balances</h6>
+              </div>
+              <div className="card-body-custom">
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {cashFlowData.opening_balances.map((ob) => (
+                    <div
+                      key={ob.id}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "12px 16px",
+                        backgroundColor: "#1e1e1e",
+                        borderRadius: "6px",
+                        border: "1px solid #374151"
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: "14px", color: "#fff", fontWeight: "500" }}>
+                          {ob.financial_year}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={{ fontSize: "16px", fontWeight: "600", color: "#10b981" }}>
+                          {formatCurrency(ob.amount)}
+                        </div>
+                        <button
+                          onClick={() => handleEditOpeningBalance(ob)}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            fontSize: "12px",
+                            cursor: "pointer"
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteOpeningBalance(ob.financial_year)}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#ef4444",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            fontSize: "12px",
+                            cursor: "pointer"
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Last Month Outflow Card */}
           <div className="dashboard-card">
@@ -511,6 +668,153 @@ export default function CashFlowPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Opening Balance Modal */}
+      {showOpeningBalanceModal && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: "#1f2937",
+            borderRadius: "12px",
+            padding: "24px",
+            width: "100%",
+            maxWidth: "400px",
+            border: "1px solid #374151"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "20px"
+            }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", color: "white", margin: 0 }}>
+                {editingOpeningBalance ? "Edit Opening Balance" : "Add Opening Balance"}
+              </h3>
+              <button
+                onClick={handleCloseModal}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#9ca3af",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  padding: "0",
+                  lineHeight: "1"
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {/* Financial Year Dropdown */}
+              <div>
+                <label style={{ display: "block", fontSize: "13px", color: "#9ca3af", marginBottom: "6px" }}>
+                  Financial Year *
+                </label>
+                <select
+                  value={financialYear}
+                  onChange={(e) => setFinancialYear(e.target.value)}
+                  disabled={!!editingOpeningBalance}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    backgroundColor: editingOpeningBalance ? "#374151" : "#111827",
+                    border: "1px solid #374151",
+                    borderRadius: "6px",
+                    color: editingOpeningBalance ? "#9ca3af" : "white",
+                    fontSize: "14px",
+                    cursor: editingOpeningBalance ? "not-allowed" : "pointer"
+                  }}
+                >
+                  <option value="">Select Financial Year</option>
+                  {financialYears.map((fy) => (
+                    <option key={fy} value={fy}>
+                      {fy}
+                    </option>
+                  ))}
+                </select>
+                {editingOpeningBalance && (
+                  <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px" }}>
+                    Financial year cannot be changed when editing
+                  </div>
+                )}
+              </div>
+
+              {/* Amount Input */}
+              <div>
+                <label style={{ display: "block", fontSize: "13px", color: "#9ca3af", marginBottom: "6px" }}>
+                  Amount (₹) *
+                </label>
+                <input
+                  type="number"
+                  value={openingBalanceAmount}
+                  onChange={(e) => setOpeningBalanceAmount(e.target.value)}
+                  placeholder="Enter amount"
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    backgroundColor: "#111827",
+                    border: "1px solid #374151",
+                    borderRadius: "6px",
+                    color: "white",
+                    fontSize: "14px"
+                  }}
+                />
+              </div>
+
+              {/* Buttons */}
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+                <button
+                  onClick={handleCloseModal}
+                  disabled={savingOpeningBalance}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    backgroundColor: "#374151",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    cursor: savingOpeningBalance ? "not-allowed" : "pointer"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveOpeningBalance}
+                  disabled={savingOpeningBalance}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    backgroundColor: "#FF5757",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    cursor: savingOpeningBalance ? "not-allowed" : "pointer",
+                    opacity: savingOpeningBalance ? 0.6 : 1
+                  }}
+                >
+                  {savingOpeningBalance ? "Saving..." : (editingOpeningBalance ? "Update" : "Save")}
+                </button>
+              </div>
             </div>
           </div>
         </div>
