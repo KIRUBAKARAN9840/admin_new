@@ -220,6 +220,33 @@ export default function CashFlowPage() {
                       {formatCurrency(cashFlowData?.outflow?.tds_payable)}
                     </div>
                   </div>
+
+                  {/* Expenses */}
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "14px 16px",
+                    backgroundColor: "#1e1e1e",
+                    borderRadius: "6px",
+                    border: "1px solid #374151"
+                  }}>
+                    <div>
+                      <div style={{ fontSize: "14px", color: "#fff", fontWeight: "500" }}>
+                        Expenses
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>
+                        Operational & Marketing expenses
+                      </div>
+                    </div>
+                    <div style={{
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      color: "#8b5cf6"
+                    }}>
+                      {formatCurrency(cashFlowData?.outflow?.expenses)}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -244,9 +271,9 @@ export default function CashFlowPage() {
                     fontSize: "13px",
                     color: "#9ca3af"
                   }}>
-                    <strong style={{ color: "#fff" }}>Outflow = </strong> Gym Payout + GST Payable + TDS Payable
+                    <strong style={{ color: "#fff" }}>Outflow = </strong> Gym Payout + GST Payable + TDS Payable + Expenses
                     <br />
-                    <span style={{ fontSize: "12px", color: "#6b7280" }}>Note: PG charges are deducted before payout (retained by platform)</span>
+                    <span style={{ fontSize: "12px", color: "#6b7280" }}>Note: PG charges & commission are deducted before payout (retained by platform)</span>
                   </div>
 
                   {/* Membership */}
@@ -459,6 +486,12 @@ export default function CashFlowPage() {
                         <span style={{ color: "#9ca3af" }}>Total TDS Payable:</span>
                         <span style={{ color: "#f59e0b", fontWeight: "500" }}>
                           {formatCurrency(cashFlowData?.outflow?.tds_payable)}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                        <span style={{ color: "#9ca3af" }}>Total Expenses:</span>
+                        <span style={{ color: "#8b5cf6", fontWeight: "500" }}>
+                          {formatCurrency(cashFlowData?.outflow?.expenses)}
                         </span>
                       </div>
                       <div style={{
