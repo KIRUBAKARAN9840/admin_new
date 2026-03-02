@@ -193,13 +193,38 @@ function MRRIcon({ size = 20 }) {
     />
   );
 }
+
+function StrategicInsightsIcon({ size = 20 }) {
+  return (
+    <img
+      src="/strategic_insights.svg"
+      alt="Strategic Insights"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
 export default function RoleBasedLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [strategicInsightsOpen, setStrategicInsightsOpen] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const dropdownRef = useRef(null);
   const { role, user } = useRole(); // Get role and user from context
+
+  // Strategic Insights sub-items
+  const strategicInsightsItems = [
+    { name: "Financials Dashboard", icon: FinanceIcon, path: "/portal/admin/financials" },
+    { name: "Users Stats", icon: UserStatsIcon, path: "/portal/admin/users-stats" },
+    { name: "Gyms", icon: GymsIcon, path: "/portal/admin/gyms" },
+    { name: "Unit Economics", icon: UnitEconomicsIcon, path: "/portal/admin/unit-economics" },
+    { name: "Expenses", icon: ExpensesIcon, path: "/portal/admin/expenses" },
+    { name: "Cash Flow", icon: CashFlowIcon, path: "/portal/admin/cash-flow" },
+    { name: "Tax & Compliance", icon: TaxComplianceIcon, path: "/portal/admin/tax-compliance" },
+    { name: "MRR", icon: MRRIcon, path: "/portal/admin/mrr" },
+  ];
 
   // Define navigation items based on role
   const getNavigationItems = () => {
@@ -210,6 +235,11 @@ export default function RoleBasedLayout({ children }) {
             name: "Summary",
             icon: SummaryIcon,
             path: "/portal/admin/home",
+          },
+          {
+            name: "Strategic Insights",
+            icon: StrategicInsightsIcon,
+            path: "/portal/admin/financials",
           },
           {
             name: "Fymble Users",
@@ -237,49 +267,9 @@ export default function RoleBasedLayout({ children }) {
             path: "/portal/admin/user-conversion",
           },
           {
-            name: "Financials Dashboard",
-            icon: FinanceIcon,
-            path: "/portal/admin/financials",
-          },
-          {
-            name: "Expenses",
-            icon: ExpensesIcon,
-            path: "/portal/admin/expenses",
-          },
-          {
-            name: "Tax & Compliance",
-            icon: TaxComplianceIcon,
-            path: "/portal/admin/tax-compliance",
-          },
-          {
-            name: "Cash Flow",
-            icon: CashFlowIcon,
-            path: "/portal/admin/cash-flow",
-          },
-          {
-            name: "MRR",
-            icon: MRRIcon,
-            path: "/portal/admin/mrr",
-          },
-          {
-            name: "Unit Economics",
-            icon: UnitEconomicsIcon,
-            path: "/portal/admin/unit-economics",
-          },
-          {
             name: "Bookings",
             icon: BookingsIcon,
             path: "/portal/admin/purchases",
-          },
-          {
-            name: "Gyms",
-            icon: GymsIcon,
-            path: "/portal/admin/gyms",
-          },
-          {
-            name: "Users Stats",
-            icon: UserStatsIcon,
-            path: "/portal/admin/users-stats",
           },
           // {
           //   name: "Marketing",
@@ -598,6 +588,140 @@ export default function RoleBasedLayout({ children }) {
           {navigationItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.path);
+
+            // Check if this is the Strategic Insights section
+            if (item.name === "Strategic Insights") {
+              const hasActiveSubItem = strategicInsightsItems.some(subItem => isActive(subItem.path));
+
+              return (
+                <div key={item.name} style={{ marginBottom: "8px" }}>
+                  {/* Strategic Insights Header */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "12px 16px",
+                      margin: "4px 0",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      backgroundColor: hasActiveSubItem ? "#374151" : "transparent",
+                      color: hasActiveSubItem ? "white" : "#9ca3af",
+                      transition: "all 0.2s ease-in-out",
+                      userSelect: "none",
+                    }}
+                    onClick={() => setStrategicInsightsOpen(!strategicInsightsOpen)}
+                    onMouseEnter={(e) => {
+                      if (!hasActiveSubItem) {
+                        e.currentTarget.style.backgroundColor = "#1f2937";
+                        e.currentTarget.style.color = "white";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!hasActiveSubItem) {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = "#9ca3af";
+                      }
+                    }}
+                  >
+                    <IconComponent size={20} style={{ flexShrink: 0 }} />
+                    {!sidebarCollapsed && (
+                      <>
+                        <span
+                          style={{
+                            marginLeft: "12px",
+                            fontWeight: "600",
+                            display: "block",
+                          }}
+                        >
+                          {item.name}
+                        </span>
+                        <div style={{
+                          marginLeft: "auto",
+                          transform: strategicInsightsOpen ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.2s ease-in-out",
+                          display: "flex",
+                          alignItems: "center"
+                        }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M6 9l6 6 6-6" />
+                          </svg>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Strategic Insights Sub-items */}
+                  {(!sidebarCollapsed || strategicInsightsOpen) && strategicInsightsOpen && (
+                    <div style={{
+                      marginLeft: sidebarCollapsed ? "0" : "16px",
+                      marginTop: "4px",
+                      paddingLeft: sidebarCollapsed ? "0" : "12px",
+                      borderLeft: sidebarCollapsed ? "none" : "1px solid #374151",
+                    }}>
+                      {strategicInsightsItems.map((subItem) => {
+                        const subActive = isActive(subItem.path);
+                        const SubIconComponent = subItem.icon;
+
+                        return (
+                          <div
+                            key={subItem.name}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              padding: sidebarCollapsed ? "12px 16px" : "8px 12px",
+                              margin: "2px 0",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              backgroundColor: subActive ? "#FF5757" : "transparent",
+                              color: subActive ? "white" : "#6b7280",
+                              transition: "all 0.2s ease-in-out",
+                              userSelect: "none",
+                            }}
+                            onClick={() => handleNavigation(subItem.path)}
+                            onMouseEnter={(e) => {
+                              if (!subActive) {
+                                e.currentTarget.style.backgroundColor = "#1f2937";
+                                e.currentTarget.style.color = "white";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!subActive) {
+                                e.currentTarget.style.backgroundColor = "transparent";
+                                e.currentTarget.style.color = "#6b7280";
+                              }
+                            }}
+                          >
+                            <SubIconComponent size={16} style={{ flexShrink: 0 }} />
+                            {!sidebarCollapsed && (
+                              <span
+                                style={{
+                                  fontSize: "13px",
+                                  fontWeight: "500",
+                                  marginLeft: "8px",
+                                }}
+                              >
+                                {subItem.name}
+                              </span>
+                            )}
+                            {subActive && (
+                              <div
+                                style={{
+                                  width: "3px",
+                                  height: "12px",
+                                  backgroundColor: "white",
+                                  borderRadius: "2px",
+                                  marginLeft: "auto",
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
 
             return (
               <div
