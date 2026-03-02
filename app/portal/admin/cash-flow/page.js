@@ -109,6 +109,31 @@ export default function CashFlowPage() {
     }).format(amount || 0);
   };
 
+  // Get current financial year (April 1 to March 31)
+  const getCurrentFinancialYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth(); // 0-indexed (0 = January)
+
+    // Financial year: April (3) to March (2)
+    // If month >= March (3), FY is current year to next year
+    // Otherwise, FY is previous year to current year
+    if (month >= 3) {
+      return `${year}-${year + 1}`;
+    } else {
+      return `${year - 1}-${year}`;
+    }
+  };
+
+  // Get opening balance for current financial year
+  const getCurrentFinancialYearOpeningBalance = () => {
+    const currentFY = getCurrentFinancialYear();
+    const openingBalance = cashFlowData?.opening_balances?.find(
+      (ob) => ob.financial_year === currentFY
+    );
+    return openingBalance?.amount || 0;
+  };
+
   return (
     <div className="dashboard-container">
       {loading ? (
@@ -835,6 +860,374 @@ export default function CashFlowPage() {
                   {cashFlowData?.net_cash_flow >= 0 ? "✓ Positive Cash Flow" : "⚠ Negative Cash Flow"}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Closing Balance Card */}
+          <div className="dashboard-card" style={{ marginTop: "20px" }}>
+            <div className="card-header-custom">
+              <h6 className="card-title">Closing Balance</h6>
+              <div style={{
+                fontSize: "12px",
+                color: "#9ca3af",
+                backgroundColor: "#1f2937",
+                padding: "4px 10px",
+                borderRadius: "4px"
+              }}>
+                {getCurrentFinancialYear()}
+              </div>
+            </div>
+            <div className="card-body-custom">
+              {/* Closing Balance Summary */}
+              <div style={{
+                textAlign: "center",
+                padding: "30px 20px",
+                backgroundColor: "#1f2937",
+                borderRadius: "8px",
+                marginBottom: "20px"
+              }}>
+                <div style={{ fontSize: "14px", color: "#9ca3af", marginBottom: "8px" }}>
+                  Closing Balance
+                </div>
+                <div style={{
+                  fontSize: "36px",
+                  fontWeight: "700",
+                  color: "#8b5cf6"
+                }}>
+                  {formatCurrency(getCurrentFinancialYearOpeningBalance() + (cashFlowData?.net_cash_flow || 0))}
+                </div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
+                  Opening Balance + Net Cash Flow
+                </div>
+              </div>
+
+              {/* Closing Balance Components */}
+              <div>
+                <div style={{
+                  fontSize: "14px",
+                  color: "#fff",
+                  marginBottom: "15px",
+                  fontWeight: "600"
+                }}>
+                  Closing Balance Components
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {/* Opening Balance */}
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "14px 16px",
+                    backgroundColor: "#1e1e1e",
+                    borderRadius: "6px",
+                    border: "1px solid #374151"
+                  }}>
+                    <div>
+                      <div style={{ fontSize: "14px", color: "#fff", fontWeight: "500" }}>
+                        Opening Balance
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>
+                        {getCurrentFinancialYear()} Financial Year
+                      </div>
+                    </div>
+                    <div style={{
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      color: "#8b5cf6"
+                    }}>
+                      {formatCurrency(getCurrentFinancialYearOpeningBalance())}
+                    </div>
+                  </div>
+
+                  {/* Net Cash Flow */}
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "14px 16px",
+                    backgroundColor: "#1e1e1e",
+                    borderRadius: "6px",
+                    border: "1px solid #374151"
+                  }}>
+                    <div>
+                      <div style={{ fontSize: "14px", color: "#fff", fontWeight: "500" }}>
+                        Net Cash Flow
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>
+                        {cashFlowData?.month?.month_name}
+                      </div>
+                    </div>
+                    <div style={{
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      color: cashFlowData?.net_cash_flow >= 0 ? "#10b981" : "#ef4444"
+                    }}>
+                      {formatCurrency(cashFlowData?.net_cash_flow)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Closing Balance Summary */}
+              <div style={{
+                marginTop: "20px",
+                padding: "16px",
+                backgroundColor: "#1f2937",
+                borderRadius: "6px",
+                border: "1px solid #374151"
+              }}>
+                <div style={{
+                  fontSize: "13px",
+                  color: "#fff",
+                  fontWeight: "600",
+                  marginBottom: "12px"
+                }}>
+                  Closing Balance Summary
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                    <span style={{ color: "#9ca3af" }}>Opening Balance:</span>
+                    <span style={{ color: "#8b5cf6", fontWeight: "500" }}>
+                      {formatCurrency(getCurrentFinancialYearOpeningBalance())}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                    <span style={{ color: "#9ca3af" }}>Net Cash Flow:</span>
+                    <span style={{ color: cashFlowData?.net_cash_flow >= 0 ? "#10b981" : "#ef4444", fontWeight: "500" }}>
+                      {formatCurrency(cashFlowData?.net_cash_flow)}
+                    </span>
+                  </div>
+                  <div style={{
+                    display: "flex", justifyContent: "space-between",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    paddingTop: "8px",
+                    borderTop: "1px solid #374151",
+                    marginTop: "4px"
+                  }}>
+                    <span style={{ color: "#fff" }}>Closing Balance:</span>
+                    <span style={{ color: "#8b5cf6" }}>
+                      {formatCurrency(getCurrentFinancialYearOpeningBalance() + (cashFlowData?.net_cash_flow || 0))}
+                    </span>
+                  </div>
+                </div>
+                <div style={{
+                  marginTop: "12px",
+                  padding: "10px 12px",
+                  backgroundColor: "rgba(139, 92, 246, 0.1)",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  color: "#8b5cf6",
+                  textAlign: "center"
+                }}>
+                  Financial Year: {getCurrentFinancialYear()} (April 1 to March 31)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Burn Rate Card */}
+          <div className="dashboard-card" style={{ marginTop: "20px" }}>
+            <div className="card-header-custom">
+              <h6 className="card-title">Burn Rate</h6>
+              {cashFlowData?.month && (
+                <div style={{
+                  fontSize: "12px",
+                  color: "#9ca3af",
+                  backgroundColor: "#1f2937",
+                  padding: "4px 10px",
+                  borderRadius: "4px"
+                }}>
+                  {cashFlowData.month.month_name}
+                </div>
+              )}
+            </div>
+            <div className="card-body-custom">
+              {/* Burn Rate Summary */}
+              <div style={{
+                textAlign: "center",
+                padding: "30px 20px",
+                backgroundColor: "#1f2937",
+                borderRadius: "8px",
+                marginBottom: "20px"
+              }}>
+                <div style={{ fontSize: "14px", color: "#9ca3af", marginBottom: "8px" }}>
+                  Monthly Burn Rate
+                </div>
+                <div style={{
+                  fontSize: "36px",
+                  fontWeight: "700",
+                  color: cashFlowData?.net_cash_flow < 0 ? "#ef4444" : "#10b981"
+                }}>
+                  {formatCurrency(cashFlowData?.net_cash_flow < 0 ? Math.abs(cashFlowData.net_cash_flow) : 0)}
+                </div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
+                  {cashFlowData?.month && (
+                    <span>{cashFlowData.month.start_date} to {cashFlowData.month.end_date}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Burn Rate Status */}
+              <div style={{
+                padding: "16px",
+                backgroundColor: "#1f2937",
+                borderRadius: "6px",
+                border: "1px solid #374151"
+              }}>
+                {cashFlowData?.net_cash_flow >= 0 && (
+                  <div style={{
+                    padding: "12px 16px",
+                    backgroundColor: "rgba(16, 185, 129, 0.1)",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    color: "#10b981",
+                    textAlign: "center",
+                    fontWeight: "500"
+                  }}>
+                    ✓ Positive cash flow - No burn rate this month
+                  </div>
+                )}
+                {cashFlowData?.net_cash_flow < 0 && (
+                  <div style={{
+                    padding: "12px 16px",
+                    backgroundColor: "rgba(239, 68, 68, 0.1)",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    color: "#ef4444",
+                    textAlign: "center",
+                    fontWeight: "500"
+                  }}>
+                    ⚠ Negative cash flow - Burning {formatCurrency(Math.abs(cashFlowData.net_cash_flow))} per month
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Runway Card */}
+          <div className="dashboard-card" style={{ marginTop: "20px" }}>
+            <div className="card-header-custom">
+              <h6 className="card-title">Runway</h6>
+              <div style={{
+                fontSize: "12px",
+                color: "#9ca3af",
+                backgroundColor: "#1f2937",
+                padding: "4px 10px",
+                borderRadius: "4px"
+              }}>
+                {getCurrentFinancialYear()}
+              </div>
+            </div>
+            <div className="card-body-custom">
+              {(() => {
+                const closingBalance = getCurrentFinancialYearOpeningBalance() + (cashFlowData?.net_cash_flow || 0);
+                const netCashFlow = cashFlowData?.net_cash_flow || 0;
+
+                // Calculate runway: Closing Balance / Net Cash Flow
+                // Only if Closing Balance is positive AND Net Cash Flow is negative
+                // Use absolute value of Net Cash Flow for division
+                let runway = 0;
+                let shouldCalculate = false;
+
+                if (closingBalance > 0 && netCashFlow < 0) {
+                  runway = closingBalance / Math.abs(netCashFlow);
+                  shouldCalculate = true;
+                }
+
+                return (
+                  <>
+                    {/* Runway Summary */}
+                    <div style={{
+                      textAlign: "center",
+                      padding: "30px 20px",
+                      backgroundColor: "#1f2937",
+                      borderRadius: "8px",
+                      marginBottom: "20px"
+                    }}>
+                      <div style={{ fontSize: "14px", color: "#9ca3af", marginBottom: "8px" }}>
+                        Runway (Months)
+                      </div>
+                      <div style={{
+                        fontSize: "48px",
+                        fontWeight: "700",
+                        color: shouldCalculate ? (runway >= 6 ? "#10b981" : runway >= 3 ? "#f59e0b" : "#ef4444") : "#10b981"
+                      }}>
+                        {shouldCalculate ? runway.toFixed(1) : "0"}
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
+                        {shouldCalculate ? `${runway.toFixed(1)} months remaining` :
+                         closingBalance <= 0 ? "Negative closing balance" :
+                         "Positive cash flow"}
+                      </div>
+                    </div>
+
+                    {/* Runway Details */}
+                    <div style={{
+                      padding: "16px",
+                      backgroundColor: "#1f2937",
+                      borderRadius: "6px",
+                      border: "1px solid #374151"
+                    }}>
+                      <div style={{
+                        fontSize: "13px",
+                        color: "#fff",
+                        fontWeight: "600",
+                        marginBottom: "12px"
+                      }}>
+                        Runway Calculation
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#9ca3af" }}>Closing Balance:</span>
+                          <span style={{ color: closingBalance >= 0 ? "#8b5cf6" : "#ef4444", fontWeight: "500" }}>
+                            {formatCurrency(closingBalance)}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                          <span style={{ color: "#9ca3af" }}>Net Cash Flow:</span>
+                          <span style={{ color: netCashFlow >= 0 ? "#10b981" : "#ef4444", fontWeight: "500" }}>
+                            {formatCurrency(netCashFlow)}
+                          </span>
+                        </div>
+                        <div style={{
+                          display: "flex", justifyContent: "space-between",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          paddingTop: "8px",
+                          borderTop: "1px solid #374151",
+                          marginTop: "4px"
+                        }}>
+                          <span style={{ color: "#fff" }}>Runway:</span>
+                          <span style={{ color: shouldCalculate ? (runway >= 6 ? "#10b981" : runway >= 3 ? "#f59e0b" : "#ef4444") : "#10b981" }}>
+                            {shouldCalculate ? `${runway.toFixed(1)} months` : "0 months"}
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{
+                        marginTop: "12px",
+                        padding: "10px 12px",
+                        backgroundColor: shouldCalculate ?
+                          (runway >= 6 ? "rgba(16, 185, 129, 0.1)" : runway >= 3 ? "rgba(245, 158, 11, 0.1)" : "rgba(239, 68, 68, 0.1)") :
+                          "rgba(16, 185, 129, 0.1)",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: shouldCalculate ?
+                          (runway >= 6 ? "#10b981" : runway >= 3 ? "#f59e0b" : "#ef4444") :
+                          "#10b981",
+                        textAlign: "center"
+                      }}>
+                        {closingBalance <= 0 ? "⚠ Negative closing balance - Cannot calculate runway" :
+                         netCashFlow >= 0 ? "✓ Positive cash flow - No runway calculation needed" :
+                         runway >= 12 ? "✓ Healthy - More than 1 year runway" :
+                         runway >= 6 ? "✓ Good - 6+ months runway" :
+                         runway >= 3 ? "⚠ Warning - Less than 6 months runway" :
+                         "🚨 Critical - Less than 3 months runway"}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
