@@ -208,7 +208,7 @@ function StrategicInsightsIcon({ size = 20 }) {
 export default function RoleBasedLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [strategicInsightsOpen, setStrategicInsightsOpen] = useState(true);
+  const [strategicInsightsOpen, setStrategicInsightsOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const dropdownRef = useRef(null);
@@ -232,14 +232,14 @@ export default function RoleBasedLayout({ children }) {
       case "admin":
         return [
           {
-            name: "Summary",
-            icon: SummaryIcon,
-            path: "/portal/admin/home",
-          },
-          {
             name: "Strategic Insights",
             icon: StrategicInsightsIcon,
             path: "/portal/admin/financials",
+          },
+          {
+            name: "Summary",
+            icon: SummaryIcon,
+            path: "/portal/admin/home",
           },
           {
             name: "Fymble Users",
