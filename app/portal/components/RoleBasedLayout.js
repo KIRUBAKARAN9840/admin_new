@@ -133,6 +133,66 @@ function CashFlowIcon({ size = 20 }) {
     />
   );
 }
+
+function SummaryIcon({ size = 20 }) {
+  return (
+    <img
+      src="/summary.svg"
+      alt="Summary"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
+
+function FymbleUsersIcon({ size = 20 }) {
+  return (
+    <img
+      src="/fymble_users.svg"
+      alt="Fymble Users"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
+
+function TechSupportIcon({ size = 20 }) {
+  return (
+    <img
+      src="/tech_support.svg"
+      alt="Tech Support"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
+
+function TaxComplianceIcon({ size = 20 }) {
+  return (
+    <img
+      src="/tax_compliance.svg"
+      alt="Tax & Compliance"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
+
+function MRRIcon({ size = 20 }) {
+  return (
+    <img
+      src="/mrr.svg"
+      alt="MRR"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
 export default function RoleBasedLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -148,12 +208,12 @@ export default function RoleBasedLayout({ children }) {
         return [
           {
             name: "Summary",
-            icon: HiOutlineHome,
+            icon: SummaryIcon,
             path: "/portal/admin/home",
           },
           {
             name: "Fymble Users",
-            icon: HiOutlineUsers,
+            icon: FymbleUsersIcon,
             path: "/portal/admin/users",
           },
           {
@@ -168,7 +228,7 @@ export default function RoleBasedLayout({ children }) {
           // },
           {
             name: "Tech Support Inhouse",
-            icon: HiOutlinePhone,
+            icon: TechSupportIcon,
             path: "/portal/admin/telecaller-managers",
           },
           {
@@ -188,7 +248,7 @@ export default function RoleBasedLayout({ children }) {
           },
           {
             name: "Tax & Compliance",
-            icon: HiOutlineReceiptTax,
+            icon: TaxComplianceIcon,
             path: "/portal/admin/tax-compliance",
           },
           {
@@ -198,7 +258,7 @@ export default function RoleBasedLayout({ children }) {
           },
           {
             name: "MRR",
-            icon: HiOutlineCurrencyDollar,
+            icon: MRRIcon,
             path: "/portal/admin/mrr",
           },
           {
