@@ -670,6 +670,173 @@ export default function CashFlowPage() {
               )}
             </div>
           </div>
+
+          {/* Net Cash Flow Card */}
+          <div className="dashboard-card" style={{ marginTop: "20px" }}>
+            <div className="card-header-custom">
+              <h6 className="card-title">Net Cash Flow</h6>
+              {cashFlowData?.month && (
+                <div style={{
+                  fontSize: "12px",
+                  color: "#9ca3af",
+                  backgroundColor: "#1f2937",
+                  padding: "4px 10px",
+                  borderRadius: "4px"
+                }}>
+                  {cashFlowData.month.month_name}
+                </div>
+              )}
+            </div>
+            <div className="card-body-custom">
+              {/* Net Cash Flow Summary */}
+              <div style={{
+                textAlign: "center",
+                padding: "30px 20px",
+                backgroundColor: "#1f2937",
+                borderRadius: "8px",
+                marginBottom: "20px"
+              }}>
+                <div style={{ fontSize: "14px", color: "#9ca3af", marginBottom: "8px" }}>
+                  Net Cash Flow
+                </div>
+                <div style={{
+                  fontSize: "36px",
+                  fontWeight: "700",
+                  color: cashFlowData?.net_cash_flow >= 0 ? "#10b981" : "#ef4444"
+                }}>
+                  {formatCurrency(cashFlowData?.net_cash_flow)}
+                </div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
+                  {cashFlowData?.month && (
+                    <span>{cashFlowData.month.start_date} to {cashFlowData.month.end_date}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Inflow and Outflow Comparison */}
+              <div>
+                <div style={{
+                  fontSize: "14px",
+                  color: "#fff",
+                  marginBottom: "15px",
+                  fontWeight: "600"
+                }}>
+                  Cash Flow Components
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {/* Total Inflow */}
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "14px 16px",
+                    backgroundColor: "#1e1e1e",
+                    borderRadius: "6px",
+                    border: "1px solid #374151"
+                  }}>
+                    <div>
+                      <div style={{ fontSize: "14px", color: "#fff", fontWeight: "500" }}>
+                        Total Inflow
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>
+                        Total Gross Revenue
+                      </div>
+                    </div>
+                    <div style={{
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      color: "#10b981"
+                    }}>
+                      {formatCurrency(cashFlowData?.inflow?.total_revenue)}
+                    </div>
+                  </div>
+
+                  {/* Total Outflow */}
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "14px 16px",
+                    backgroundColor: "#1e1e1e",
+                    borderRadius: "6px",
+                    border: "1px solid #374151"
+                  }}>
+                    <div>
+                      <div style={{ fontSize: "14px", color: "#fff", fontWeight: "500" }}>
+                        Total Outflow
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>
+                        Gym Payout + GST + TDS + Expenses
+                      </div>
+                    </div>
+                    <div style={{
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      color: "#ef4444"
+                    }}>
+                      {formatCurrency(cashFlowData?.outflow?.total_outflow)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Net Cash Flow Summary */}
+              <div style={{
+                marginTop: "20px",
+                padding: "16px",
+                backgroundColor: "#1f2937",
+                borderRadius: "6px",
+                border: "1px solid #374151"
+              }}>
+                <div style={{
+                  fontSize: "13px",
+                  color: "#fff",
+                  fontWeight: "600",
+                  marginBottom: "12px"
+                }}>
+                  Net Cash Flow Summary
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                    <span style={{ color: "#9ca3af" }}>Total Inflow:</span>
+                    <span style={{ color: "#10b981", fontWeight: "500" }}>
+                      {formatCurrency(cashFlowData?.inflow?.total_revenue)}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                    <span style={{ color: "#9ca3af" }}>Total Outflow:</span>
+                    <span style={{ color: "#ef4444", fontWeight: "500" }}>
+                      {formatCurrency(cashFlowData?.outflow?.total_outflow)}
+                    </span>
+                  </div>
+                  <div style={{
+                    display: "flex", justifyContent: "space-between",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    paddingTop: "8px",
+                    borderTop: "1px solid #374151",
+                    marginTop: "4px"
+                  }}>
+                    <span style={{ color: "#fff" }}>Net Cash Flow:</span>
+                    <span style={{ color: cashFlowData?.net_cash_flow >= 0 ? "#10b981" : "#ef4444" }}>
+                      {formatCurrency(cashFlowData?.net_cash_flow)}
+                    </span>
+                  </div>
+                </div>
+                <div style={{
+                  marginTop: "12px",
+                  padding: "10px 12px",
+                  backgroundColor: cashFlowData?.net_cash_flow >= 0 ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  color: cashFlowData?.net_cash_flow >= 0 ? "#10b981" : "#ef4444",
+                  textAlign: "center"
+                }}>
+                  {cashFlowData?.net_cash_flow >= 0 ? "✓ Positive Cash Flow" : "⚠ Negative Cash Flow"}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
