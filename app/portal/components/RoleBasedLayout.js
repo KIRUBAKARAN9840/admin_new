@@ -205,6 +205,18 @@ function StrategicInsightsIcon({ size = 20 }) {
     />
   );
 }
+
+function SupportTicketsIcon({ size = 20 }) {
+  return (
+    <img
+      src="/support_tickets.svg"
+      alt="Support Tickets"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
 export default function RoleBasedLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -270,6 +282,11 @@ export default function RoleBasedLayout({ children }) {
             name: "Bookings",
             icon: BookingsIcon,
             path: "/portal/admin/purchases",
+          },
+          {
+            name: "Support Tickets",
+            icon: SupportTicketsIcon,
+            path: "/portal/admin/tickets",
           },
           // {
           //   name: "Marketing",

@@ -2,15 +2,18 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
+import { FaSpinner, FaChevronLeft, FaChevronRight, FaTicketAlt } from "react-icons/fa";
 
 export default function AdminTickets() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const ticketType = searchParams.get("type") || "gym"; // gym or client
+  const ticketType = searchParams.get("type") || "client"; // client or gym
+  const statusFilter = searchParams.get("status") || "all"; // all, resolved, unresolved, follow_up
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tickets, setTickets] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -19,15 +22,10 @@ export default function AdminTickets() {
     hasNext: false,
     hasPrev: false,
   });
-  const [filters, setFilters] = useState({
-    search: "",
-    status: "",
-    issueType: "",
-  });
 
   useEffect(() => {
     fetchTickets();
-  }, [ticketType, pagination.page, filters.status, filters.issueType]);
+  }, [ticketType, statusFilter, pagination.page]);
 
   const fetchTickets = async () => {
     try {
@@ -43,11 +41,21 @@ export default function AdminTickets() {
       // Filter by source - Gym = "Fittbot Business", Client = "Fittbot"
       params.append("source", ticketType === "gym" ? "Fittbot Business" : "Fittbot");
 
-      if (filters.search) params.append("search", filters.search);
-      if (filters.status && filters.status !== "") params.append("status", filters.status);
-      if (filters.issueType) params.append("issue_type", filters.issueType);
+      // Always add status filter - map to API values
+      if (statusFilter !== "all") {
+        const statusMap = {
+          "resolved": "Resolved",
+          "unresolved": "Pending",
+          "follow_up": "Follow Up"
+        };
+        params.append("status", statusMap[statusFilter] || statusFilter);
+      }
 
-      const response = await axiosInstance.get(`/api/admin/dashboard/support-tickets-list?${params.toString()}`);
+      if (searchTerm) params.append("search", searchTerm);
+
+      const response = await axiosInstance.get(
+        `/api/admin/dashboard/support-tickets-list?${params.toString()}`
+      );
 
       if (response.data.success) {
         setTickets(response.data.data.tickets);
@@ -70,30 +78,43 @@ export default function AdminTickets() {
     fetchTickets();
   };
 
-  const handleStatusChange = (status) => {
-    setFilters({ ...filters, status, page: 1 });
+  const handleStatusFilter = (status) => {
     setPagination({ ...pagination, page: 1 });
+    router.push(`/portal/admin/tickets?type=${ticketType}&status=${status}`);
   };
 
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case "resolved":
-        return "badge-resolved";
-      case "working":
-        return "badge-working";
-      default:
-        return "badge-pending";
+  const handleTypeFilter = (type) => {
+    setPagination({ ...pagination, page: 1 });
+    router.push(`/portal/admin/tickets?type=${type}&status=${statusFilter}`);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    setPagination({ ...pagination, page: newPage });
+  };
+
+  const getStatusBadgeStyle = (status) => {
+    const statusLower = status?.toLowerCase() || "";
+    if (statusLower === "resolved") {
+      return { backgroundColor: "rgba(16, 185, 129, 0.2)", borderColor: "#059669", color: "#34d399" };
+    } else if (statusLower === "follow up" || statusLower === "follow_up" || statusLower === "working") {
+      return { backgroundColor: "rgba(245, 158, 11, 0.2)", borderColor: "#d97706", color: "#fbbf24" };
+    } else {
+      return { backgroundColor: "rgba(239, 68, 68, 0.2)", borderColor: "#dc2626", color: "#f87171" };
     }
   };
 
   const getStatusLabel = (status) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case "resolved":
         return "Resolved";
+      case "follow up":
+      case "follow_up":
       case "working":
-        return "Working";
+        return status || "Follow Up";
+      case "yet to start":
       default:
-        return "Yet to Start";
+        return "Pending";
     }
   };
 
@@ -109,291 +130,506 @@ export default function AdminTickets() {
     });
   };
 
+  const getShortTicketId = (ticketId) => {
+    if (!ticketId) return "N/A";
+    return ticketId.substring(0, 8);
+  };
+
   return (
-    <div className="dashboard-container">
-      <div className="section-container">
-        {/* Header with Back Button */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <button
-              className="btn btn-outline-secondary btn-sm mb-2"
-              onClick={() => router.push("/portal/admin/home")}
-              style={{
-                borderColor: "#444",
-                color: "#ccc",
-                backgroundColor: "transparent",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = "#222";
-                e.target.style.borderColor = "#FF5757";
-                e.target.style.color = "#FF5757";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = "transparent";
-                e.target.style.borderColor = "#444";
-                e.target.style.color = "#ccc";
-              }}
-            >
-              ← Back to Dashboard
-            </button>
-            <h3 className="section-heading mb-0">
-              <span style={{ color: "#FF5757" }}>
-                {ticketType === "gym" ? "Gym" : "Client"}
-              </span>{" "}
-              Support Tickets
-            </h3>
-          </div>
+    <div style={{ padding: "1.5rem", minHeight: "calc(100vh - 100px)" }}>
+      {/* Header */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            color: "white",
+            marginBottom: "0.25rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+          }}
+        >
+          <FaTicketAlt style={{ color: "#FF5757" }} />
+          Support Tickets
+        </h1>
+      </div>
+
+      {/* Type Tabs - Fymble / Fymble Business */}
+      <div
+        style={{
+          display: "flex",
+          gap: "0.5rem",
+          marginBottom: "1.5rem",
+          borderBottom: "1px solid #374151",
+          paddingBottom: "0",
+        }}
+      >
+        <button
+          onClick={() => handleTypeFilter("client")}
+          style={{
+            padding: "0.75rem 1.5rem",
+            backgroundColor: ticketType === "client" ? "#FF5757" : "transparent",
+            border: "none",
+            borderRadius: "0.5rem 0.5rem 0 0",
+            color: ticketType === "client" ? "white" : "#9ca3af",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            fontSize: "0.875rem",
+            fontWeight: "500",
+            borderBottom: ticketType === "client" ? "2px solid #FF5757" : "2px solid transparent",
+          }}
+          onMouseEnter={(e) => {
+            if (ticketType !== "client") {
+              e.target.style.color = "white";
+              e.target.style.backgroundColor = "#374151";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (ticketType !== "client") {
+              e.target.style.color = "#9ca3af";
+              e.target.style.backgroundColor = "transparent";
+            }
+          }}
+        >
+          Fymble
+        </button>
+        <button
+          onClick={() => handleTypeFilter("gym")}
+          style={{
+            padding: "0.75rem 1.5rem",
+            backgroundColor: ticketType === "gym" ? "#FF5757" : "transparent",
+            border: "none",
+            borderRadius: "0.5rem 0.5rem 0 0",
+            color: ticketType === "gym" ? "white" : "#9ca3af",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            fontSize: "0.875rem",
+            fontWeight: "500",
+            borderBottom: ticketType === "gym" ? "2px solid #FF5757" : "2px solid transparent",
+          }}
+          onMouseEnter={(e) => {
+            if (ticketType !== "gym") {
+              e.target.style.color = "white";
+              e.target.style.backgroundColor = "#374151";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (ticketType !== "gym") {
+              e.target.style.color = "#9ca3af";
+              e.target.style.backgroundColor = "transparent";
+            }
+          }}
+        >
+          Fymble Business
+        </button>
+      </div>
+
+      {/* Status Filters + Search Bar */}
+      <div style={{ marginBottom: "1.5rem", display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <button
+            onClick={() => handleStatusFilter("all")}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: statusFilter === "all" ? "#FF5757" : "#1f2937",
+              border: statusFilter === "all" ? "none" : "1px solid #374151",
+              borderRadius: "0.5rem",
+              color: statusFilter === "all" ? "white" : "#9ca3af",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              fontSize: "0.875rem",
+            }}
+            onMouseEnter={(e) => {
+              if (statusFilter !== "all") {
+                e.target.style.backgroundColor = "#374151";
+                e.target.style.color = "white";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (statusFilter !== "all") {
+                e.target.style.backgroundColor = "#1f2937";
+                e.target.style.color = "#9ca3af";
+              }
+            }}
+          >
+            All Tickets
+          </button>
+          <button
+            onClick={() => handleStatusFilter("resolved")}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: statusFilter === "resolved" ? "#10b981" : "#1f2937",
+              border: statusFilter === "resolved" ? "none" : "1px solid #374151",
+              borderRadius: "0.5rem",
+              color: statusFilter === "resolved" ? "white" : "#9ca3af",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              fontSize: "0.875rem",
+            }}
+            onMouseEnter={(e) => {
+              if (statusFilter !== "resolved") {
+                e.target.style.backgroundColor = "#374151";
+                e.target.style.color = "white";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (statusFilter !== "resolved") {
+                e.target.style.backgroundColor = "#1f2937";
+                e.target.style.color = "#9ca3af";
+              }
+            }}
+          >
+            Resolved
+          </button>
+          <button
+            onClick={() => handleStatusFilter("unresolved")}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: statusFilter === "unresolved" ? "#ef4444" : "#1f2937",
+              border: statusFilter === "unresolved" ? "none" : "1px solid #374151",
+              borderRadius: "0.5rem",
+              color: statusFilter === "unresolved" ? "white" : "#9ca3af",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              fontSize: "0.875rem",
+            }}
+            onMouseEnter={(e) => {
+              if (statusFilter !== "unresolved") {
+                e.target.style.backgroundColor = "#374151";
+                e.target.style.color = "white";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (statusFilter !== "unresolved") {
+                e.target.style.backgroundColor = "#1f2937";
+                e.target.style.color = "#9ca3af";
+              }
+            }}
+          >
+            Unresolved
+          </button>
+          <button
+            onClick={() => handleStatusFilter("follow_up")}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: statusFilter === "follow_up" ? "#9333ea" : "#1f2937",
+              border: statusFilter === "follow_up" ? "none" : "1px solid #374151",
+              borderRadius: "0.5rem",
+              color: statusFilter === "follow_up" ? "white" : "#9ca3af",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              fontSize: "0.875rem",
+            }}
+            onMouseEnter={(e) => {
+              if (statusFilter !== "follow_up") {
+                e.target.style.backgroundColor = "#374151";
+                e.target.style.color = "white";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (statusFilter !== "follow_up") {
+                e.target.style.backgroundColor = "#1f2937";
+                e.target.style.color = "#9ca3af";
+              }
+            }}
+          >
+            Follow Up
+          </button>
         </div>
 
-        {/* Filters */}
-        <div className="row mb-4">
-          <div className="col-md-4">
-            <form onSubmit={handleSearch}>
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search by ticket ID, name, or email..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  style={{
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #333",
-                    color: "#fff",
-                  }}
-                />
-                <button
-                  className="btn"
-                  type="submit"
-                  style={{ backgroundColor: "#FF5757", border: "none", color: "#fff" }}
-                >
-                  Search
-                </button>
-              </div>
-            </form>
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.5rem", marginLeft: "auto" }}>
+          <input
+            type="text"
+            placeholder="Search by ticket ID, name, or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "#1f2937",
+              border: "1px solid #374151",
+              borderRadius: "0.5rem",
+              color: "white",
+              fontSize: "0.875rem",
+              minWidth: "280px",
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "#FF5757",
+              border: "none",
+              borderRadius: "0.5rem",
+              color: "white",
+              cursor: "pointer",
+              transition: "background-color 0.2s",
+              fontSize: "0.875rem",
+              fontWeight: "500",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#dc2626";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "#FF5757";
+            }}
+          >
+            Search
+          </button>
+        </form>
+      </div>
+
+      {/* Tickets Table */}
+      <div
+        style={{
+          backgroundColor: "#1f2937",
+          borderRadius: "0.5rem",
+          overflow: "hidden",
+          border: "1px solid #374151",
+        }}
+      >
+        {/* Table Header - Different columns based on filter */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: statusFilter === "all" ? "180px 1fr 100px 140px 150px 150px" : "180px 1fr 130px 150px 150px",
+            gap: "1rem",
+            padding: "0.75rem 1.5rem",
+            backgroundColor: "#374151",
+            borderBottom: "1px solid #4b5563",
+          }}
+        >
+          <div style={{ fontSize: "0.75rem", fontWeight: "500", color: "#d1d5db", textTransform: "uppercase" }}>
+            Ticket ID
           </div>
-          <div className="col-md-8">
-            <div className="d-flex gap-2">
-              <button
-                className={`btn btn-sm ${filters.status === "" ? "btn-danger" : "btn-outline-secondary"}`}
-                onClick={() => handleStatusChange("")}
-                style={filters.status === "" ? {} : { borderColor: "#444", color: "#ccc" }}
-              >
-                All
-              </button>
-              <button
-                className={`btn btn-sm ${filters.status === "resolved" ? "btn-danger" : "btn-outline-secondary"}`}
-                onClick={() => handleStatusChange("resolved")}
-                style={filters.status === "resolved" ? {} : { borderColor: "#444", color: "#ccc" }}
-              >
-                Resolved
-              </button>
+          <div style={{ fontSize: "0.75rem", fontWeight: "500", color: "#d1d5db", textTransform: "uppercase" }}>
+            Subject
+          </div>
+          {statusFilter === "all" && (
+            <div style={{ fontSize: "0.75rem", fontWeight: "500", color: "#d1d5db", textTransform: "uppercase" }}>
+              Status
             </div>
+          )}
+          <div style={{ fontSize: "0.75rem", fontWeight: "500", color: "#d1d5db", textTransform: "uppercase" }}>
+            Assigned To
+          </div>
+          <div style={{ fontSize: "0.75rem", fontWeight: "500", color: "#d1d5db", textTransform: "uppercase" }}>
+            Created At
+          </div>
+          <div style={{ fontSize: "0.75rem", fontWeight: "500", color: "#d1d5db", textTransform: "uppercase" }}>
+            Solved At
           </div>
         </div>
 
-        {/* Tickets Table */}
+        {/* Loading State */}
         {loading ? (
-          <div className="text-center py-5">
-            <div
-              style={{
-                width: "50px",
-                height: "50px",
-                border: "4px solid #3a3a3a",
-                borderTop: "4px solid #FF5757",
-                borderRadius: "50%",
-                animation: "spin 1s linear infinite",
-                margin: "0 auto 1rem",
-              }}
-            />
-            <p style={{ fontSize: "14px", color: "#ccc" }}>Loading tickets...</p>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "3rem 0",
+            }}
+          >
+            <FaSpinner style={{ fontSize: "2rem", color: "#FF5757", animation: "spin 1s linear infinite" }} />
           </div>
         ) : error ? (
-          <div className="text-center py-5">
-            <p style={{ fontSize: "16px", color: "#ef4444" }}>Error: {error}</p>
+          <div style={{ padding: "3rem 0", textAlign: "center" }}>
+            <p style={{ color: "#ef4444", marginBottom: "1rem" }}>{error}</p>
             <button
-              className="btn btn-sm mt-3"
               onClick={fetchTickets}
-              style={{ backgroundColor: "#FF5757", border: "none", color: "#fff" }}
+              style={{
+                padding: "0.5rem 1rem",
+                backgroundColor: "#FF5757",
+                border: "none",
+                borderRadius: "0.5rem",
+                color: "white",
+                cursor: "pointer",
+              }}
             >
               Retry
             </button>
           </div>
         ) : tickets.length === 0 ? (
-          <div className="text-center py-5">
-            <p style={{ fontSize: "16px", color: "#888" }}>No tickets found</p>
+          <div style={{ padding: "3rem 0", textAlign: "center", color: "#9ca3af" }}>
+            <FaTicketAlt style={{ fontSize: "3rem", color: "#4b5563", marginBottom: "0.75rem" }} />
+            <p>No tickets found</p>
           </div>
         ) : (
-          <div className="table-responsive">
-            <table
-              className="table tickets-table"
-            >
-              <thead>
-                <tr>
-                  <th>Ticket ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Subject</th>
-                  <th>Issue</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tickets.map((ticket) => (
-                  <tr
-                    key={ticket.id}
-                    onClick={() => router.push(`/portal/admin/tickets/${ticket.ticket_id}?source=${ticket.source}`)}
-                  >
-                    <td className="ticket-id">
-                      {ticket.ticket_id.substring(0, 8)}...
-                    </td>
-                    <td className="ticket-name">{ticket.name}</td>
-                    <td className="ticket-email">{ticket.email}</td>
-                    <td className="ticket-subject">{ticket.subject}</td>
-                    <td className="ticket-issue">
-                      {ticket.issue}
-                    </td>
-                    <td className="ticket-status">
-                      <span className={`badge ${getStatusBadgeClass(ticket.status)}`}>
+          <div>
+            {tickets.map((ticket) => (
+              <div
+                key={ticket.id}
+                onClick={() => router.push(`/portal/admin/tickets/${ticket.ticket_id}?source=${ticket.source}`)}
+                style={{
+                  cursor: "pointer",
+                  borderBottom: "1px solid #374151",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#37415180";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: statusFilter === "all" ? "180px 1fr 100px 140px 150px 150px" : "180px 1fr 130px 150px 150px",
+                    gap: "1rem",
+                    padding: "1rem 1.5rem",
+                    alignItems: "center",
+                  }}
+                >
+                  {/* Ticket ID */}
+                  <div>
+                    <div style={{ fontFamily: "monospace", fontSize: "0.875rem", color: "#60a5fa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {ticket.ticket_id || "N/A"}
+                    </div>
+                  </div>
+
+                  {/* Subject */}
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "0.875rem",
+                        color: "#d1d5db",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {ticket.subject}
+                    </div>
+                  </div>
+
+                  {/* Status - only show for All */}
+                  {statusFilter === "all" && (
+                    <div>
+                      <span
+                        style={{
+                          padding: "0.25rem 0.75rem",
+                          fontSize: "0.75rem",
+                          fontWeight: "500",
+                          borderRadius: "0.25rem",
+                          border: "1px solid",
+                          ...getStatusBadgeStyle(ticket.status),
+                        }}
+                      >
                         {getStatusLabel(ticket.status)}
                       </span>
-                    </td>
-                    <td className="ticket-date">
-                      {formatDate(ticket.created_at)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                    </div>
+                  )}
 
-        {/* Pagination */}
-        {!loading && tickets.length > 0 && (
-          <div className="d-flex justify-content-between align-items-center mt-4">
-            <div style={{ color: "#888", fontSize: "14px" }}>
-              Showing {((pagination.page - 1) * pagination.limit) + 1} to{" "}
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} tickets
-            </div>
-            <div className="btn-group">
-              <button
-                className="btn btn-sm"
-                disabled={!pagination.hasPrev}
-                onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
-                style={{
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #333",
-                  color: pagination.hasPrev ? "#fff" : "#555",
-                }}
-              >
-                Previous
-              </button>
-              <button
-                className="btn btn-sm"
-                disabled={!pagination.hasNext}
-                onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
-                style={{
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #333",
-                  color: pagination.hasNext ? "#fff" : "#555",
-                }}
-              >
-                Next
-              </button>
-            </div>
+                  {/* Assigned To */}
+                  <div>
+                    <div style={{ fontSize: "0.875rem", color: "#d1d5db", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {ticket.assigned_to || "N/A"}
+                    </div>
+                  </div>
+
+                  {/* Created At */}
+                  <div>
+                    <div style={{ fontSize: "0.875rem", color: "#9ca3af" }}>
+                      {formatDate(ticket.created_at)}
+                    </div>
+                  </div>
+
+                  {/* Solved At */}
+                  <div>
+                    <div style={{ fontSize: "0.875rem", color: "#9ca3af" }}>
+                      {ticket.resolved_at ? formatDate(ticket.resolved_at) : "N/A"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      <style jsx global>{`
-        table.tickets-table {
-          width: 100% !important;
-          border-collapse: separate !important;
-          border-spacing: 0 !important;
-          background-color: #1a1a1a !important;
-          color: #fff !important;
-          border-radius: 8px !important;
-          overflow: hidden !important;
-        }
+      {/* Pagination */}
+      {pagination.totalPages > 1 && !loading && (
+        <div
+          style={{
+            marginTop: "1.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ fontSize: "0.875rem", color: "#9ca3af" }}>
+            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+            {pagination.total} tickets
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={!pagination.hasPrev || loading}
+              style={{
+                padding: "0.5rem",
+                borderRadius: "0.5rem",
+                backgroundColor: "#1f2937",
+                border: "1px solid #374151",
+                color: "#9ca3af",
+                cursor: !pagination.hasPrev || loading ? "not-allowed" : "pointer",
+                opacity: !pagination.hasPrev || loading ? 0.5 : 1,
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                if (pagination.hasPrev && !loading) {
+                  e.target.style.color = "white";
+                  e.target.style.backgroundColor = "#374151";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = "#9ca3af";
+                e.target.style.backgroundColor = "#1f2937";
+              }}
+            >
+              <FaChevronLeft style={{ fontSize: "1rem" }} />
+            </button>
+            <span style={{ fontSize: "0.875rem", color: "#9ca3af", padding: "0 0.5rem" }}>
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={!pagination.hasNext || loading}
+              style={{
+                padding: "0.5rem",
+                borderRadius: "0.5rem",
+                backgroundColor: "#1f2937",
+                border: "1px solid #374151",
+                color: "#9ca3af",
+                cursor: !pagination.hasNext || loading ? "not-allowed" : "pointer",
+                opacity: !pagination.hasNext || loading ? 0.5 : 1,
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                if (pagination.hasNext && !loading) {
+                  e.target.style.color = "white";
+                  e.target.style.backgroundColor = "#374151";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = "#9ca3af";
+                e.target.style.backgroundColor = "#1f2937";
+              }}
+            >
+              <FaChevronRight style={{ fontSize: "1rem" }} />
+            </button>
+          </div>
+        </div>
+      )}
 
-        table.tickets-table > thead {
-          background-color: #222 !important;
-          border-bottom: 2px solid #FF5757 !important;
-        }
-
-        table.tickets-table > thead > tr > th {
-          padding: 12px !important;
-          font-weight: 600 !important;
-          text-align: left !important;
-          color: #fff !important;
-          border: none !important;
-          background-color: transparent !important;
-        }
-
-        table.tickets-table > tbody > tr {
-          border-bottom: 1px solid #333 !important;
-          cursor: pointer !important;
-          transition: background-color 0.2s ease !important;
-          background-color: transparent !important;
-        }
-
-        table.tickets-table > tbody > tr:hover {
-          background-color: #222 !important;
-        }
-
-        table.tickets-table > tbody > tr:last-child {
-          border-bottom: none !important;
-        }
-
-        table.tickets-table > tbody > tr > td {
-          padding: 12px !important;
-          color: #fff !important;
-          border: none !important;
-          background-color: transparent !important;
-        }
-
-        table.tickets-table .ticket-id {
-          font-family: monospace !important;
-        }
-
-        table.tickets-table .ticket-email {
-          color: #888 !important;
-        }
-
-        table.tickets-table .ticket-issue {
-          max-width: 200px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        table.tickets-table .ticket-date {
-          font-size: 14px !important;
-          color: #888 !important;
-        }
-
-        table.tickets-table .ticket-status .badge {
-          padding: 4px 10px !important;
-          border-radius: 12px !important;
-          font-size: 12px !important;
-        }
-
-        .badge-resolved {
-          background-color: #10b981 !important;
-          color: white !important;
-        }
-        .badge-working {
-          background-color: #f59e0b !important;
-          color: white !important;
-        }
-        .badge-pending {
-          background-color: #ef4444 !important;
-          color: white !important;
-        }
+      <style jsx>{`
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>
