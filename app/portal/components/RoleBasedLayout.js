@@ -411,16 +411,18 @@ export default function RoleBasedLayout({ children }) {
   const navigationItems = getNavigationItems();
   const userInfo = getUserInfo();
   const accessDenied = !hasAccess(role, pathname);
-  const [hasInitialRedirect, setHasInitialRedirect] = useState(false);
 
-  // Set initial page for admin login (only once)
+  // Set initial page for admin login (only once per session)
   useEffect(() => {
-    if (role === "admin" && pathname === "/portal/admin/home" && !hasInitialRedirect) {
-      setHasInitialRedirect(true);
-      setStrategicInsightsOpen(true);
-      router.push("/portal/admin/financials");
+    if (role === "admin" && pathname === "/portal/admin/home") {
+      const hasRedirected = sessionStorage.getItem('adminInitialRedirect');
+      if (!hasRedirected) {
+        sessionStorage.setItem('adminInitialRedirect', 'true');
+        setStrategicInsightsOpen(true);
+        router.push("/portal/admin/financials");
+      }
     }
-  }, [role, pathname, router, hasInitialRedirect]);
+  }, [role, pathname, router]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
