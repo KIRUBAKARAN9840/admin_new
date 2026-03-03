@@ -299,7 +299,7 @@ export default function CashFlowPage() {
                       <th style={{ padding: "12px", textAlign: "right", color: "#9ca3af", fontWeight: "600", fontSize: "13px" }}>Net Cash Flow</th>
                       <th style={{ padding: "12px", textAlign: "right", color: "#9ca3af", fontWeight: "600", fontSize: "13px" }}>Closing Balance</th>
                       <th style={{ padding: "12px", textAlign: "right", color: "#9ca3af", fontWeight: "600", fontSize: "13px" }}>Burn Rate</th>
-                      <th style={{ padding: "12px", textAlign: "right", color: "#9ca3af", fontWeight: "600", fontSize: "13px" }}>Runway (Months)</th>
+                      <th style={{ padding: "12px", textAlign: "right", color: "#9ca3af", fontWeight: "600", fontSize: "13px" }}>Runway</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1217,7 +1217,7 @@ function CashFlowDetailView({ month, onBack }) {
                       marginBottom: "20px"
                     }}>
                       <div style={{ fontSize: "14px", color: "#9ca3af", marginBottom: "8px" }}>
-                        Runway (Months)
+                        Runway
                       </div>
                       <div style={{
                         fontSize: "48px",
