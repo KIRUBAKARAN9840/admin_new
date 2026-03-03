@@ -411,6 +411,16 @@ export default function RoleBasedLayout({ children }) {
   const navigationItems = getNavigationItems();
   const userInfo = getUserInfo();
   const accessDenied = !hasAccess(role, pathname);
+  const [hasInitialRedirect, setHasInitialRedirect] = useState(false);
+
+  // Set initial page for admin login (only once)
+  useEffect(() => {
+    if (role === "admin" && pathname === "/portal/admin/home" && !hasInitialRedirect) {
+      setHasInitialRedirect(true);
+      setStrategicInsightsOpen(true);
+      router.push("/portal/admin/financials");
+    }
+  }, [role, pathname, router, hasInitialRedirect]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -464,6 +474,11 @@ export default function RoleBasedLayout({ children }) {
 
   // Function to handle navigation
   const handleNavigation = (path) => {
+    // Close Strategic Insights toggle if navigating to a page outside of it
+    const isStrategicInsightsPath = strategicInsightsItems.some(item => path.startsWith(item.path));
+    if (!isStrategicInsightsPath) {
+      setStrategicInsightsOpen(false);
+    }
     router.push(path);
   };
 
