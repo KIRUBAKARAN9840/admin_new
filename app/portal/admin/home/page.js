@@ -674,9 +674,11 @@ export default function Home() {
                 <div className="metric-number">
                   {dashboardData.fittbot.totalPayingUsers || 0}
                 </div>
-                {/* <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
-                  Unique users who made payments
-                </div> */}
+                {dashboardData.fittbot.totalUsers?.overall > 0 && (
+                  <div style={{ fontSize: "12px", color: "#f59e0b", marginTop: "4px", fontWeight: "600" }}>
+                    {(((dashboardData.fittbot.totalPayingUsers || 0) / dashboardData.fittbot.totalUsers.overall) * 100).toFixed(1)}% of Total users
+                  </div>
+                )}
               </div>
             </div>
           </div>

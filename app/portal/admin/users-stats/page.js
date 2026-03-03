@@ -145,6 +145,11 @@ export default function UsersStatsPage() {
                   <div style={{ fontSize: "13px", color: "#888", marginTop: "8px" }}>
                     Unique users with payments
                   </div>
+                  {totalUsers > 0 && (
+                    <div style={{ fontSize: "12px", color: "#f59e0b", marginTop: "4px", fontWeight: "600" }}>
+                      {((payingUsers / totalUsers) * 100).toFixed(1)}% of Total users
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
