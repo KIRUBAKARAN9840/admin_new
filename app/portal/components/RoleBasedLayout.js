@@ -217,6 +217,20 @@ function SupportTicketsIcon({ size = 20 }) {
     />
   );
 }
+
+function UserTrackingIcon({ size = 20 }) {
+  return (
+    <img
+      src="/user_tracking.svg"
+      alt="User Tracking"
+      width={size}
+      height={size}
+      style={{ filter: 'brightness(0) saturate(100%) invert(1)' }}
+    />
+  );
+}
+
+
 export default function RoleBasedLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -277,6 +291,11 @@ export default function RoleBasedLayout({ children }) {
             name: "User Conversion",
             icon: UserConversionIcon,
             path: "/portal/admin/user-conversion",
+          },
+          {
+            name: "User Tracking",
+            icon: UserTrackingIcon,
+            path: "/portal/admin/tracking",
           },
           {
             name: "Bookings",
