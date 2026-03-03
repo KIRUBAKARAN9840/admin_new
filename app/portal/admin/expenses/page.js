@@ -416,7 +416,7 @@ export default function ExpensesPage() {
                 {(expenseTypes[formData.category] || []).map(type => (
                   <option key={type} value={type}>{type}</option>
                 ))}
-                <option value="Other">Other (Custom)</option>
+                {/* <option value="Other">Other (Custom)</option> */}
               </select>
             </div>
             {isCustomType && (

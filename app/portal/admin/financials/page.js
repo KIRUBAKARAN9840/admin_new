@@ -117,10 +117,6 @@ export default function FinancialsDashboard() {
     fetchFinancialsData(start, end);
   }, []); // Empty dependency array - only run on mount
 
-  const handleBack = () => {
-    router.push("/portal/admin/home");
-  };
-
   const formatCurrency = (amount) => {
     if (typeof amount === 'number') {
       // Show max 2 decimal places, remove trailing zeros for whole numbers
@@ -174,22 +170,6 @@ export default function FinancialsDashboard() {
       <div className="section-container">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <button
-              onClick={handleBack}
-              style={{
-                padding: "8px 16px",
-                backgroundColor: "#2a2a2a",
-                color: "#fff",
-                border: "1px solid #3a3a3a",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
-              onMouseEnter={(e) => (e.target.style.backgroundColor = "#3a3a3a")}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#2a2a2a")}
-            >
-              ← Back
-            </button>
             <h3 className="section-heading" style={{ margin: 0 }}>
               <span style={{ color: "#FF5757" }}>Financials</span> Dashboard
             </h3>
