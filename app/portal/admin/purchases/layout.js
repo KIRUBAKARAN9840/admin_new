@@ -1,11 +1,23 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useRole } from "../../layout";
 
 export default function PurchasesLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState("purchase-count");
+  const { role } = useRole();
+
+  // Determine default tab based on role - support users default to "all", others to "purchase-count"
+  const defaultTab = role === "support" ? "all" : "purchase-count";
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // Redirect support users if they're on purchase-count page
+  useEffect(() => {
+    if (role === "support" && pathname === "/portal/admin/purchases/purchase-count") {
+      router.push("/portal/admin/purchases/all");
+    }
+  }, [role, pathname, router]);
 
   useEffect(() => {
     if (pathname.includes("/purchase-count")) {
@@ -17,12 +29,13 @@ export default function PurchasesLayout({ children }) {
     } else if (pathname.includes("/gym-memberships")) {
       setActiveTab("gym-memberships");
     } else {
-      setActiveTab("purchase-count");
+      setActiveTab(defaultTab);
     }
-  }, [pathname]);
+  }, [pathname, defaultTab]);
 
+  // Define tabs - include purchase-count only for non-support roles
   const tabs = [
-    { id: "purchase-count", name: "Purchase Count", path: "/portal/admin/purchases/purchase-count" },
+    ...(role !== "support" ? [{ id: "purchase-count", name: "Purchase Count", path: "/portal/admin/purchases/purchase-count" }] : []),
     { id: "all", name: "Session/Daily pass", path: "/portal/admin/purchases/all" },
     { id: "today", name: "Today's Schedule", path: "/portal/admin/purchases/today" },
     { id: "gym-memberships", name: "Gym Memberships", path: "/portal/admin/purchases/gym-memberships" },

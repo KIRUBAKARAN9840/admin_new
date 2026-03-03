@@ -350,6 +350,16 @@ export default function RoleBasedLayout({ children }) {
             icon: HiOutlineChartBar,
             path: "/portal/support/fittbotbusiness",
           },
+          {
+            name: "Support Tickets",
+            icon: SupportTicketsIcon,
+            path: "/portal/support/tickets",
+          },
+          {
+            name: "Bookings",
+            icon: BookingsIcon,
+            path: "/portal/admin/purchases",
+          },
         ];
       case "telecaller":
         return [
@@ -435,7 +445,7 @@ export default function RoleBasedLayout({ children }) {
   const hasAccess = (userRole, pathname) => {
     const roleRoutes = {
       admin: ["/portal/admin"],
-      support: ["/portal/support", "/portal/admin/gymplans", "/portal/admin/gymphotos", "/portal/admin/gymdetails", "/portal/admin/verified-gyms", "/portal/admin/unverified-gyms", "/portal/admin/unverified-splitup"],
+      support: ["/portal/support", "/portal/admin/gymplans", "/portal/admin/gymphotos", "/portal/admin/gymdetails", "/portal/admin/verified-gyms", "/portal/admin/unverified-gyms", "/portal/admin/unverified-splitup", "/portal/admin/purchases"],
       telecaller: ["/portal/telecaller"],
       nutritionist: ["/portal/nutritionist"],
     };
