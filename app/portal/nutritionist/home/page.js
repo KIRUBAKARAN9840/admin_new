@@ -1,14 +1,19 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaChevronUp, FaEdit } from "react-icons/fa";
+import axios from "@/lib/axios";
 
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [sessions, setSessions] = useState([]);
+  const [dateCounts, setDateCounts] = useState({}); // Store session counts per date
   const [expandedRow, setExpandedRow] = useState(null);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [sessionsLoading, setSessionsLoading] = useState(false); // Loading state for date details
+  const [error, setError] = useState(null);
   const [rescheduleData, setRescheduleData] = useState({
     date: "",
     time: "",
@@ -23,127 +28,73 @@ export default function Home() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Dummy data for sessions
-  const dummySessionData = {
-    "2025-12-18": [
-      {
-        id: 1,
-        slot: "10:00 - 10:30 AM",
-        client_name: "Aarav Sharma",
-        meeting_link: null,
-        status: "Pending",
-        age: 28,
-        goal: "Weight Loss",
-        current_weight: 85,
-        target_weight: 75,
-        activity_level: "Moderate",
-      },
-      {
-        id: 2,
-        slot: "11:00 - 11:30 AM",
-        client_name: "Meera Kapoor",
-        meeting_link: "https://meet.google.com/abc-defg-hij",
-        status: "Scheduled",
-        age: 32,
-        goal: "Muscle Gain",
-        current_weight: 62,
-        target_weight: 68,
-        activity_level: "High",
-      },
-      {
-        id: 3,
-        slot: "02:00 - 02:30 PM",
-        client_name: "Rohan Verma",
-        meeting_link: "https://meet.google.com/xyz-abcd-efg",
-        status: "Rescheduled",
-        age: 25,
-        goal: "Maintain Weight",
-        current_weight: 70,
-        target_weight: 70,
-        activity_level: "Low",
-      },
-    ],
-    "2025-12-19": [
-      {
-        id: 4,
-        slot: "09:00 - 09:30 AM",
-        client_name: "Priya Singh",
-        meeting_link: "https://meet.google.com/priya-session",
-        status: "Scheduled",
-        age: 30,
-        goal: "Weight Loss",
-        current_weight: 78,
-        target_weight: 65,
-        activity_level: "Moderate",
-      },
-      {
-        id: 5,
-        slot: "03:00 - 03:30 PM",
-        client_name: "Vikram Reddy",
-        meeting_link: null,
-        status: "Pending",
-        age: 35,
-        goal: "Muscle Gain",
-        current_weight: 80,
-        target_weight: 85,
-        activity_level: "Very High",
-      },
-    ],
-    "2025-12-20": [
-      {
-        id: 6,
-        slot: "10:30 - 11:00 AM",
-        client_name: "Ananya Patel",
-        meeting_link: "https://meet.google.com/ananya-meet",
-        status: "Scheduled",
-        age: 27,
-        goal: "Weight Loss",
-        current_weight: 72,
-        target_weight: 62,
-        activity_level: "Moderate",
-      },
-    ],
-    "2025-12-22": [
-      {
-        id: 7,
-        slot: "11:00 - 11:30 AM",
-        client_name: "Kabir Malhotra",
-        meeting_link: null,
-        status: "Pending",
-        age: 29,
-        goal: "Maintain Weight",
-        current_weight: 75,
-        target_weight: 75,
-        activity_level: "High",
-      },
-      {
-        id: 8,
-        slot: "04:00 - 04:30 PM",
-        client_name: "Sneha Iyer",
-        meeting_link: "https://meet.google.com/sneha-call",
-        status: "Scheduled",
-        age: 26,
-        goal: "Weight Loss",
-        current_weight: 68,
-        target_weight: 58,
-        activity_level: "Low",
-      },
-    ],
-    "2025-12-25": [
-      {
-        id: 9,
-        slot: "10:00 - 10:30 AM",
-        client_name: "Arjun Nair",
-        meeting_link: "https://meet.google.com/arjun-session",
-        status: "Rescheduled",
-        age: 31,
-        goal: "Muscle Gain",
-        current_weight: 73,
-        target_weight: 80,
-        activity_level: "Very High",
-      },
-    ],
-  };
+  // Fetch session counts for calendar on initial load
+  useEffect(() => {
+    const fetchCalendarCounts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Calculate date range: today to 30 days ahead
+        const startDate = today.toISOString().split("T")[0];
+        const endDate = new Date(today);
+        endDate.setDate(endDate.getDate() + 30);
+        const endDateStr = endDate.toISOString().split("T")[0];
+
+        const response = await axios.get("/api/admin/nutritionist_sessions/calendar/counts", {
+          params: {
+            start_date: startDate,
+            end_date: endDateStr,
+          },
+        });
+
+        if (response.data?.success && response.data?.data?.date_counts) {
+          setDateCounts(response.data.data.date_counts);
+        } else {
+          setDateCounts({});
+        }
+      } catch (err) {
+        console.error("Error fetching calendar counts:", err);
+        setError("Failed to load calendar. Please try again.");
+        setDateCounts({});
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCalendarCounts();
+  }, []);
+
+  // Fetch sessions for a specific date when clicked
+  useEffect(() => {
+    const fetchSessionsForDate = async () => {
+      if (!selectedDate) return;
+
+      try {
+        setSessionsLoading(true);
+        const formattedDate = selectedDate.toISOString().split("T")[0];
+
+        const response = await axios.get("/api/admin/nutritionist_sessions/sessions/by-date", {
+          params: {
+            target_date: formattedDate,
+          },
+        });
+
+        if (response.data?.success && response.data?.data?.sessions) {
+          setSessions(response.data.data.sessions);
+        } else {
+          setSessions([]);
+        }
+      } catch (err) {
+        console.error("Error fetching sessions for date:", err);
+        setSessions([]);
+      } finally {
+        setSessionsLoading(false);
+      }
+    };
+
+    fetchSessionsForDate();
+  }, [selectedDate]);
 
   // Generate 30 days from today
   const generateCalendarDates = () => {
@@ -177,23 +128,10 @@ export default function Home() {
 
   const monthsData = generateCalendarDates();
 
-  const getSessionsForDate = (date) => {
-    const formattedDate = date.toISOString().split("T")[0];
-    return dummySessionData[formattedDate] || [];
-  };
-
   const getSessionCount = (date) => {
     const formattedDate = date.toISOString().split("T")[0];
-    const sessions = dummySessionData[formattedDate];
-    return sessions ? sessions.length : 0;
+    return dateCounts[formattedDate] || 0;
   };
-
-  useEffect(() => {
-    if (selectedDate) {
-      const sessionData = getSessionsForDate(selectedDate);
-      setSessions(sessionData);
-    }
-  }, [selectedDate]);
 
   const handleDateClick = (date) => {
     if (selectedDate && selectedDate.toDateString() === date.toDateString()) {
@@ -209,22 +147,18 @@ export default function Home() {
     return selectedDate && selectedDate.toDateString() === date.toDateString();
   };
 
-  const handleGenerateLink = (sessionId) => {
-    // Simulate generating a link
-    const updatedSessions = sessions.map((session) =>
-      session.id === sessionId
-        ? {
-            ...session,
-            meeting_link: `https://meet.google.com/generated-${sessionId}`,
-            status: "Scheduled",
-          }
-        : session
-    );
-    setSessions(updatedSessions);
-  };
-
-  const isRescheduledWithoutLink = (session) => {
-    return session.status === "Rescheduled" && !session.meeting_link;
+  const handleGenerateLink = async (sessionId) => {
+    try {
+      // Generate a simple Google Meet link
+      const updatedSessions = sessions.map((session) =>
+        session.id === sessionId
+          ? { ...session, meeting_link: `https://meet.google.com/generated-${sessionId}`, status: "Scheduled" }
+          : session
+      );
+      setSessions(updatedSessions);
+    } catch (err) {
+      console.error("Error generating link:", err);
+    }
   };
 
   const handleReschedule = (session) => {
@@ -323,7 +257,7 @@ export default function Home() {
     }
 
     return (
-      <div key={monthData.month} style={{ marginBottom: "24px" }}>
+      <div style={{ marginBottom: "24px" }}>
         <div style={{ textAlign: "center", marginBottom: "16px" }}>
           <h3
             style={{
@@ -464,6 +398,26 @@ export default function Home() {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="users-container">
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+          <div style={{ color: "#FF5757", fontSize: "18px" }}>Loading calendar...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="users-container">
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+          <div style={{ color: "#ff4444", fontSize: "16px" }}>{error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="users-container">
       <div className="users-header">
@@ -482,7 +436,9 @@ export default function Home() {
           marginBottom: "2rem",
         }}
       >
-        {monthsData.map((monthData) => renderMonth(monthData))}
+        {monthsData.map((monthData) => (
+          <div key={monthData.month}>{renderMonth(monthData)}</div>
+        ))}
       </div>
 
       {/* Sessions Table */}
@@ -498,281 +454,294 @@ export default function Home() {
           >
             Sessions for {formatDate(selectedDate)}
           </h3>
-          <div className="table-responsive">
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>S.No</th>
-                  <th>Slot</th>
-                  <th>Client Name</th>
-                  <th>Meeting Link</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {sessions.length > 0 ? (
-                  sessions.map((session, index) => (
-                    <>
-                      <tr
-                        key={session.id}
-                        onClick={() =>
-                          setExpandedRow(expandedRow === index ? null : index)
-                        }
-                        style={{ cursor: "pointer" }}
-                      >
-                        <td>{index + 1}</td>
-                        <td>{session.slot}</td>
-                        <td>{session.client_name}</td>
-                        <td>
-                          {session.status === "Rescheduled" ? (
-                            <span
-                              style={{
-                                fontSize: "12px",
-                                color: "#999",
-                                fontStyle: "italic",
-                              }}
-                            >
-                              -
-                            </span>
-                          ) : !session.meeting_link ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleGenerateLink(session.id);
-                              }}
-                              style={{
-                                background: "#FF5757",
-                                border: "none",
-                                color: "white",
-                                padding: "6px 12px",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                              }}
-                            >
-                              Generate Link
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                              }}
-                            >
-                              <a
-                                href={session.meeting_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
+
+          {sessionsLoading ? (
+            <div style={{ display: "flex", justifyContent: "center", padding: "2rem", color: "#999" }}>
+              Loading sessions...
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="users-table">
+                <thead>
+                  <tr>
+                    <th>S.No</th>
+                    <th>Slot</th>
+                    <th>Client Name</th>
+                    <th>Meeting Link</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sessions.length > 0 ? (
+                    sessions.map((session, index) => (
+                      <React.Fragment key={session.id}>
+                        <tr
+                          onClick={() =>
+                            setExpandedRow(expandedRow === index ? null : index)
+                          }
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td>{index + 1}</td>
+                          <td>{session.slot}</td>
+                          <td>{session.client_name || "Client #" + session.client_id}</td>
+                          <td>
+                            {session.status === "Rescheduled" ? (
+                              <span
+                                style={{
+                                  fontSize: "12px",
+                                  color: "#999",
+                                  fontStyle: "italic",
+                                }}
+                              >
+                                -
+                              </span>
+                            ) : !session.meeting_link ? (
+                              <button
                                 onClick={(e) => {
-                                  if (session.status === "Completed") {
-                                    e.preventDefault();
-                                  } else {
-                                    e.stopPropagation();
-                                  }
+                                  e.stopPropagation();
+                                  handleGenerateLink(session.id);
                                 }}
                                 style={{
-                                  background: session.status === "Completed" ? "#666" : "#4CAF50",
+                                  background: "#FF5757",
                                   border: "none",
                                   color: "white",
                                   padding: "6px 12px",
                                   borderRadius: "4px",
-                                  textDecoration: "none",
+                                  cursor: "pointer",
                                   fontSize: "12px",
-                                  cursor: session.status === "Completed" ? "not-allowed" : "pointer",
-                                  opacity: session.status === "Completed" ? 0.5 : 1,
                                 }}
                               >
-                                Join Meeting
-                              </a>
+                                Generate Link
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                <a
+                                  href={session.meeting_link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => {
+                                    if (session.status === "Completed") {
+                                      e.preventDefault();
+                                    } else {
+                                      e.stopPropagation();
+                                    }
+                                  }}
+                                  style={{
+                                    background: session.status === "Completed" ? "#666" : "#4CAF50",
+                                    border: "none",
+                                    color: "white",
+                                    padding: "6px 12px",
+                                    borderRadius: "4px",
+                                    textDecoration: "none",
+                                    fontSize: "12px",
+                                    cursor: session.status === "Completed" ? "not-allowed" : "pointer",
+                                    opacity: session.status === "Completed" ? 0.5 : 1,
+                                  }}
+                                >
+                                  Join Meeting
+                                </a>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleReschedule(session);
+                                  }}
+                                  disabled={session.status === "Completed"}
+                                  style={{
+                                    background: "transparent",
+                                    border: "1px solid #444",
+                                    color: "#ccc",
+                                    padding: "6px 8px",
+                                    borderRadius: "4px",
+                                    cursor: session.status === "Completed" ? "not-allowed" : "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    opacity: session.status === "Completed" ? 0.5 : 1,
+                                  }}
+                                >
+                                  <FaEdit size={12} />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            {session.status === "Scheduled" ? (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleReschedule(session);
+                                  handleMarkAsCompleted(session);
                                 }}
-                                disabled={session.status === "Completed"}
                                 style={{
-                                  background: "transparent",
-                                  border: "1px solid #444",
-                                  color: "#ccc",
-                                  padding: "6px 8px",
-                                  borderRadius: "4px",
-                                  cursor: session.status === "Completed" ? "not-allowed" : "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  opacity: session.status === "Completed" ? 0.5 : 1,
+                                  ...getStatusStyle(session.status),
+                                  padding: "6px 14px",
+                                  borderRadius: "12px",
+                                  fontSize: "12px",
+                                  fontWeight: "600",
+                                  border: "2px solid #4CAF50",
+                                  cursor: "pointer",
+                                  transition: "all 0.2s",
+                                  boxShadow: "0 2px 4px rgba(76, 175, 80, 0.2)",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = "scale(1.05)";
+                                  e.currentTarget.style.boxShadow = "0 4px 8px rgba(76, 175, 80, 0.3)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = "scale(1)";
+                                  e.currentTarget.style.boxShadow = "0 2px 4px rgba(76, 175, 80, 0.2)";
                                 }}
                               >
-                                <FaEdit size={12} />
+                                {session.status} ✓
                               </button>
-                            </div>
-                          )}
-                        </td>
-                        <td>
-                          {session.status === "Scheduled" ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkAsCompleted(session);
-                              }}
-                              style={{
-                                ...getStatusStyle(session.status),
-                                padding: "6px 14px",
-                                borderRadius: "12px",
-                                fontSize: "12px",
-                                fontWeight: "600",
-                                border: "2px solid #4CAF50",
-                                cursor: "pointer",
-                                transition: "all 0.2s",
-                                boxShadow: "0 2px 4px rgba(76, 175, 80, 0.2)",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = "scale(1.05)";
-                                e.currentTarget.style.boxShadow = "0 4px 8px rgba(76, 175, 80, 0.3)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = "scale(1)";
-                                e.currentTarget.style.boxShadow = "0 2px 4px rgba(76, 175, 80, 0.2)";
-                              }}
-                            >
-                              {session.status} ✓
-                            </button>
-                          ) : (
-                            <span
-                              style={{
-                                ...getStatusStyle(session.status),
-                                padding: "4px 12px",
-                                borderRadius: "12px",
-                                fontSize: "12px",
-                                fontWeight: "500",
-                              }}
-                            >
-                              {session.status}
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          {expandedRow === index ? (
-                            <FaChevronUp />
-                          ) : (
-                            <FaChevronDown />
-                          )}
-                        </td>
-                      </tr>
-                      {expandedRow === index && (
-                        <tr>
-                          <td colSpan="6">
-                            <div
-                              style={{
-                                background: "#252525",
-                                padding: "1rem",
-                                borderRadius: "4px",
-                                display: "grid",
-                                gridTemplateColumns: "repeat(5, 1fr)",
-                                gap: "1rem",
-                              }}
-                            >
-                              <div>
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#999",
-                                    marginBottom: "4px",
-                                  }}
-                                >
-                                  Age
-                                </div>
-                                <div
-                                  style={{ fontSize: "14px", color: "#ccc" }}
-                                >
-                                  {session.age || "-"}
-                                </div>
-                              </div>
-                              <div>
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#999",
-                                    marginBottom: "4px",
-                                  }}
-                                >
-                                  Goal
-                                </div>
-                                <div
-                                  style={{ fontSize: "14px", color: "#ccc" }}
-                                >
-                                  {session.goal || "-"}
-                                </div>
-                              </div>
-                              <div>
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#999",
-                                    marginBottom: "4px",
-                                  }}
-                                >
-                                  Current Weight
-                                </div>
-                                <div
-                                  style={{ fontSize: "14px", color: "#ccc" }}
-                                >
-                                  {session.current_weight
-                                    ? `${session.current_weight} kg`
-                                    : "-"}
-                                </div>
-                              </div>
-                              <div>
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#999",
-                                    marginBottom: "4px",
-                                  }}
-                                >
-                                  Target Weight
-                                </div>
-                                <div
-                                  style={{ fontSize: "14px", color: "#ccc" }}
-                                >
-                                  {session.target_weight
-                                    ? `${session.target_weight} kg`
-                                    : "-"}
-                                </div>
-                              </div>
-                              <div>
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#999",
-                                    marginBottom: "4px",
-                                  }}
-                                >
-                                  Activity Level
-                                </div>
-                                <div
-                                  style={{ fontSize: "14px", color: "#ccc" }}
-                                >
-                                  {session.activity_level || "-"}
-                                </div>
-                              </div>
-                            </div>
+                            ) : (
+                              <span
+                                style={{
+                                  ...getStatusStyle(session.status),
+                                  padding: "4px 12px",
+                                  borderRadius: "12px",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                }}
+                              >
+                                {session.status}
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            {expandedRow === index ? (
+                              <FaChevronUp />
+                            ) : (
+                              <FaChevronDown />
+                            )}
                           </td>
                         </tr>
-                      )}
-                    </>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="no-data">
-                      No sessions scheduled for this date
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                        {expandedRow === index && (
+                          <tr>
+                            <td colSpan="6">
+                              <div
+                                style={{
+                                  background: "#252525",
+                                  padding: "1rem",
+                                  borderRadius: "4px",
+                                  display: "grid",
+                                  gridTemplateColumns: "repeat(5, 1fr)",
+                                  gap: "1rem",
+                                }}
+                              >
+                                <div>
+                                  <div
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "#999",
+                                      marginBottom: "4px",
+                                    }}
+                                  >
+                                    Client ID
+                                  </div>
+                                  <div
+                                    style={{ fontSize: "14px", color: "#ccc" }}
+                                  >
+                                    {session.client_id || "-"}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "#999",
+                                      marginBottom: "4px",
+                                    }}
+                                  >
+                                    Booking ID
+                                  </div>
+                                  <div
+                                    style={{ fontSize: "14px", color: "#ccc" }}
+                                  >
+                                    {session.id || "-"}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "#999",
+                                      marginBottom: "4px",
+                                    }}
+                                  >
+                                    Meeting Link
+                                  </div>
+                                  <div
+                                    style={{ fontSize: "14px", color: "#ccc" }}
+                                  >
+                                    {session.meeting_link ? (
+                                      <a
+                                        href={session.meeting_link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ color: "#4CAF50" }}
+                                      >
+                                        Link
+                                      </a>
+                                    ) : (
+                                      "-"
+                                    )}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "#999",
+                                      marginBottom: "4px",
+                                    }}
+                                  >
+                                    Notes
+                                  </div>
+                                  <div
+                                    style={{ fontSize: "14px", color: "#ccc" }}
+                                  >
+                                    {session.notes || "-"}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "#999",
+                                      marginBottom: "4px",
+                                    }}
+                                  >
+                                    Consultation Summary
+                                  </div>
+                                  <div
+                                    style={{ fontSize: "14px", color: "#ccc" }}
+                                  >
+                                    {session.consultation_summary || "-"}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="no-data">
+                        No sessions scheduled for this date
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
