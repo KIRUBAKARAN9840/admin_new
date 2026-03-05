@@ -16,6 +16,7 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [dateCounts, setDateCounts] = useState({}); // Store session counts per date
+  const [dateRescheduled, setDateRescheduled] = useState({}); // Track which dates have rescheduled sessions
   const [expandedRow, setExpandedRow] = useState(null);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -37,40 +38,44 @@ export default function Home() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // Fetch session counts for calendar - extracted as reusable function
+  const fetchCalendarCounts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Calculate date range: today to 30 days ahead (using IST format)
+      const startDate = toISTDateString(today);
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + 30);
+      const endDateStr = toISTDateString(endDate);
+
+      const response = await axios.get("/api/admin/nutritionist_sessions/calendar/counts", {
+        params: {
+          start_date: startDate,
+          end_date: endDateStr,
+        },
+      });
+
+      if (response.data?.success && response.data?.data?.date_counts) {
+        setDateCounts(response.data.data.date_counts);
+        setDateRescheduled(response.data.data.date_rescheduled || {});
+      } else {
+        setDateCounts({});
+        setDateRescheduled({});
+      }
+    } catch (err) {
+      console.error("Error fetching calendar counts:", err);
+      setError("Failed to load calendar. Please try again.");
+      setDateCounts({});
+      setDateRescheduled({});
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch session counts for calendar on initial load
   useEffect(() => {
-    const fetchCalendarCounts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Calculate date range: today to 30 days ahead (using IST format)
-        const startDate = toISTDateString(today);
-        const endDate = new Date(today);
-        endDate.setDate(endDate.getDate() + 30);
-        const endDateStr = toISTDateString(endDate);
-
-        const response = await axios.get("/api/admin/nutritionist_sessions/calendar/counts", {
-          params: {
-            start_date: startDate,
-            end_date: endDateStr,
-          },
-        });
-
-        if (response.data?.success && response.data?.data?.date_counts) {
-          setDateCounts(response.data.data.date_counts);
-        } else {
-          setDateCounts({});
-        }
-      } catch (err) {
-        console.error("Error fetching calendar counts:", err);
-        setError("Failed to load calendar. Please try again.");
-        setDateCounts({});
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCalendarCounts();
   }, []);
 
@@ -175,19 +180,64 @@ export default function Home() {
     setShowRescheduleModal(true);
   };
 
-  const submitReschedule = () => {
-    // Simulate rescheduling - reset meeting link so they need to generate a new one
-    const updatedSessions = sessions.map((session) =>
-      session.id === selectedSession.id
-        ? { ...session, status: "Rescheduled", meeting_link: null }
-        : session
-    );
-    setSessions(updatedSessions);
-    setShowRescheduleModal(false);
-    setRescheduleData({ date: "", time: "", reason: "" });
-    alert(
-      `Session rescheduled to ${rescheduleData.date} at ${rescheduleData.time}`
-    );
+  const submitReschedule = async () => {
+    if (!rescheduleData.date || !rescheduleData.time || !rescheduleData.reason) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      // Call the reschedule API
+      const response = await axios.post("/api/admin/nutritionist_sessions/reschedule", {
+        booking_id: selectedSession.id,
+        new_date: rescheduleData.date,
+        new_time: rescheduleData.time,
+        reason: rescheduleData.reason,
+      });
+
+      if (response.data?.success) {
+        const responseData = response.data.data;
+
+        // Update local state with new rescheduled info from API
+        const updatedSessions = sessions.map((session) =>
+          session.id === selectedSession.id
+            ? {
+                ...session,
+                status: responseData.status,
+                meeting_link: null,
+                reschedule_reason: responseData.reason,
+                rescheduled_at: responseData.rescheduled_at,
+                // Store original and new times for display
+                original_slot: responseData.original_time,
+                original_date: responseData.original_date,
+                slot: responseData.new_time
+              }
+            : session
+        );
+        setSessions(updatedSessions);
+
+        setShowRescheduleModal(false);
+        setRescheduleData({ date: "", time: "", reason: "" });
+
+        alert(`Session rescheduled successfully to ${responseData.new_date} at ${responseData.new_time}`);
+
+        // Refresh the calendar counts to show updated session counts
+        await fetchCalendarCounts();
+
+        // Refresh the sessions list for the currently selected date
+        if (selectedDate) {
+          // Trigger a re-fetch by temporarily setting selectedDate to null and back
+          const currentDate = selectedDate;
+          setSelectedDate(null);
+          setTimeout(() => setSelectedDate(currentDate), 0);
+        }
+      } else {
+        alert("Failed to reschedule session. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error rescheduling session:", err);
+      alert(err.response?.data?.detail || "Failed to reschedule session. Please try again.");
+    }
   };
 
   const handleMarkAsCompleted = (session) => {
@@ -639,7 +689,7 @@ export default function Home() {
                                   padding: "1rem",
                                   borderRadius: "4px",
                                   display: "grid",
-                                  gridTemplateColumns: "repeat(5, 1fr)",
+                                  gridTemplateColumns: session.rescheduled_at ? "repeat(3, 1fr)" : "repeat(5, 1fr)",
                                   gap: "1rem",
                                 }}
                               >
@@ -675,65 +725,136 @@ export default function Home() {
                                     {session.id || "-"}
                                   </div>
                                 </div>
-                                <div>
-                                  <div
-                                    style={{
-                                      fontSize: "11px",
-                                      color: "#999",
-                                      marginBottom: "4px",
-                                    }}
-                                  >
-                                    Meeting Link
-                                  </div>
-                                  <div
-                                    style={{ fontSize: "14px", color: "#ccc" }}
-                                  >
-                                    {session.meeting_link ? (
-                                      <a
-                                        href={session.meeting_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{ color: "#4CAF50" }}
+                                {session.rescheduled_at ? (
+                                  <>
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontSize: "11px",
+                                          color: "#2196F3",
+                                          marginBottom: "4px",
+                                          fontWeight: "600",
+                                        }}
                                       >
-                                        Link
-                                      </a>
-                                    ) : (
-                                      "-"
-                                    )}
-                                  </div>
-                                </div>
-                                <div>
-                                  <div
-                                    style={{
-                                      fontSize: "11px",
-                                      color: "#999",
-                                      marginBottom: "4px",
-                                    }}
-                                  >
-                                    Notes
-                                  </div>
-                                  <div
-                                    style={{ fontSize: "14px", color: "#ccc" }}
-                                  >
-                                    {session.notes || "-"}
-                                  </div>
-                                </div>
-                                <div>
-                                  <div
-                                    style={{
-                                      fontSize: "11px",
-                                      color: "#999",
-                                      marginBottom: "4px",
-                                    }}
-                                  >
-                                    Consultation Summary
-                                  </div>
-                                  <div
-                                    style={{ fontSize: "14px", color: "#ccc" }}
-                                  >
-                                    {session.consultation_summary || "-"}
-                                  </div>
-                                </div>
+                                        Original Schedule
+                                      </div>
+                                      <div
+                                        style={{ fontSize: "13px", color: "#ccc" }}
+                                      >
+                                        {session.original_date || "-"}
+                                      </div>
+                                      <div
+                                        style={{ fontSize: "13px", color: "#ccc", marginTop: "2px" }}
+                                      >
+                                        {session.original_slot || "-"}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontSize: "11px",
+                                          color: "#4CAF50",
+                                          marginBottom: "4px",
+                                          fontWeight: "600",
+                                        }}
+                                      >
+                                        Rescheduled To
+                                      </div>
+                                      <div
+                                        style={{ fontSize: "13px", color: "#ccc" }}
+                                      >
+                                        {session.rescheduled_at ? new Date(session.rescheduled_at).toLocaleDateString("en-IN", {
+                                          day: "2-digit",
+                                          month: "short",
+                                          year: "numeric",
+                                        }) : "-"}
+                                      </div>
+                                      <div
+                                        style={{ fontSize: "13px", color: "#ccc", marginTop: "2px" }}
+                                      >
+                                        {session.slot || "-"}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontSize: "11px",
+                                          color: "#999",
+                                          marginBottom: "4px",
+                                        }}
+                                      >
+                                        Reschedule Reason
+                                      </div>
+                                      <div
+                                        style={{ fontSize: "13px", color: "#ccc" }}
+                                      >
+                                        {session.reschedule_reason || "-"}
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontSize: "11px",
+                                          color: "#999",
+                                          marginBottom: "4px",
+                                        }}
+                                      >
+                                        Meeting Link
+                                      </div>
+                                      <div
+                                        style={{ fontSize: "14px", color: "#ccc" }}
+                                      >
+                                        {session.meeting_link ? (
+                                          <a
+                                            href={session.meeting_link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ color: "#4CAF50" }}
+                                          >
+                                            Link
+                                          </a>
+                                        ) : (
+                                          "-"
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontSize: "11px",
+                                          color: "#999",
+                                          marginBottom: "4px",
+                                        }}
+                                      >
+                                        Notes
+                                      </div>
+                                      <div
+                                        style={{ fontSize: "14px", color: "#ccc" }}
+                                      >
+                                        {session.notes || "-"}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontSize: "11px",
+                                          color: "#999",
+                                          marginBottom: "4px",
+                                        }}
+                                      >
+                                        Consultation Summary
+                                      </div>
+                                      <div
+                                        style={{ fontSize: "14px", color: "#ccc" }}
+                                      >
+                                        {session.consultation_summary || "-"}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             </td>
                           </tr>
