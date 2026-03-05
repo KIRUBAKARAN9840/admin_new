@@ -3,6 +3,15 @@ import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaChevronUp, FaEdit } from "react-icons/fa";
 import axios from "@/lib/axios";
 
+// Helper function to convert date to IST format (YYYY-MM-DD)
+// Since the database stores dates in IST, we need to format them correctly
+const toISTDateString = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [sessions, setSessions] = useState([]);
@@ -35,11 +44,11 @@ export default function Home() {
         setLoading(true);
         setError(null);
 
-        // Calculate date range: today to 30 days ahead
-        const startDate = today.toISOString().split("T")[0];
+        // Calculate date range: today to 30 days ahead (using IST format)
+        const startDate = toISTDateString(today);
         const endDate = new Date(today);
         endDate.setDate(endDate.getDate() + 30);
-        const endDateStr = endDate.toISOString().split("T")[0];
+        const endDateStr = toISTDateString(endDate);
 
         const response = await axios.get("/api/admin/nutritionist_sessions/calendar/counts", {
           params: {
@@ -72,7 +81,7 @@ export default function Home() {
 
       try {
         setSessionsLoading(true);
-        const formattedDate = selectedDate.toISOString().split("T")[0];
+        const formattedDate = toISTDateString(selectedDate);
 
         const response = await axios.get("/api/admin/nutritionist_sessions/sessions/by-date", {
           params: {
@@ -129,7 +138,7 @@ export default function Home() {
   const monthsData = generateCalendarDates();
 
   const getSessionCount = (date) => {
-    const formattedDate = date.toISOString().split("T")[0];
+    const formattedDate = toISTDateString(date);
     return dateCounts[formattedDate] || 0;
   };
 
