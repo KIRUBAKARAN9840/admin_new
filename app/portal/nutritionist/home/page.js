@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaChevronUp, FaEdit } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 import axios from "@/lib/axios";
 
 // Helper function to convert date to IST format (YYYY-MM-DD)
@@ -13,6 +14,7 @@ const toISTDateString = (date) => {
 };
 
 export default function Home() {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [dateCounts, setDateCounts] = useState({}); // Store session counts per date
@@ -543,7 +545,29 @@ export default function Home() {
                         >
                           <td>{index + 1}</td>
                           <td>{session.slot}</td>
-                          <td>{session.client_name || "Client #" + session.client_id}</td>
+                          <td>
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/portal/nutritionist/client/${session.client_id}`);
+                              }}
+                              style={{
+                                color: "#FF5757",
+                                cursor: "pointer",
+                                textDecoration: "underline",
+                                textDecorationColor: "transparent",
+                                transition: "textDecorationColor 0.2s"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.textDecorationColor = "#FF5757";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.textDecorationColor = "transparent";
+                              }}
+                            >
+                              {session.client_name || "Client #" + session.client_id}
+                            </span>
+                          </td>
                           <td>
                             {session.status === "Rescheduled" ? (
                               <span
